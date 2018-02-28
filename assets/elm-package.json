@@ -4,7 +4,10 @@
     "repository": "https://github.com/user/project.git",
     "license": "BSD3",
     "source-directories": [
-        "."
+        ".",
+        "./elm",
+        "./elm/Views",
+        "./elm/Data"
     ],
     "exposed-modules": [],
     "dependencies": {

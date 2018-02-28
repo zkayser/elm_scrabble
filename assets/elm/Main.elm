@@ -3,6 +3,7 @@ module Main exposing (..)
 import Html exposing (..)
 import Html.Attributes as Attributes
 import Html.Events as Events
+import Views.Board as Board
 
 
 type alias Model =
@@ -37,19 +38,7 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div [ Attributes.class "container" ]
-        [ h1 [ Attributes.class "greeting" ] [ text model.greeting ]
-        , div [ Attributes.class "vertical-container"]
-          [ button
-            [ Attributes.class "btn happy-btn"
-            , Events.onClick ShowGreeting ]
-            [ text "Show Greeting" ]
-          , button
-            [ Attributes.class "btn danger-btn"
-            , Events.onClick ShowAttitude ]
-            [ text "Show Attitude" ]
-          ]
-        ]
-
+        [ Board.view model ]
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
