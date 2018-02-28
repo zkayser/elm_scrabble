@@ -1,1 +1,40 @@
-/* This file is for your main application css. */
+.container {
+	max-width: 100vw;
+	max-height: 100vh;
+	padding: 10rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.btn {
+	height: 4rem;
+	width: 10rem;
+	font-size: 1rem;
+	text-align: center;
+	border-radius: 0.5rem;
+	background-color: lightgrey;
+	margin: 1rem;
+}
+
+.happy-btn {
+	background-color: #0074D9;
+	color: white;
+}
+
+.danger-btn {
+	background-color: #FF4136;
+	color: white;
+}
+
+.vertical-container {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+
+.btn.focus, .btn:focus, .btn:hover {
+	color: white;
+}
