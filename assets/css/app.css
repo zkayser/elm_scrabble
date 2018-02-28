@@ -3,6 +3,27 @@ body {
 	min-height: 100vh;
 	max-height: 100vh;
 	/*background: radial-gradient(#a8edea, #fed6e3);*/
+}
+
+.container {
+	max-width: 100vw;
+	max-height: 100vh;
+	padding: 1vh 3vw 2vh 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.board {
+	position: fixed;
+	top: 0.5vh;
+	left: 1rem;
+	height: 85vh;
+	display: grid;
+	grid-template-columns: 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw;
+	grid-gap: 0;
+	box-shadow: black 2rem 2rem 2rem 2rem;
 	background: rgb(233,223,196)
 
   background: -moz-linear-gradient(left, rgba(233,223,196,1) 0%, rgba(233,223,196,1) 1%, rgba(237,227,200,1) 2%, rgba(237,227,200,1) 24%, rgba(235,221,195,1) 25%, rgba(233,223,196,1) 48%, rgba(235,221,195,1) 49%, rgba(230,216,189,1) 52%, rgba(230,216,189,1) 53%, rgba(233,219,192,1) 54%, rgba(230,216,189,1) 55%, rgba(230,216,189,1) 56%, rgba(233,219,192,1) 57%, rgba(230,216,189,1) 58%, rgba(230,216,189,1) 73%, rgba(233,219,192,1) 74%, rgba(233,219,192,1) 98%, rgba(235,221,195,1) 100%);
@@ -19,28 +40,10 @@ body {
 
   background-size: 120px;
   background-repeat: repeat;
-}
 
-.container {
-	max-width: 100vw;
-	max-height: 100vh;
-	padding: 1vh 3vw 2vh 2vw;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-}
-
-.board {
-	display: grid;
-	grid-template-columns: 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw 6.4vw;
-	grid-gap: 0;
-	color: maroon;
-	box-shadow: black 2rem 2rem 2rem 2rem;
 }
 
 .cell {
-	padding: 1px;
 	border: 1px white solid;
 	border-radius: 1px;
 	height: 5vh;
@@ -55,6 +58,28 @@ body {
 .double-word {
 	background-color: pink;
 	color: black;
+}
+
+.triple-word {
+	background-color: red;
+	color: white;
+}
+
+.double-letter {
+	background-color: lightblue;
+	color: black;
+}
+
+.triple-letter {
+	background-color: darkblue;
+	color: white;
+}
+
+.tile {
+	background: inherit;
+	background-color: inherit;
+	color: black;
+	font-weight: bold;
 }
 
 .btn {
