@@ -185,7 +185,13 @@ cellToHtml cell =
                             else
                                 "2x W"
                     in
-                    div [ class <| "cell double-word" ] [ text displayText ]
+                      if cell.isCenter then
+                        div [ class <| "cell double-word center-tile" ] [
+                          Html.img [ class <| "center-logo", Html.Attributes.src "images/glogo.png" ] []
+                        ]
+
+                      else
+                        div [ class <| "cell double-word" ] [ text displayText ]
 
                 TripleWord ->
                     div [ class <| "cell triple-word" ] [ text "3x W" ]
