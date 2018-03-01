@@ -1,7 +1,7 @@
 module Data.Grid exposing (..)
 
-import Html exposing (Html, div, text)
-import Html.Attributes exposing (class)
+import Html exposing (..)
+import Html.Attributes exposing (class, src)
 
 
 type alias Grid =
@@ -185,12 +185,11 @@ cellToHtml cell =
                             else
                                 "2x W"
                     in
-                      if cell.isCenter then
-                        div [ class <| "cell double-word center-tile" ] [
-                          Html.img [ class <| "center-logo", Html.Attributes.src "images/glogo.png" ] []
-                        ]
-
-                      else
+                    if cell.isCenter then
+                        div [ class <| "cell double-word center-tile" ]
+                            [ img [ class <| "center-logo", src "images/glogo.png" ] []
+                            ]
+                    else
                         div [ class <| "cell double-word" ] [ text displayText ]
 
                 TripleWord ->
