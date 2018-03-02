@@ -21,7 +21,9 @@ type alias Position =
 
 
 type alias Tile =
-    String
+    { letter : String
+    , id : Int
+    }
 
 
 type Multiplier
@@ -178,19 +180,12 @@ cellToHtml cell =
         _ ->
             case cell.multiplier of
                 DoubleWord ->
-                    let
-                        displayText =
-                            if cell.isCenter then
-                                "★"
-                            else
-                                "2x W"
-                    in
                     if cell.isCenter then
                         div [ class <| "cell double-word center-tile" ]
                             [ img [ class <| "center-logo", src "images/glogo.png" ] []
                             ]
                     else
-                        div [ class <| "cell double-word" ] [ text displayText ]
+                        div [ class <| "cell double-word" ] [ text "2x W" ]
 
                 TripleWord ->
                     div [ class <| "cell triple-word" ] [ text "3x W" ]
@@ -207,4 +202,4 @@ cellToHtml cell =
 
 tileToHtml : Tile -> Html msg
 tileToHtml tile =
-    div [ class <| "tile" ] [ text tile ]
+    div [ class <| "tile" ] [ text tile.letter ]

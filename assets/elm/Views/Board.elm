@@ -6,7 +6,7 @@ import Html.Attributes as Attributes
 import Html.Events as Events
 
 
-view : { grid : Grid } -> Html msg
+view : { r | grid : Grid } -> Html msg
 view model =
     div [ Attributes.class "board" ] <|
         List.map Grid.cellToHtml model.grid
