@@ -171,8 +171,8 @@ doubleLetterPositions =
     ]
 
 
-cellToHtml : Cell -> Html msg
-cellToHtml cell =
+cellToHtml : ( subMsg, Cell ) -> Html msg
+cellToHtml ( dragDropMsg, cell ) =
     case cell.tile of
         Just tile ->
             tileToHtml tile

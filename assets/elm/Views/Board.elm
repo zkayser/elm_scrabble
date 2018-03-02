@@ -6,7 +6,11 @@ import Html.Attributes as Attributes
 import Html.Events as Events
 
 
-view : { r | grid : Grid } -> Html msg
+view : { r | grid : Grid, dragDropMsg : subMsg } -> Html msg
 view model =
+    let
+        cellsWithMsg =
+            List.map (\cell -> ( model.dragDropMsg, cell )) model.grid
+    in
     div [ Attributes.class "board" ] <|
-        List.map Grid.cellToHtml model.grid
+        List.map Grid.cellToHtml cellsWithMsg
