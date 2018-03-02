@@ -37,19 +37,11 @@ frequencyList =
 shuffleTileBag : List String -> Time -> List String
 shuffleTileBag tiles time =
     let
-        timeInMilliSeconds =
+        timeInMillis =
             Time.inMilliseconds time |> truncate
-
-        randomizedNumberList =
-            Random.step (Random.list (List.length tiles) (Random.int 0 2000)) (Random.initialSeed timeInMilliSeconds) |> Tuple.first
-
-        zippedList =
-            List.map2 (,) randomizedNumberList tiles
-
-        sorted =
-            List.sortBy Tuple.first zippedList
-
-        result =
-            List.map Tuple.second sorted
     in
-    result
+    Random.step (Random.list (List.length tiles) (Random.int 0 2000)) (Random.initialSeed timeInMillis)
+        |> Tuple.first
+        |> List.map2 (,) tiles
+        |> List.sortBy Tuple.second
+        |> List.map Tuple.first
