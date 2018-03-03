@@ -1,5 +1,6 @@
 module Helpers.TileManager exposing (generateTileBag, shuffleTileBag)
 
+import Data.Grid as Grid exposing (Tile)
 import Random
 import Time exposing (Time)
 
@@ -7,14 +8,17 @@ import Time exposing (Time)
 -- Generate the bag of tiles
 
 
-generateTileBag : List String
+generateTileBag : List Tile
 generateTileBag =
     List.foldr doGenerateTiles [] frequencyList
+        |> List.indexedMap (\index letter -> { letter = letter, id = index })
 
 
 doGenerateTiles : ( Int, List String ) -> List String -> List String
 doGenerateTiles ( frequency, list ) accumulator =
-    List.map (\string -> List.repeat frequency string) list |> List.concat |> List.append accumulator
+    List.map (\string -> List.repeat frequency string) list
+        |> List.concat
+        |> List.append accumulator
 
 
 frequencyList : List ( Int, List String )
@@ -34,7 +38,7 @@ frequencyList =
 -- Randomize and sort the generated list of letters
 
 
-shuffleTileBag : List String -> Time -> List String
+shuffleTileBag : List Tile -> Time -> List Tile
 shuffleTileBag tiles time =
     let
         timeInMillis =

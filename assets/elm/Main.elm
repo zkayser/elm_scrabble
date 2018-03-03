@@ -1,10 +1,11 @@
 module Main exposing (..)
 
-import Data.Grid as Grid exposing (Grid)
+import Data.Grid as Grid exposing (Grid, Tile)
 import Helpers.TileManager as TileManager exposing (generateTileBag, shuffleTileBag)
 import Html exposing (..)
 import Html.Attributes as Attributes
 import Html.Events as Events
+import Json.Decode as Json
 import Task
 import Time exposing (Time)
 import Views.Board as Board
@@ -13,8 +14,8 @@ import Views.TileHolder as TileHolder
 
 type alias Model =
     { grid : Grid
-    , tiles : List String
-    , tileBag : List String
+    , tiles : List Tile
+    , tileBag : List Tile
     }
 
 
@@ -24,7 +25,12 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    ( { grid = Grid.init, tileBag = generateTileBag, tiles = [] }, Task.perform CurrentTime Time.now )
+    ( { grid = Grid.init
+      , tileBag = generateTileBag
+      , tiles = []
+      }
+    , Task.perform CurrentTime Time.now
+    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
