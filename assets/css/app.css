@@ -117,8 +117,8 @@ body {
     color: black;
     transform: translateY(-3px);
     font-weight: bold;
-    height: 5.667vh;
-    width: 6.4vw;
+    height: 5.5vh;
+    width: 6vw;
     display: flex;
     margin: 0 1rem;
     align-items: center;
@@ -127,6 +127,12 @@ body {
     background-repeat: repeat;
     background: linear-gradient(to right, #e9dfc4 0%, #e9dfc4 1%, #ede3c8 2%, #ede3c8 12%, #ebddc3 13%, #e9dfc4 23%, #ebddc3 24%, #e6d8bd 34%, #e6d8bd 35%, #e9dbc0 46%, #e6d8bd 47%, #e6d8bd 58%, #e9dbc0 59%, #e6d8bd 70%, #e6d8bd 71%, #e9dbc0 82%, #e9dbc0 84%, #ebddc3 95%);
     box-shadow: 1rem -0.25rem 2rem 3px;
+}
+
+.cell.tile {
+	margin: 0;
+	box-shadow: none;
+	transform: translate(0);
 }
 
 .tiles {

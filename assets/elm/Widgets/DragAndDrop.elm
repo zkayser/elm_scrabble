@@ -7,20 +7,24 @@ import Json.Decode as Json
 
 
 type alias Config msg dragData dropData =
-    { dragMsg : dragData -> msg
+    { dragStartMsg : dragData -> msg
+    , dragEndMsg : msg
     , dropMsg : dropData -> msg
+    , dragOverMsg : dropData -> msg
     }
 
 
-draggable : msg -> List (Attribute msg)
-draggable toMsg =
+draggable : msg -> msg -> List (Attribute msg)
+draggable dragStartMsg dragEndMsg =
     [ attribute "draggable" "true"
-    , on "dragstart" <| Json.succeed <| toMsg
+    , on "dragstart" <| Json.succeed <| dragStartMsg
+    , on "dragend" <| Json.succeed <| dragEndMsg
     ]
 
 
-droppable : msg -> List (Attribute msg)
-droppable toMsg =
+droppable : msg -> msg -> List (Attribute msg)
+droppable dropMsg dragOverMsg =
     [ attribute "droppable" "true"
-    , onWithOptions "drop" { preventDefault = True, stopPropagation = True } <| Json.succeed <| toMsg
+    , onWithOptions "drop" { preventDefault = True, stopPropagation = True } <| Json.succeed <| dropMsg
+    , onWithOptions "dragover" { preventDefault = True, stopPropagation = True } <| Json.succeed <| dragOverMsg
     ]

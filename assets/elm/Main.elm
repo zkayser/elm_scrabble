@@ -25,7 +25,9 @@ type alias Model =
 type Msg
     = CurrentTime Time
     | DragStarted Tile
+    | DragEnd
     | Dropped Cell
+    | DragOver Cell
 
 
 init : ( Model, Cmd Msg )
@@ -56,9 +58,35 @@ update msg model =
         DragStarted tile ->
             ( { model | dragging = Just tile }, Cmd.none )
 
+        DragEnd ->
+            ( { model | dragging = Nothing }, Cmd.none )
+
         Dropped cell ->
-            -- Add a function to the Grid module that updates the cell in the Grid,
-            -- if the user is dragging a tile
+            let
+                newCell =
+                    { cell | tile = model.dragging }
+
+                newGrid =
+                    List.map
+                        (\gridCell ->
+                            if gridCell.position == newCell.position then
+                                newCell
+                            else
+                                gridCell
+                        )
+                        model.grid
+
+                newTiles =
+                    case model.dragging of
+                        Nothing ->
+                            model.tiles
+
+                        Just tile ->
+                            List.filter (\listTile -> listTile /= tile) model.tiles
+            in
+            ( { model | grid = newGrid, tiles = newTiles }, Cmd.none )
+
+        DragOver cell ->
             ( model, Cmd.none )
 
 
@@ -77,8 +105,10 @@ subscriptions model =
 
 dragAndDropConfig : DragAndDrop.Config Msg Tile Cell
 dragAndDropConfig =
-    { dragMsg = DragStarted
+    { dragStartMsg = DragStarted
+    , dragEndMsg = DragEnd
     , dropMsg = Dropped
+    , dragOverMsg = DragOver
     }
 
 
