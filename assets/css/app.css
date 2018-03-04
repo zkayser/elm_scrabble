@@ -109,7 +109,7 @@ body {
     justify-content: center;
     font-size: 3rem;
     background-repeat: repeat;
-		background-image: url("../images/wood.png");
+		background-image: url("../images/table4.png");
 		box-shadow: 3px 3px #564d40;
 		border: 1px solid #564d40;
 		margin-bottom: 2px;
@@ -141,7 +141,7 @@ body {
 	width: 90vw;
 	box-shadow: 10px 10px #564d40;
 	text-align: center;
-	background-image: url("../images/wood.png");
+	background-image: url("../images/wood5.png");
 	margin-bottom: 10px;
 }
 
