@@ -2,7 +2,9 @@
 
 To start your Phoenix server:
 
+  * Install elm: https://guide.elm-lang.org/install.html
   * Install dependencies with `mix deps.get`
+  * Make sure you have your `postgres` username and password set correctly in `dev.exs`
   * Create and migrate your database with `mix ecto.create && mix ecto.migrate`
   * Install Node.js dependencies with `cd assets && npm install`
   * Start Phoenix endpoint with `mix phx.server`
