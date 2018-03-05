@@ -24,6 +24,7 @@ type alias Position =
 type alias Tile =
     { letter : String
     , id : Int
+    , value : Int
     }
 
 
@@ -207,4 +208,7 @@ cellToHtml config cell =
 
 tileToHtml : Tile -> Html msg
 tileToHtml tile =
-    div [ class <| "cell tile" ] [ text tile.letter ]
+    div [ class <| "cell tile" ]
+        [ span [ class "letter" ] [ text tile.letter ]
+        , span [ class "value" ] [ text <| toString tile.value ]
+        ]

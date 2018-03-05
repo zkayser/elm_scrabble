@@ -32,4 +32,6 @@ viewTiles model =
 viewTile : DragConfig msg -> Tile -> Html msg
 viewTile config tile =
     div ([ class "tile" ] ++ DragAndDrop.draggable (config.dragStartMsg tile) config.dragEndMsg)
-        [ text tile.letter ]
+        [ span [ class "letter" ] [ text tile.letter ]
+        , span [ class "value" ] [ text <| toString tile.value ]
+        ]

@@ -11,7 +11,7 @@ import Time exposing (Time)
 generateTileBag : List Tile
 generateTileBag =
     List.foldr doGenerateTiles [] frequencyList
-        |> List.indexedMap (\index letter -> { letter = letter, id = index })
+        |> List.indexedMap (\index letter -> { letter = letter, id = index, value = valueFor letter })
 
 
 doGenerateTiles : ( Int, List String ) -> List String -> List String
@@ -49,3 +49,27 @@ shuffleTileBag tiles time =
         |> List.map2 (,) tiles
         |> List.sortBy Tuple.second
         |> List.map Tuple.first
+
+
+
+-- Generate the point value for a given letter
+
+
+valueFor : String -> Int
+valueFor letter =
+    if List.member letter [ "" ] then
+        0
+    else if List.member letter [ "A", "E", "I", "L", "N", "O", "R", "S", "T", "U" ] then
+        1
+    else if List.member letter [ "D", "G" ] then
+        2
+    else if List.member letter [ "B", "C", "M", "P" ] then
+        3
+    else if List.member letter [ "F", "H", "V", "W", "Y" ] then
+        4
+    else if List.member letter [ "K" ] then
+        5
+    else if List.member letter [ "J", "X" ] then
+        8
+    else
+        10
