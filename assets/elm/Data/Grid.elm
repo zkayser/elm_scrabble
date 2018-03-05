@@ -187,28 +187,28 @@ cellToHtml config cell =
             case cell.multiplier of
                 DoubleWord ->
                     if cell.isCenter then
-                        div ([ class <| "cell double-word center-tile" ] ++ dropConfig)
-                            [ img [ class <| "center-logo", src "images/glogo.png" ] []
+                        div ([ class "cell double-word center-tile" ] ++ dropConfig)
+                            [ img [ class "center-logo", src "images/glogo.png" ] []
                             ]
                     else
-                        div ([ class <| "cell double-word" ] ++ dropConfig) [ text "2x W" ]
+                        div ([ class "cell double-word" ] ++ dropConfig) [ text "2x W" ]
 
                 TripleWord ->
-                    div ([ class <| "cell triple-word" ] ++ dropConfig) [ text "3x W" ]
+                    div ([ class "cell triple-word" ] ++ dropConfig) [ text "3x W" ]
 
                 DoubleLetter ->
-                    div ([ class <| "cell double-letter" ] ++ dropConfig) [ text "2x L" ]
+                    div ([ class "cell double-letter" ] ++ dropConfig) [ text "2x L" ]
 
                 TripleLetter ->
-                    div ([ class <| "cell triple-letter" ] ++ dropConfig) [ text "3x L" ]
+                    div ([ class "cell triple-letter" ] ++ dropConfig) [ text "3x L" ]
 
                 NoMultiplier ->
-                    div ([ class <| "cell" ] ++ dropConfig) [ text "" ]
+                    div ([ class "cell" ] ++ dropConfig) [ text "" ]
 
 
 tileToHtml : Tile -> Html msg
 tileToHtml tile =
-    div [ class <| "cell tile" ]
+    div [ class "cell tile" ]
         [ span [ class "letter" ] [ text tile.letter ]
         , span [ class "value" ] [ text <| toString tile.value ]
         ]
