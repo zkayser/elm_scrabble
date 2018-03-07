@@ -19,6 +19,7 @@ type alias Model =
     , tileBag : List Tile
     , dragAndDropConfig : DragAndDrop.Config Msg Tile Cell
     , dragging : Maybe Tile
+    , tilesPlayed : List Tile
     }
 
 
@@ -37,6 +38,7 @@ init =
       , tiles = []
       , dragAndDropConfig = dragAndDropConfig
       , dragging = Nothing
+      , tilesPlayed = []
       }
     , Task.perform CurrentTime Time.now
     )
@@ -76,15 +78,15 @@ update msg model =
                         )
                         model.grid
 
-                newTiles =
+                ( newTiles, newTilesPlayed ) =
                     case model.dragging of
                         Nothing ->
-                            model.tiles
+                            ( model.tiles, model.tilesPlayed )
 
                         Just tile ->
-                            List.filter (\listTile -> listTile /= tile) model.tiles
+                            ( List.filter (\listTile -> listTile /= tile) model.tiles, tile :: model.tilesPlayed )
             in
-            ( { model | grid = newGrid, tiles = newTiles }, Cmd.none )
+            ( { model | grid = newGrid, tiles = newTiles, tilesPlayed = newTilesPlayed }, Cmd.none )
 
         DragOver cell ->
             ( model, Cmd.none )

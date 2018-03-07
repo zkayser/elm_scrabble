@@ -2,7 +2,7 @@ defmodule ElmScrabbleWeb.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  # channel "room:*", ElmScrabbleWeb.RoomChannel
+  channel "scrabble:lobby", ElmScrabbleWeb.ScrabbleChannel
 
   ## Transports
   transport :websocket, Phoenix.Transports.WebSocket
