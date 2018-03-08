@@ -2,7 +2,7 @@ module Data.Grid exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (class, src)
-import Widgets.DragAndDrop exposing (Config, droppable)
+import Widgets.DragAndDrop exposing (Config, draggable, droppable)
 
 
 type alias Grid =
@@ -181,7 +181,7 @@ cellToHtml config cell =
     in
     case cell.tile of
         Just tile ->
-            tileToHtml tile
+            tileToHtml config tile
 
         _ ->
             case cell.multiplier of
@@ -206,9 +206,13 @@ cellToHtml config cell =
                     div ([ class "cell" ] ++ dropConfig) [ text "" ]
 
 
-tileToHtml : Tile -> Html msg
-tileToHtml tile =
-    div [ class "cell tile" ]
+tileToHtml : Config msg Tile Cell -> Tile -> Html msg
+tileToHtml config tile =
+    let
+        dragConfig =
+            draggable (config.dragStartMsg tile) config.dragEndMsg
+    in
+    div ([ class "cell tile" ] ++ dragConfig)
         [ span [ class "letter" ] [ text tile.letter ]
         , span [ class "value" ] [ text <| toString tile.value ]
         ]

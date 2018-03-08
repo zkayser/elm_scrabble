@@ -6,6 +6,7 @@ import Html exposing (..)
 import Html.Attributes as Attributes
 import Html.Events as Events
 import Json.Decode as Json
+import Logic.GameContext as GameContext exposing (Context, Turn)
 import Task
 import Time exposing (Time)
 import Views.Board as Board
@@ -14,12 +15,11 @@ import Widgets.DragAndDrop as DragAndDrop exposing (Config)
 
 
 type alias Model =
-    { grid : Grid
-    , tiles : List Tile
-    , tileBag : List Tile
+    { tileBag : List Tile
     , dragAndDropConfig : DragAndDrop.Config Msg Tile Cell
     , dragging : Maybe Tile
-    , tilesPlayed : List Tile
+    , turn : Turn
+    , context : Context
     }
 
 
@@ -33,12 +33,11 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    ( { grid = Grid.init
-      , tileBag = generateTileBag
-      , tiles = []
+    ( { tileBag = generateTileBag
       , dragAndDropConfig = dragAndDropConfig
       , dragging = Nothing
-      , tilesPlayed = []
+      , context = GameContext.init Grid.init []
+      , turn = GameContext.Initializing
       }
     , Task.perform CurrentTime Time.now
     )
@@ -54,8 +53,14 @@ update msg model =
 
                 playerTiles =
                     List.take 7 shuffledTiles
+
+                turn =
+                    GameContext.Active
+
+                context =
+                    GameContext.init model.context.grid playerTiles
             in
-            ( { model | tileBag = shuffledTiles, tiles = playerTiles }, Cmd.none )
+            ( { model | tileBag = shuffledTiles, turn = turn, context = context }, Cmd.none )
 
         DragStarted tile ->
             ( { model | dragging = Just tile }, Cmd.none )
@@ -64,29 +69,16 @@ update msg model =
             ( { model | dragging = Nothing }, Cmd.none )
 
         Dropped cell ->
-            let
-                newCell =
-                    { cell | tile = model.dragging }
+            case model.dragging of
+                Just tile ->
+                    let
+                        newContext =
+                            GameContext.update model.turn model.context { tile = tile, position = cell.position }
+                    in
+                    ( { model | context = newContext }, Cmd.none )
 
-                newGrid =
-                    List.map
-                        (\gridCell ->
-                            if gridCell.position == newCell.position then
-                                newCell
-                            else
-                                gridCell
-                        )
-                        model.grid
-
-                ( newTiles, newTilesPlayed ) =
-                    case model.dragging of
-                        Nothing ->
-                            ( model.tiles, model.tilesPlayed )
-
-                        Just tile ->
-                            ( List.filter (\listTile -> listTile /= tile) model.tiles, tile :: model.tilesPlayed )
-            in
-            ( { model | grid = newGrid, tiles = newTiles, tilesPlayed = newTilesPlayed }, Cmd.none )
+                Nothing ->
+                    ( model, Cmd.none )
 
         DragOver cell ->
             ( model, Cmd.none )

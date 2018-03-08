@@ -1,257 +1,47 @@
 module GameContextTest exposing (..)
 
-import Data.Grid as Grid
+import Data.Grid as Grid exposing (Tile)
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
-import Logic.GameContext as Context
+import Logic.GameContext as Context exposing (Turn(..))
 import Test exposing (..)
-import Types.Playable as Playable
 
 
 suite : Test
 suite =
     describe "GameContext"
-        [ test "First move and the user places a tile on the center piece" <|
-            \_ ->
-                let
-                    grid =
-                        Grid.init
+        [ describe "User is Active" <|
+            let
+                -- The function is curried so that it is always
+                -- evaluated with an `Active` Turn parameter for
+                -- the remainder of the test block
+                update =
+                    Context.update Active
 
-                    turnState =
-                        Context.Ready { grid = grid, tilesPlayed = [], playable = [ Playable.AllValid ] }
+                -- Same thing here
+                isValidSubmission =
+                    Context.isValidSubmission Active
 
-                    tile =
-                        { letter = "A", value = 1, id = 1 }
-
-                    move =
-                        { tile = tile, position = ( 8, 8 ) }
-
-                    updatedContext =
-                        Context.update turnState move
-
-                    expectedGrid =
-                        List.map
-                            (\cell ->
-                                if cell.isCenter then
-                                    { cell | tile = Just tile }
-                                else
-                                    cell
-                            )
-                            grid
-                in
-                Expect.equal updatedContext (Context.OneTilePlayed { grid = expectedGrid, tilesPlayed = [ tile ], playable = [ Playable.Row 8, Playable.Column 8 ] })
-        , test "First move and the user tries to place a tile where one has already been placed" <|
-            \_ ->
-                let
-                    tile =
-                        { letter = "A", value = 1, id = 1 }
-
-                    grid =
-                        List.map
-                            (\cell ->
-                                if cell.isCenter then
-                                    { cell | tile = Just tile }
-                                else
-                                    cell
-                            )
-                            Grid.init
-
-                    turnState =
-                        Context.Ready { grid = grid, tilesPlayed = [], playable = [ Playable.AllValid ] }
-
-                    move =
-                        { tile = { letter = "B", value = 2, id = 2 }, position = ( 8, 8 ) }
-
-                    updatedContext =
-                        Context.update turnState move
-                in
-                Expect.equal updatedContext turnState
-        , test "Placing a second tile in a playable row" <|
-            \_ ->
-                let
-                    playedTile =
-                        { letter = "A", value = 1, id = 1 }
-
-                    grid =
-                        List.map
-                            (\cell ->
-                                if cell.isCenter then
-                                    { cell | tile = Just playedTile }
-                                else
-                                    cell
-                            )
-                            Grid.init
-
-                    turnState =
-                        Context.OneTilePlayed { grid = grid, tilesPlayed = [ playedTile ], playable = [ Playable.Row 8, Playable.Column 8 ] }
-
-                    newTile =
-                        { letter = "B", value = 2, id = 2 }
-
-                    move =
-                        { tile = newTile, position = ( 8, 9 ) }
-
-                    updatedContext =
-                        Context.update turnState move
-
-                    expectedGrid =
-                        List.map
-                            (\cell ->
-                                if cell.position == ( 8, 9 ) then
-                                    { cell | tile = Just move.tile }
-                                else
-                                    cell
-                            )
-                            grid
-                in
-                Expect.equal updatedContext (Context.MultipleTilesPlayed { grid = expectedGrid, tilesPlayed = [ newTile, playedTile ], playable = [ Playable.Row 8 ] })
-        , test "Placing a second tile in a playable column" <|
-            \_ ->
-                let
-                    playedTile =
-                        { letter = "A", value = 1, id = 1 }
-
-                    grid =
-                        List.map
-                            (\cell ->
-                                if cell.isCenter then
-                                    { cell | tile = Just playedTile }
-                                else
-                                    cell
-                            )
-                            Grid.init
-
-                    turnState =
-                        Context.OneTilePlayed { grid = grid, tilesPlayed = [ playedTile ], playable = [ Playable.Row 8, Playable.Column 8 ] }
-
-                    newTile =
-                        { letter = "B", value = 2, id = 2 }
-
-                    move =
-                        { tile = newTile, position = ( 9, 8 ) }
-
-                    updatedContext =
-                        Context.update turnState move
-
-                    expectedGrid =
-                        List.map
-                            (\cell ->
-                                if cell.position == ( 9, 8 ) then
-                                    { cell | tile = Just move.tile }
-                                else
-                                    cell
-                            )
-                            grid
-                in
-                Expect.equal updatedContext (Context.MultipleTilesPlayed { grid = expectedGrid, tilesPlayed = [ newTile, playedTile ], playable = [ Playable.Column 8 ] })
-        , test "Placing a second tile on an unplayable cell" <|
-            \_ ->
-                let
-                    playedTile =
-                        { letter = "A", value = 1, id = 1 }
-
-                    grid =
-                        List.map
-                            (\cell ->
-                                if cell.isCenter then
-                                    { cell | tile = Just playedTile }
-                                else
-                                    cell
-                            )
-                            Grid.init
-
-                    turnState =
-                        Context.OneTilePlayed { grid = grid, tilesPlayed = [ playedTile ], playable = [ Playable.Row 8, Playable.Column 8 ] }
-
-                    newTile =
-                        { letter = "B", value = 2, id = 2 }
-
-                    move =
-                        { tile = newTile, position = ( 2, 2 ) }
-
-                    -- This is unplayable (row 2, column 2)
-                    updatedContext =
-                        Context.update turnState move
-                in
-                Expect.equal updatedContext turnState
-        , test "Placing a third tile on a playable cell" <|
-            \_ ->
-                let
-                    tileA =
-                        { letter = "A", value = 1, id = 1 }
-
-                    tileB =
-                        { letter = "B", value = 2, id = 2 }
-
-                    grid =
-                        List.map
-                            (\cell ->
-                                if cell.isCenter then
-                                    { cell | tile = Just tileA }
-                                else if cell.position == ( 8, 9 ) then
-                                    { cell | tile = Just tileB }
-                                else
-                                    cell
-                            )
-                            Grid.init
-
-                    turnState =
-                        Context.MultipleTilesPlayed { grid = grid, tilesPlayed = [ tileB, tileA ], playable = [ Playable.Row 8 ] }
-
-                    newTile =
-                        { letter = "C", value = 3, id = 3 }
-
-                    move =
-                        { tile = newTile, position = ( 8, 10 ) }
-
-                    -- This move is valid - row 8, column 10
-                    updatedContext =
-                        Context.update turnState move
-
-                    expectedGrid =
-                        List.map
-                            (\cell ->
-                                if cell.position == move.position then
-                                    { cell | tile = Just move.tile }
-                                else
-                                    cell
-                            )
-                            grid
-                in
-                Expect.equal updatedContext (Context.MultipleTilesPlayed { grid = expectedGrid, tilesPlayed = [ newTile, tileB, tileA ], playable = [ Playable.Row 8 ] })
-        , test "Placing a third tile on an unplayable cell" <|
-            \_ ->
-                let
-                    tileA =
-                        { letter = "A", value = 1, id = 1 }
-
-                    tileB =
-                        { letter = "B", value = 2, id = 2 }
-
-                    grid =
-                        List.map
-                            (\cell ->
-                                if cell.isCenter then
-                                    { cell | tile = Just tileA }
-                                else if cell.position == ( 8, 9 ) then
-                                    { cell | tile = Just tileB }
-                                else
-                                    cell
-                            )
-                            Grid.init
-
-                    turnState =
-                        Context.MultipleTilesPlayed { grid = grid, tilesPlayed = [ tileB, tileA ], playable = [ Playable.Row 8 ] }
-
-                    newTile =
-                        { letter = "C", value = 3, id = 3 }
-
-                    move =
-                        { tile = newTile, position = ( 9, 8 ) }
-
-                    -- This move should be invalid. Only row 8 should be valid at this point
-                    updatedContext =
-                        Context.update turnState move
-                in
-                Expect.equal updatedContext turnState
+                initialContext =
+                    Context.init Grid.init initialTiles
+            in
+            [ test "A tile is transferred from the context's tiles list to the grid when played" <|
+                \_ ->
+                    Expect.equal True False
+            , test "A tile cannot be placed on top of another tile on the grid" <|
+                \_ ->
+                    Expect.equal True False
+            , test "All tiles played must be in the same row or column to create a valid submission" <|
+                \_ ->
+                    Expect.equal True False
+            , test "Moving a tile already on the board transfers it from the initial position to the new position" <|
+                \_ ->
+                    Expect.equal True False
+            ]
         ]
+
+
+initialTiles : List Tile
+initialTiles =
+    List.map (\( number, letter ) -> { letter = letter, id = number, value = number })
+        [ ( 1, "A" ), ( 2, "B" ), ( 3, "C" ), ( 4, "D" ), ( 5, "E" ), ( 6, "F" ), ( 7, "G" ) ]

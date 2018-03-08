@@ -4,6 +4,7 @@ import Data.Grid as Grid exposing (Cell, Tile)
 import Html exposing (..)
 import Html.Attributes as Attributes exposing (class)
 import Html.Events as Events exposing (on)
+import Logic.GameContext exposing (Context)
 import Widgets.DragAndDrop as DragAndDrop exposing (Config)
 
 
@@ -13,7 +14,7 @@ type alias DragConfig msg =
 
 type alias Model r msg =
     { r
-        | tiles : List Tile
+        | context : Context
         , dragAndDropConfig : DragConfig msg
     }
 
@@ -26,7 +27,7 @@ view model =
 
 viewTiles : Model r msg -> Html msg
 viewTiles model =
-    div [ class "tiles" ] (List.map (\tile -> viewTile model.dragAndDropConfig tile) model.tiles)
+    div [ class "tiles" ] (List.map (\tile -> viewTile model.dragAndDropConfig tile) model.context.tiles)
 
 
 viewTile : DragConfig msg -> Tile -> Html msg
