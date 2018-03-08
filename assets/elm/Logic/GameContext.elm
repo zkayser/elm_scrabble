@@ -5,7 +5,7 @@ import Data.Grid as Grid exposing (Grid, Position, Tile)
 
 type alias Context =
     { grid : Grid
-    , tilesPlayed : List Tile
+    , movesMade : List Move
     , tiles : List Tile
     }
 
@@ -27,7 +27,7 @@ type Turn
 init : Grid -> List Tile -> Context
 init grid tiles =
     { grid = grid
-    , tilesPlayed = []
+    , movesMade = []
     , tiles = tiles
     }
 
@@ -52,10 +52,10 @@ update turn context move =
                         False ->
                             context.grid
             in
-            { grid = newGrid, tilesPlayed = move.tile :: context.tilesPlayed, tiles = context.tiles }
+            { grid = newGrid, movesMade = move.tile :: context.movesMade, tiles = context.tiles }
 
         StartedTurn ->
-            { grid = context.grid, tilesPlayed = [], tiles = context.tiles }
+            { grid = context.grid, movesMade = [], tiles = context.tiles }
 
         _ ->
             context

@@ -12,9 +12,9 @@ suite =
     describe "GameContext"
         [ describe "User is Active" <|
             let
-                -- The function is curried so that it is always
+                -- This function is curried so that it is always
                 -- evaluated with an `Active` Turn parameter for
-                -- the remainder of the test block
+                -- the remainder of this test block
                 update =
                     Context.update Active
 
