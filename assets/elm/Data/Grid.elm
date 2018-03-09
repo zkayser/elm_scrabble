@@ -36,6 +36,12 @@ type Multiplier
     | NoMultiplier
 
 
+type Dimension
+    = Row Int
+    | Column Int
+    | Invalid
+
+
 init : Grid
 init =
     List.map initialCellForPosition <| List.range 1 225
@@ -216,3 +222,20 @@ tileToHtml config tile =
         [ span [ class "letter" ] [ text tile.letter ]
         , span [ class "value" ] [ text <| toString tile.value ]
         ]
+
+
+{-| Grabs either a row or a column of the
+grid. Returns the entire grid unmodified
+if the dimension given is `Invalid`
+-}
+get : Dimension -> Grid -> List Cell
+get dimension grid =
+    case dimension of
+        Invalid ->
+            grid
+
+        Row row ->
+            List.filter (\cell -> Tuple.first cell.position == row) grid
+
+        Column column ->
+            List.filter (\cell -> Tuple.second cell.position == column) grid

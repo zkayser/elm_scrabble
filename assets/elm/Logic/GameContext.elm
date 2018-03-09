@@ -52,7 +52,7 @@ update turn context move =
                         False ->
                             context.grid
             in
-            { grid = newGrid, movesMade = move.tile :: context.movesMade, tiles = context.tiles }
+            { grid = newGrid, movesMade = move :: context.movesMade, tiles = context.tiles }
 
         StartedTurn ->
             { grid = context.grid, movesMade = [], tiles = context.tiles }
