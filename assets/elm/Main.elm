@@ -37,7 +37,7 @@ init =
       , dragAndDropConfig = dragAndDropConfig
       , dragging = Nothing
       , context = GameContext.init Grid.init []
-      , turn = GameContext.Initializing
+      , turn = GameContext.Active
       }
     , Task.perform CurrentTime Time.now
     )

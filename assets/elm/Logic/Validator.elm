@@ -14,7 +14,7 @@ type ValidatorState
 
 {-| Loop over the cells in a row or column
 to validate a play attempted by a user.
-The function reduces of the list of cells
+The function reduces the list of cells
 (the row or column) and builds a `ValidatorState`
 that will hold an intermediate representation of
 possible moves in the list of tiles carried around
