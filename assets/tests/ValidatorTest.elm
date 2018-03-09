@@ -84,19 +84,19 @@ suite =
                         |> addMovesToGrid
                         |> Grid.get (Row 8)
                         |> Validator.validate rowWithGap
-                        |> Expect.equal Invalid
+                        |> Expect.equal Invalidated
             , test "Invalid along a column" <|
                 \_ ->
                     columnWithGap
                         |> addMovesToGrid
                         |> Grid.get (Column 8)
                         |> Validator.validate columnWithGap
-                        |> Expect.equal Invalid
+                        |> Expect.equal Invalidated
             , test "Empty row (or column) is invalid" <|
                 \_ ->
                     Grid.get (Row 8) Grid.init
                         |> Validator.validate validMovesRow
-                        |> Expect.equal Invalid
+                        |> Expect.equal Invalidated
             ]
         , describe "Complex - Existing tile detected first" <|
             let
@@ -219,23 +219,23 @@ suite =
             , test "Row play is invalid with gap between existing tile and first moved tile" <|
                 \_ ->
                     invalidRowWithGaps
-                        |> Validate.validate rowWithGap
-                        |> Expect.equal Invalid
+                        |> Validator.validate rowWithGap
+                        |> Expect.equal Invalidated
             , test "Column play is invalid with gap between existing tile and first moved tile" <|
                 \_ ->
                     invalidColumnWithGaps
                         |> Validator.validate columnWithGap
-                        |> Expect.equal Invalid
+                        |> Expect.equal Invalidated
             , test "Row play is invalid with no gap between existing tile and first moved tile" <|
                 \_ ->
                     invalidRowNoGap
                         |> Validator.validate rowWithGap
-                        |> Expect.equal Invalid
-            , test "Column play is invalid with gap between existing tile and first moved tile" <|
+                        |> Expect.equal Invalidated
+            , test "Column play is invalid with no gap between existing tile and first moved tile" <|
                 \_ ->
                     invalidColumnNoGap
                         |> Validator.validate columnWithGap
-                        |> Expect.equal Invalid
+                        |> Expect.equal Invalidated
             ]
         ]
 
