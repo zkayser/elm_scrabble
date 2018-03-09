@@ -18,25 +18,105 @@ suite =
                 update =
                     Context.update Active
 
-                -- Same thing here
-                isValidSubmission =
-                    Context.isValidSubmission Active
-
                 initialContext =
                     Context.init Grid.init initialTiles
             in
             [ test "A tile is transferred from the context's tiles list to the grid when played" <|
                 \_ ->
-                    Expect.equal True False
+                    let
+                        move =
+                            { tile = fakeTileWith 1 "A", position = ( 8, 8 ) }
+
+                        expectedGrid =
+                            List.map
+                                (\cell ->
+                                    if cell.position == ( 8, 8 ) then
+                                        { cell | tile = Just (fakeTileWith 1 "A") }
+                                    else
+                                        cell
+                                )
+                                Grid.init
+
+                        expectedMoves =
+                            [ move ]
+
+                        expectedTiles =
+                            List.filter (\tile -> tile /= fakeTileWith 1 "A") initialTiles
+                    in
+                    update initialContext move
+                        |> Expect.equal { grid = expectedGrid, movesMade = expectedMoves, tiles = expectedTiles }
             , test "A tile cannot be placed on top of another tile on the grid" <|
                 \_ ->
-                    Expect.equal True False
-            , test "All tiles played must be in the same row or column to create a valid submission" <|
-                \_ ->
-                    Expect.equal True False
+                    let
+                        tileA =
+                            fakeTileWith 1 "A"
+
+                        tileB =
+                            fakeTileWith 2 "B"
+
+                        startGrid =
+                            List.map
+                                (\cell ->
+                                    if cell.isCenter then
+                                        { cell | tile = Just tileA }
+                                    else
+                                        cell
+                                )
+                                initialContext.grid
+
+                        newContext =
+                            { grid = startGrid, movesMade = [ { tile = tileA, position = ( 8, 8 ) } ], tiles = List.filter (\tile -> tile /= tileA) initialContext.tiles }
+
+                        move =
+                            { tile = tileB, position = ( 8, 8 ) }
+                    in
+                    move
+                        |> update newContext
+                        |> Expect.equal newContext
             , test "Moving a tile already on the board transfers it from the initial position to the new position" <|
                 \_ ->
-                    Expect.equal True False
+                    let
+                        tileA =
+                            fakeTileWith 1 "A"
+
+                        startGrid =
+                            List.map
+                                (\cell ->
+                                    if cell.isCenter then
+                                        { cell | tile = Just tileA }
+                                    else
+                                        cell
+                                )
+                                Grid.init
+
+                        newTiles =
+                            List.filter (\tile -> tile /= tileA) initialContext.tiles
+
+                        newContext =
+                            { grid = startGrid, movesMade = [ { tile = tileA, position = ( 8, 8 ) } ], tiles = newTiles }
+
+                        move =
+                            { tile = tileA, position = ( 7, 7 ) }
+
+                        expectedGrid =
+                            List.map
+                                (\cell ->
+                                    if cell.position == ( 7, 7 ) then
+                                        { cell | tile = Just tileA }
+                                    else
+                                        cell
+                                )
+                                Grid.init
+
+                        expectedMovesMade =
+                            [ move ]
+
+                        expectedContext =
+                            { grid = expectedGrid, movesMade = expectedMovesMade, tiles = newTiles }
+                    in
+                    move
+                        |> update newContext
+                        |> Expect.equal expectedContext
             ]
         ]
 
