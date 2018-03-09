@@ -7,3 +7,23 @@ type alias Move =
     { tile : Tile
     , position : Position
     }
+
+
+{-| Validates whether or not a list of moves
+are valid, returning a `Dimension` value
+that indicates whether the list is `Invalid`
+or is valid for a `Row` or `Column`
+-}
+validate : List Move -> Grid.Dimension
+validate moves =
+    case List.map (\move -> move.position) moves of
+        [] ->
+            Invalid
+
+        ( row, column ) :: tail ->
+            if List.all (\( r, _ ) -> r == row) tail then
+                Row row
+            else if List.all (\( _, c ) -> c == column) tail then
+                Column column
+            else
+                Invalid
