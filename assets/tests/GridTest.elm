@@ -23,5 +23,8 @@ suite =
                 \_ ->
                     Expect.true "Expected to get a list of cells from column 8 only" <|
                         List.all (\cell -> Tuple.second cell.position == 8) (Grid.get (Column 8) Grid.init)
+            , test "Get Invalid" <|
+                \_ ->
+                    Expect.equal (Grid.get Invalid Grid.init) []
             ]
         ]

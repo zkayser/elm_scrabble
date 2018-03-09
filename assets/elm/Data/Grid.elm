@@ -232,7 +232,7 @@ get : Dimension -> Grid -> List Cell
 get dimension grid =
     case dimension of
         Invalid ->
-            grid
+            []
 
         Row row ->
             List.filter (\cell -> Tuple.first cell.position == row) grid
