@@ -1,18 +1,13 @@
 module Logic.GameContext exposing (..)
 
 import Data.Grid as Grid exposing (Grid, Position, Tile)
+import Data.Move as Move exposing (Move)
 
 
 type alias Context =
     { grid : Grid
     , movesMade : List Move
     , tiles : List Tile
-    }
-
-
-type alias Move =
-    { tile : Tile
-    , position : Position
     }
 
 
