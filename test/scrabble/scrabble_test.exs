@@ -9,7 +9,7 @@ defmodule ScrabbleTest do
     # true. Should match the actual
     # dictionary API.
     def verify("not a word"), do: :word_not_found
-    def verify(word), do: :word_found
+    def verify(_), do: :word_found
   end
 
   describe "Scrabble.raw_score/1" do
