@@ -10,6 +10,7 @@ import Logic.GameContext as GameContext exposing (Context, Turn)
 import Task
 import Time exposing (Time)
 import Views.Board as Board
+import Views.Scoreboard as Scoreboard
 import Views.TileHolder as TileHolder
 import Widgets.DragAndDrop as DragAndDrop exposing (Config)
 
@@ -86,9 +87,13 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div [ Attributes.class "container" ]
-        [ Board.view model
-        , TileHolder.view model
+    div [ Attributes.class "scrabble" ]
+        [ div [ Attributes.class "container" ]
+            [ Board.view model
+            , TileHolder.view model
+            ]
+        , div [ Attributes.class "scoreboard-container" ]
+            [ Scoreboard.view model ]
         ]
 
 
