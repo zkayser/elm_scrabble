@@ -217,3 +217,9 @@ body {
 .score {
 	font-size: 5rem;
 }
+
+.submit-row {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}

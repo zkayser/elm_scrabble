@@ -88,7 +88,7 @@ update msg model =
             ( model, Cmd.none )
 
         SubmitScore ->
-            ( model, Cmd.none )
+            ( { model | score = model.score + 25 }, Cmd.none )
 
 
 view : Model -> Html Msg
