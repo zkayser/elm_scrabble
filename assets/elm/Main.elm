@@ -21,6 +21,7 @@ type alias Model =
     , dragging : Maybe Tile
     , turn : Turn
     , context : Context
+    , score : Int
     }
 
 
@@ -30,6 +31,7 @@ type Msg
     | DragEnd
     | Dropped Cell
     | DragOver Cell
+    | SubmitScore
 
 
 init : ( Model, Cmd Msg )
@@ -39,6 +41,7 @@ init =
       , dragging = Nothing
       , context = GameContext.init Grid.init []
       , turn = GameContext.Active
+      , score = 0
       }
     , Task.perform CurrentTime Time.now
     )
@@ -84,6 +87,9 @@ update msg model =
         DragOver cell ->
             ( model, Cmd.none )
 
+        SubmitScore ->
+            ( model, Cmd.none )
+
 
 view : Model -> Html Msg
 view model =
@@ -93,7 +99,7 @@ view model =
             , TileHolder.view model
             ]
         , div [ Attributes.class "scoreboard-container" ]
-            [ Scoreboard.view model ]
+            [ Scoreboard.view SubmitScore model ]
         ]
 
 

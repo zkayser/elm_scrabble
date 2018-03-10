@@ -24,7 +24,6 @@ body {
 }
 
 .scoreboard-container {
-	padding-top: 25px;
 	max-width: 35vw;
 	color: white;
 	background: #2f2b2b;
@@ -171,12 +170,19 @@ body {
 
 .btn {
 	height: 4rem;
-	width: 10rem;
+	width: 12rem;
 	font-size: 1rem;
 	text-align: center;
 	border-radius: 0.5rem;
-	background-color: lightgrey;
+	background-color: #08a7e4;
 	margin: 1rem;
+}
+
+.submit-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 2rem;
 }
 
 .vertical-container {
@@ -190,9 +196,24 @@ body {
 	color: white;
 }
 
+.btn:hover {
+	cursor: pointer;
+}
+
 /* Scoreboard */
 .scoreboard-header {
 	font-family: inherit;
 	font-size:  3rem;
 	text-align: center;
+}
+
+.score-display {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 25vh;
+}
+
+.score {
+	font-size: 5rem;
 }
