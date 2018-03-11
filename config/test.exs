@@ -6,6 +6,9 @@ config :elm_scrabble, ElmScrabbleWeb.Endpoint,
   http: [port: 4001],
   server: false
 
+# Scrabble Dictionary Api config
+config :elm_scrabble, :dictionary_api, FakeDictionaryApi
+
 # Print only warnings and errors during test
 config :logger, level: :warn
 

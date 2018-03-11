@@ -1,16 +1,9 @@
 defmodule Scrabble do
 
-	# The TempDictionaryApi is just a stand-in while
-	# I work on development
-	@default_dict_api TempDictionaryApi
+	@dictionary_api Application.get_env(:elm_scrabble, :dictionary_api)
 
-	defmodule TempDictionaryApi do
-		def verify(word), do: :word_found
-	end
-
-
-	def score(%{"word" => word, "multipliers" => multipliers}, dictionary_api \\ @default_dict_api) do
-		case dictionary_api.verify(word) do
+	def score(%{"word" => word, "multipliers" => multipliers}) do
+		case @dictionary_api.verify(word) do
 			:word_found -> _score(word, multipliers)
 			:word_not_found -> {:error, "Hey, #{word} isn't a real word!"}
 			{:error, reason} -> {:error, reason}

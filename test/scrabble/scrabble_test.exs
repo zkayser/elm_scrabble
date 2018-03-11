@@ -3,15 +3,6 @@ defmodule ScrabbleTest do
 
   @default "scrabble"
 
-  defmodule FakeDictionaryApi do
-    # return false only in this case
-    # for test purposes, otherwise
-    # true. Should match the actual
-    # dictionary API.
-    def verify("not a word"), do: :word_not_found
-    def verify(_), do: :word_found
-  end
-
   describe "Scrabble.raw_score/1" do
     test "empty word scores zero" do
       assert Scrabble.raw_score("") == 0
@@ -49,43 +40,43 @@ defmodule ScrabbleTest do
   describe "Scrabble.score/2" do
     test "no multipliers or wildcard characters" do
       scrabble_play = %{"word" => @default, "multipliers" => []}
-      assert Scrabble.score(scrabble_play, FakeDictionaryApi) == Scrabble.raw_score(@default)
+      assert Scrabble.score(scrabble_play) == Scrabble.raw_score(@default)
     end
 
     test "double letter multiplier" do
       scrabble_play = %{"word" => @default, "multipliers" => [double_letter: ["s"]]}
-      score = Scrabble.score(scrabble_play, FakeDictionaryApi)
+      score = Scrabble.score(scrabble_play)
       assert score == Scrabble.raw_score(@default) + Scrabble.raw_score("s")
     end
 
     test "triple letter multiplier" do
       scrabble_play = %{"word" => @default, "multipliers" => [triple_letter: ["s"]]}
-      score = Scrabble.score(scrabble_play, FakeDictionaryApi)
+      score = Scrabble.score(scrabble_play)
       assert score == Scrabble.raw_score(@default) + Scrabble.raw_score("s") * 3
     end
 
     test "double word multiplier" do
       scrabble_play = %{"word" => @default, "multipliers" => [:double_word]}
-      score = Scrabble.score(scrabble_play, FakeDictionaryApi)
+      score = Scrabble.score(scrabble_play)
       assert score == Scrabble.raw_score(@default) * 2
     end
 
     test "triple word multiplier" do
       scrabble_play = %{"word" => @default, "multipliers" => [:triple_word]}
-      score = Scrabble.score(scrabble_play, FakeDictionaryApi)
+      score = Scrabble.score(scrabble_play)
       assert score == Scrabble.raw_score(@default) * 3
     end
 
     test "letter multiplier with word multiplier" do
       scrabble_play = %{"word" => @default, "multipliers" => [:double_word, triple_letter: ~w(s a)]}
-      score = Scrabble.score(scrabble_play, FakeDictionaryApi)
+      score = Scrabble.score(scrabble_play)
       expected = Scrabble.raw_score(@default) * 2 + Scrabble.raw_score("s") * 3 + Scrabble.raw_score("a") * 3
       assert score == expected
     end
 
     test "wildcard" do
       scrabble_play = %{"word" => @default, "multipliers" => [wildcard: ~w(s)]}
-      assert Scrabble.score(scrabble_play, FakeDictionaryApi) == Scrabble.raw_score(@default) - Scrabble.raw_score("s")
+      assert Scrabble.score(scrabble_play) == Scrabble.raw_score(@default) - Scrabble.raw_score("s")
     end
   end
 end

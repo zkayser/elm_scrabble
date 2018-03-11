@@ -18,6 +18,9 @@ config :elm_scrabble, ElmScrabbleWeb.Endpoint,
   url: [host: "example.com", port: 80],
   cache_static_manifest: "priv/static/cache_manifest.json"
 
+# Scrabble dictionary api config
+config :elm_scrabble, :dictionary_api, DictionaryApi
+
 # Do not print debug messages in production
 config :logger, level: :info
 
