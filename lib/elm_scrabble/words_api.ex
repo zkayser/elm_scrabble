@@ -23,8 +23,8 @@ defmodule WordsApi do
 	@base_url "https://wordsapiv1.p.mashape.com/words/"
 	@headers ["X-Mashape-Key": @api_key, "Accept": "application/json"]
 
-	def get(word, nil), do: raise WordsApiException
-	def get(word, api_key) do
+	def get(_word, nil), do: raise WordsApiException
+	def get(word, _api_key) do
 		HTTPotion.get(@base_url <> "#{word}", headers: @headers)
 	end
 
@@ -39,7 +39,7 @@ defmodule WordsApi do
 			end
 	end
 	def verify(arg) do
-		raise ArgumentException,
+		raise ArgumentError,
 		"WordsApi.verify/1 requires a string argument but was called with #{inspect arg}."
 	end
 end
