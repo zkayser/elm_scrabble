@@ -2,6 +2,7 @@ module Data.ScrabblePlay exposing (..)
 
 import Data.Grid as Grid exposing (Multiplier(..), Tile)
 import Dict exposing (Dict)
+import Json.Encode as Encode
 
 
 type alias Multipliers =
@@ -45,3 +46,18 @@ insertTile multipliers tile =
 
                 Nothing ->
                     Dict.insert (toString multiplier) [ tile.letter ] multipliers
+
+
+encode : Play -> Encode.Value
+encode play =
+    Encode.object
+        [ ( "word", Encode.string play.word )
+        , ( "multipliers", encodeMultipliers play.multipliers )
+        ]
+
+
+encodeMultipliers : Multipliers -> Encode.Value
+encodeMultipliers multipliers =
+    Dict.toList multipliers
+        |> List.map (\( key, value ) -> ( key, Encode.list (List.map Encode.string value) ))
+        |> Encode.object
