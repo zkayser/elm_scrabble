@@ -1,6 +1,6 @@
 module Helpers.TileManager exposing (generateTileBag, shuffleTileBag)
 
-import Data.Grid as Grid exposing (Tile)
+import Data.Grid as Grid exposing (Multiplier(..), Tile)
 import Random
 import Time exposing (Time)
 
@@ -11,7 +11,7 @@ import Time exposing (Time)
 generateTileBag : List Tile
 generateTileBag =
     List.foldr doGenerateTiles [] frequencyList
-        |> List.indexedMap (\index letter -> { letter = letter, id = index, value = valueFor letter })
+        |> List.indexedMap (\index letter -> { letter = letter, id = index, value = valueFor letter, multiplier = NoMultiplier })
 
 
 doGenerateTiles : ( Int, List String ) -> List String -> List String

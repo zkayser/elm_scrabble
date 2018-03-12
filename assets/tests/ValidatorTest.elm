@@ -2,6 +2,8 @@ module ValidatorTest exposing (..)
 
 import Data.Grid as Grid exposing (..)
 import Data.Move exposing (Move)
+import Data.ScrabblePlay exposing (Play)
+import Dict
 import Expect exposing (Expectation)
 import Logic.Validator as Validator exposing (ValidatorState(..))
 import Test exposing (..)
@@ -12,16 +14,16 @@ suite =
     describe "Validator" <|
         let
             tileA =
-                { letter = "A", id = 1, value = 1 }
+                { letter = "A", id = 1, value = 1, multiplier = Grid.NoMultiplier }
 
             tileB =
-                { letter = "B", id = 2, value = 2 }
+                { letter = "B", id = 2, value = 2, multiplier = Grid.TripleWord }
 
             tileC =
-                { letter = "C", id = 3, value = 3 }
+                { letter = "C", id = 3, value = 3, multiplier = Grid.DoubleLetter }
 
             tileS =
-                { letter = "S", id = 4, value = 4 }
+                { letter = "S", id = 4, value = 4, multiplier = Grid.Wildcard }
 
             validMovesRow =
                 fakeMoves [ tileC, tileA, tileB ] [ ( 8, 6 ), ( 8, 7 ), ( 8, 8 ) ]
@@ -42,14 +44,14 @@ suite =
                         |> addMovesToGrid
                         |> Grid.get (Row 8)
                         |> Validator.validate validMovesRow
-                        |> Expect.equal (Validated "CAB")
+                        |> Expect.equal (buildPlayFor "CAB")
             , test "Valid along a column" <|
                 \_ ->
                     validMovesColumn
                         |> addMovesToGrid
                         |> Grid.get (Column 8)
                         |> Validator.validate validMovesColumn
-                        |> Expect.equal (Validated "CAB")
+                        |> Expect.equal (buildPlayFor "CAB")
             , test "Valid row with a gap in player moves" <|
                 \_ ->
                     rowWithGap
@@ -63,7 +65,7 @@ suite =
                             )
                         |> Grid.get (Row 8)
                         |> Validator.validate rowWithGap
-                        |> Expect.equal (Validated "CAB")
+                        |> Expect.equal (buildPlayFor "CAB")
             , test "Valid column with a gap in player moves" <|
                 \_ ->
                     columnWithGap
@@ -77,7 +79,7 @@ suite =
                             )
                         |> Grid.get (Column 8)
                         |> Validator.validate columnWithGap
-                        |> Expect.equal (Validated "CAB")
+                        |> Expect.equal (buildPlayFor "CAB")
             , test "Invalid along a row" <|
                 \_ ->
                     rowWithGap
@@ -200,22 +202,22 @@ suite =
                 \_ ->
                     validRowWithGap
                         |> Validator.validate validMovesRow
-                        |> Expect.equal (Validated "CAB")
+                        |> Expect.equal (buildPlayFor "CAB")
             , test "Column play is valid with existing tiles detected first, with gaps until valid play" <|
                 \_ ->
                     validColumnWithGap
                         |> Validator.validate validMovesColumn
-                        |> Expect.equal (Validated "CAB")
+                        |> Expect.equal (buildPlayFor "CAB")
             , test "Row play is valid with existing tiles detected first, no gaps until valid play" <|
                 \_ ->
                     validRowNoGap
                         |> Validator.validate validMovesRow
-                        |> Expect.equal (Validated "SCAB")
+                        |> Expect.equal (buildPlayFor "SCAB")
             , test "Column play is valid with existing tiles detected first, no gaps until valid play" <|
                 \_ ->
                     validColumnNoGap
                         |> Validator.validate validMovesColumn
-                        |> Expect.equal (Validated "SCAB")
+                        |> Expect.equal (buildPlayFor "SCAB")
             , test "Row play is invalid with gap between existing tile and first moved tile" <|
                 \_ ->
                     invalidRowWithGaps
@@ -260,3 +262,8 @@ addMovesToGrid moves =
         )
         Grid.init
         moves
+
+
+buildPlayFor : String -> ValidatorState
+buildPlayFor word =
+    Validated { word = word, multipliers = Dict.fromList [ ( "DoubleWord", [] ) ] }

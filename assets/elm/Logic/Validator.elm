@@ -1,14 +1,15 @@
 module Logic.Validator exposing (..)
 
-import Data.Grid exposing (Cell, Tile)
+import Data.Grid exposing (Cell, Multiplier(..), Tile)
 import Data.Move exposing (Move)
+import Data.ScrabblePlay as ScrabblePlay exposing (Play)
 
 
 type ValidatorState
     = NoMoveDetected
     | PossibleMoveFound (List Tile)
     | MoveDetected (List Tile)
-    | Validated String
+    | Validated Play
     | Invalidated
 
 
@@ -42,9 +43,9 @@ updateState playedTiles cell currentState =
             case cell.tile of
                 Just tile ->
                     if List.member tile playedTiles then
-                        MoveDetected [ tile ]
+                        MoveDetected [ { tile | multiplier = cell.multiplier } ]
                     else
-                        PossibleMoveFound [ tile ]
+                        PossibleMoveFound [ { tile | multiplier = cell.multiplier } ]
 
                 Nothing ->
                     NoMoveDetected
@@ -53,9 +54,9 @@ updateState playedTiles cell currentState =
             case cell.tile of
                 Just tile ->
                     if List.member tile playedTiles then
-                        MoveDetected <| tile :: tiles
+                        MoveDetected <| { tile | multiplier = cell.multiplier } :: tiles
                     else
-                        PossibleMoveFound <| tile :: tiles
+                        PossibleMoveFound <| { tile | multiplier = cell.multiplier } :: tiles
 
                 Nothing ->
                     NoMoveDetected
@@ -63,11 +64,11 @@ updateState playedTiles cell currentState =
         MoveDetected tiles ->
             case cell.tile of
                 Just tile ->
-                    MoveDetected <| tile :: tiles
+                    MoveDetected <| { tile | multiplier = cell.multiplier } :: tiles
 
                 Nothing ->
-                    if List.all (\tile -> List.member tile tiles) playedTiles then
-                        Validated <| tilesToString tiles
+                    if List.all (\tile -> List.member tile.id (idsFor tiles)) playedTiles then
+                        Validated <| ScrabblePlay.tilesToPlay tiles
                     else
                         Invalidated
 
@@ -88,7 +89,6 @@ finalizeState state =
             state
 
 
-tilesToString : List Tile -> String
-tilesToString tiles =
-    List.map .letter tiles
-        |> String.concat
+idsFor : List Tile -> List Int
+idsFor tiles =
+    List.map .id tiles

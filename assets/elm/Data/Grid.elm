@@ -25,6 +25,7 @@ type alias Tile =
     { letter : String
     , id : Int
     , value : Int
+    , multiplier : Multiplier
     }
 
 
@@ -34,6 +35,7 @@ type Multiplier
     | DoubleLetter
     | TripleLetter
     | NoMultiplier
+    | Wildcard
 
 
 type Dimension
@@ -208,7 +210,7 @@ cellToHtml config cell =
                 TripleLetter ->
                     div ([ class "cell triple-letter" ] ++ dropConfig) [ text "3x L" ]
 
-                NoMultiplier ->
+                _ ->
                     div ([ class "cell" ] ++ dropConfig) [ text "" ]
 
 

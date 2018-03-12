@@ -1,6 +1,6 @@
 module GameContextTest exposing (..)
 
-import Data.Grid as Grid exposing (Tile)
+import Data.Grid as Grid exposing (Multiplier(..), Tile)
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import Logic.GameContext as Context exposing (Turn(..))
@@ -123,10 +123,10 @@ suite =
 
 initialTiles : List Tile
 initialTiles =
-    List.map (\( number, letter ) -> { letter = letter, id = number, value = number })
+    List.map (\( number, letter ) -> { letter = letter, id = number, value = number, multiplier = NoMultiplier })
         [ ( 1, "A" ), ( 2, "B" ), ( 3, "C" ), ( 4, "D" ), ( 5, "E" ), ( 6, "F" ), ( 7, "G" ) ]
 
 
 fakeTileWith : Int -> String -> Tile
 fakeTileWith number letter =
-    { letter = letter, id = number, value = number }
+    { letter = letter, id = number, value = number, multiplier = NoMultiplier }
