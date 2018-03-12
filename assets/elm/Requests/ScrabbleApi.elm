@@ -30,8 +30,5 @@ getScore play =
             Play.encode play
                 |> Http.jsonBody
     in
-    Debug.log "Result of getScore here"
-        Decode.field
-        "score"
-        Decode.int
+    Decode.field "score" Decode.int
         |> Http.post api jsonBody
