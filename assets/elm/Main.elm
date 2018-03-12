@@ -1,12 +1,16 @@
 module Main exposing (..)
 
 import Data.Grid as Grid exposing (Cell, Grid, Tile)
+import Data.Move as Move
 import Helpers.TileManager as TileManager exposing (generateTileBag, shuffleTileBag)
 import Html exposing (..)
 import Html.Attributes as Attributes
 import Html.Events as Events
+import Http
 import Json.Decode as Json
 import Logic.GameContext as GameContext exposing (Context, Turn)
+import Logic.Validator as Validator exposing (ValidatorState(..))
+import Requests.ScrabbleApi as ScrabbleApi
 import Task
 import Time exposing (Time)
 import Views.Board as Board
@@ -32,6 +36,7 @@ type Msg
     | Dropped Cell
     | DragOver Cell
     | SubmitScore
+    | UpdateScore (Result Http.Error Int)
 
 
 init : ( Model, Cmd Msg )
@@ -88,7 +93,32 @@ update msg model =
             ( model, Cmd.none )
 
         SubmitScore ->
-            ( { model | score = model.score + 25 }, Cmd.none )
+            let
+                moves =
+                    model.context.movesMade
+
+                validation =
+                    Move.validate moves
+                        |> Grid.get model.context.grid
+                        |> Validator.validate moves
+
+                cmd =
+                    case validation of
+                        Validated play ->
+                            Http.send UpdateScore (ScrabbleApi.getScore play)
+
+                        _ ->
+                            Cmd.none
+            in
+            ( model, cmd )
+
+        UpdateScore result ->
+            case result of
+                Ok result ->
+                    ( { model | score = model.score + result }, Cmd.none )
+
+                Err _ ->
+                    ( model, Cmd.none )
 
 
 view : Model -> Html Msg

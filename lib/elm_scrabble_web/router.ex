@@ -18,6 +18,11 @@ defmodule ElmScrabbleWeb.Router do
 
     get "/", PageController, :index
 
+  end
+
+  scope "/api", ElmScrabbleWeb do
+    pipe_through :api
+
     post "/scrabble", ScrabbleController, :score
   end
 

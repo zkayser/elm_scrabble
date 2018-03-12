@@ -59,5 +59,5 @@ encode play =
 encodeMultipliers : Multipliers -> Encode.Value
 encodeMultipliers multipliers =
     Dict.toList multipliers
-        |> List.map (\( key, value ) -> ( key, Encode.list (List.map Encode.string value) ))
-        |> Encode.object
+        |> List.map (\( key, value ) -> Encode.object [ ( key, Encode.list (List.map Encode.string value) ) ])
+        |> Encode.list

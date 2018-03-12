@@ -2,7 +2,7 @@ defmodule ElmScrabbleWeb.ScrabbleController do
 	use ElmScrabbleWeb, :controller
 	@error_message "Your request has been invalidated due to tampering"
 
-	def score(conn, %{"word" => word, "multipliers" => multipliers} = params) do
+	def score(conn, %{"word" => word, "multipliers" => multipliers}) do
 		case MultiplierParser.parse(multipliers) do
 			{:ok, multipliers} ->
 				conn
@@ -16,7 +16,7 @@ defmodule ElmScrabbleWeb.ScrabbleController do
 		end
 	end
 
-	def score(conn, _) do
+	def score(conn, _params) do
 		conn
 		|> put_status(:bad_request)
 		|> render(ElmScrabbleWeb.ErrorView, "400.json", %{error: "Bad request"})

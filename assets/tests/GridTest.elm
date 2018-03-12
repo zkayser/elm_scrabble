@@ -19,13 +19,13 @@ suite =
             [ test "Get Row 8" <|
                 \_ ->
                     Expect.true "Expected to get a list of cells from row 8 only" <|
-                        List.all (\cell -> Tuple.first cell.position == 8) (Grid.get (Row 8) Grid.init)
+                        List.all (\cell -> Tuple.first cell.position == 8) (Grid.get Grid.init <| Row 8)
             , test "Get Column 8" <|
                 \_ ->
                     Expect.true "Expected to get a list of cells from column 8 only" <|
-                        List.all (\cell -> Tuple.second cell.position == 8) (Grid.get (Column 8) Grid.init)
+                        List.all (\cell -> Tuple.second cell.position == 8) (Grid.get Grid.init <| Column 8)
             , test "Get Invalid" <|
                 \_ ->
-                    Expect.equal (Grid.get Invalid Grid.init) []
+                    Expect.equal (Grid.get Grid.init Invalid) []
             ]
         ]

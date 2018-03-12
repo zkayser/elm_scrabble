@@ -230,8 +230,8 @@ tileToHtml config tile =
 grid. Returns the entire grid unmodified
 if the dimension given is `Invalid`
 -}
-get : Dimension -> Grid -> List Cell
-get dimension grid =
+get : Grid -> Dimension -> List Cell
+get grid dimension =
     case dimension of
         Invalid ->
             []
