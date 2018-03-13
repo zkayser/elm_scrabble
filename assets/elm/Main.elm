@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Data.Grid as Grid exposing (Cell, Grid, Tile)
 import Data.Move as Move
+import Helpers.ContextManager as ContextManager
 import Helpers.TileManager as TileManager exposing (generateTileBag, shuffleTileBag)
 import Html exposing (..)
 import Html.Attributes as Attributes
@@ -13,6 +14,7 @@ import Logic.Validator as Validator exposing (ValidatorState(..))
 import Requests.ScrabbleApi as ScrabbleApi
 import Task
 import Time exposing (Time)
+import Types.Messages as Message
 import Views.Board as Board
 import Views.Scoreboard as Scoreboard
 import Views.TileHolder as TileHolder
@@ -93,24 +95,12 @@ update msg model =
             ( model, Cmd.none )
 
         SubmitScore ->
-            let
-                moves =
-                    model.context.movesMade
+            case ContextManager.updateContext UpdateScore model.tileBag model.context of
+                Ok ( newContext, cmd, newTilebag ) ->
+                    ( { model | context = newContext, tileBag = newTilebag }, cmd )
 
-                validation =
-                    Move.validate moves
-                        |> Grid.get model.context.grid
-                        |> Validator.validate moves
-
-                cmd =
-                    case validation of
-                        Validated play ->
-                            Http.send UpdateScore (ScrabbleApi.getScore play)
-
-                        _ ->
-                            Cmd.none
-            in
-            ( model, cmd )
+                Err message ->
+                    ( { model | messages = [ ( Message.Error, message ) ] }, Cmd.none )
 
         UpdateScore result ->
             case result of
