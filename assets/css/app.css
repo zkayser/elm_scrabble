@@ -326,3 +326,41 @@ input:focus, textarea:focus {
 	}
 }
 
+.hidden {
+	visibility: hidden;
+}
+
+/* Leaderboard */
+.leaderboard {
+	height: 25rem;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.leaderboard-header {
+	height: 3rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-evenly;
+	width: 100%;
+	font-size: 3rem;
+}
+
+.leaderboard-body {
+	width: 100%;
+	text-align: center;
+}
+
+.leaderboard-entry {
+	font-size: 1.25rem;
+	height: 3rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	width: 100%;
+	text-align: center;
+}
+
+
