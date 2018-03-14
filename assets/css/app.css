@@ -201,6 +201,10 @@ body {
 }
 
 /* Scoreboard */
+.scoreboard {
+	position: relative;
+}
+
 .scoreboard-header {
 	font-family: inherit;
 	font-size:  3rem;
@@ -291,14 +295,16 @@ input:focus, textarea:focus {
 	display: flex;
 	position: absolute;
 	z-index: 950;
+	width: 100%;
 	top: 10%;
+	margin-top: 2rem;
 	justify-content: center;
 }
 
 .error {
 	display: flex;
 	height: 3rem;
-	width: 25rem;
+	width: 50%;
 	box-shadow: 0.5rem 0.5rem 0.5rem black;
 	background-color: #e17171;
 	align-items: center;
