@@ -20,6 +20,7 @@ import Views.Board as Board
 import Views.Scoreboard as Scoreboard
 import Views.TileHolder as TileHolder
 import Widgets.DragAndDrop as DragAndDrop exposing (Config)
+import Widgets.Modals as Modal exposing (Modal)
 
 
 type alias Model =
@@ -30,6 +31,8 @@ type alias Model =
     , context : Context
     , score : Int
     , messages : List Message
+    , username : String
+    , modal : Modal Msg
     }
 
 
@@ -41,6 +44,9 @@ type Msg
     | DragOver Cell
     | SubmitScore
     | UpdateScore (Result Http.Error ScrabbleResponse)
+    | SubmitForm
+    | SetUsername String
+    | SetWildcardLetter Tile String
 
 
 init : ( Model, Cmd Msg )
@@ -52,6 +58,8 @@ init =
       , turn = GameContext.Active
       , score = 0
       , messages = []
+      , username = ""
+      , modal = Modal.UserPrompt SubmitForm SetUsername
       }
     , Task.perform CurrentTime Time.now
     )
@@ -89,10 +97,18 @@ update msg model =
             case model.dragging of
                 Just tile ->
                     let
+                        newModal =
+                            case tile.multiplier of
+                                Grid.Wildcard ->
+                                    Modal.WildcardPrompt SubmitForm (SetWildcardLetter tile)
+
+                                _ ->
+                                    Modal.None
+
                         newContext =
                             GameContext.update model.turn model.context { tile = tile, position = cell.position }
                     in
-                    ( { model | context = newContext }, Cmd.none )
+                    ( { model | context = newContext, modal = newModal }, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -120,6 +136,19 @@ update msg model =
                 Err _ ->
                     ( model, Cmd.none )
 
+        SubmitForm ->
+            ( { model | modal = Modal.None }, Cmd.none )
+
+        SetUsername string ->
+            ( { model | username = string }, Cmd.none )
+
+        SetWildcardLetter tile letter ->
+            let
+                updatedContext =
+                    ContextManager.updateContextWith tile letter model
+            in
+            ( { model | context = updatedContext }, Cmd.none )
+
 
 view : Model -> Html Msg
 view model =
@@ -130,6 +159,8 @@ view model =
             ]
         , div [ Attributes.class "scoreboard-container" ]
             [ Scoreboard.view SubmitScore model ]
+        , div [ Attributes.classList [ ( "modal-container", showModal model ), ( "hidden", not (showModal model) ) ] ]
+            [ Modal.view model.modal ]
         ]
 
 
@@ -145,6 +176,16 @@ dragAndDropConfig =
     , dropMsg = Dropped
     , dragOverMsg = DragOver
     }
+
+
+showModal : Model -> Bool
+showModal model =
+    case model.modal of
+        Modal.None ->
+            False
+
+        _ ->
+            True
 
 
 main =

@@ -67,3 +67,43 @@ update scrabbleResponse model =
 
                 _ ->
                     { model | messages = ( Message.Error, "Something went wrong" ) :: model.messages }
+
+
+updateContextWith : Tile -> String -> { r | context : Context } -> Context
+updateContextWith tile letter model =
+    let
+        context =
+            model.context
+    in
+    case tile.multiplier of
+        Grid.Wildcard ->
+            let
+                formattedLetter =
+                    String.reverse letter
+                        |> String.slice 0 1
+                        |> String.toUpper
+
+                newGrid =
+                    List.map
+                        (\cell ->
+                            if cell.tile == Just tile then
+                                { cell | tile = Just { tile | letter = formattedLetter } }
+                            else
+                                cell
+                        )
+                        context.grid
+
+                movesMade =
+                    List.map
+                        (\move ->
+                            if move.tile == tile then
+                                { move | tile = { tile | letter = formattedLetter } }
+                            else
+                                move
+                        )
+                        context.movesMade
+            in
+            { context | grid = newGrid, movesMade = movesMade }
+
+        _ ->
+            context

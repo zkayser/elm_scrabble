@@ -11,7 +11,7 @@ import Time exposing (Time)
 generateTileBag : List Tile
 generateTileBag =
     List.foldr doGenerateTiles [] frequencyList
-        |> List.indexedMap (\index letter -> { letter = letter, id = index, value = valueFor letter, multiplier = NoMultiplier })
+        |> List.indexedMap (\index letter -> { letter = letter, id = index, value = valueFor letter, multiplier = multiplierFor letter })
 
 
 doGenerateTiles : ( Int, List String ) -> List String -> List String
@@ -73,3 +73,11 @@ valueFor letter =
         8
     else
         10
+
+
+multiplierFor : String -> Multiplier
+multiplierFor letter =
+    if letter == "" then
+        Wildcard
+    else
+        NoMultiplier
