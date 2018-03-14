@@ -1,5 +1,6 @@
 module Helpers.ContextManager exposing (..)
 
+import Channels.LeaderboardChannel as Leaderboard
 import Data.Grid as Grid exposing (Tile)
 import Data.Move as Move
 import Http
@@ -25,7 +26,7 @@ To account for this, a `Result String (Context, Cmd msg, List Tile )`
 type is returned so that the caller of the function can react
 accordingly.
 -}
-validateSubmission : (Result Http.Error ScrabbleResponse -> msg) -> Context -> Result String (Cmd msg)
+validateSubmission : (Value -> msg) -> Context -> Result String (Cmd msg)
 validateSubmission msg context =
     let
         validation =
@@ -35,7 +36,7 @@ validateSubmission msg context =
     in
     case validation of
         Validated play ->
-            Ok (Http.send msg (Api.getScore play))
+            Ok (Leaderboard.submitPlay play)
 
         _ ->
             Err "Invalid play"

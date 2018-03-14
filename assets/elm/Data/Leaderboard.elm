@@ -16,3 +16,8 @@ entryDecoder =
     Decode.map2 Entry
         (Decode.field "user" Decode.string)
         (Decode.field "score" Decode.int)
+
+
+decoder : Decoder Leaderboard
+decoder =
+    Decode.field "leaderboard" (Decode.list entryDecoder)

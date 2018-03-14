@@ -36,11 +36,11 @@ channel model config =
         |> Channel.on "score_update" (\payload -> config.onScoreUpdate payload)
 
 
-submitPlay : Play -> { r | username : String } -> Cmd msg
-submitPlay play model =
+submitPlay : Play -> Cmd msg
+submitPlay play =
     let
         push =
             Push.init "scrabble:lobby" "submit_play"
-                |> Push.withPayload (Encode.object [ ( "user", Encode.string model.username ), ( "play", Play.encode play ) ])
+                |> Push.withPayload (Play.encode play)
     in
     Phoenix.push socketUrl push

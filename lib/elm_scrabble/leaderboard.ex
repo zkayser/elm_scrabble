@@ -25,7 +25,7 @@ defmodule Leaderboard do
 		case length(Map.keys(state)) > 1 do
 			true ->
 				state
-				|> Enum.sort_by(fn {_, value_1}, {_, value_2} -> value_1 > value_2 end)
+				|> Enum.sort(fn {_, value_1}, {_, value_2} -> value_1 > value_2 end)
 				|> Enum.take(count)
 				|> Enum.map(fn {name, score} -> %{user: name, score: score} end)
 			false ->

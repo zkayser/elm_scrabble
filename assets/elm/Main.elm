@@ -16,7 +16,7 @@ import Logic.Validator as Validator exposing (ValidatorState(..))
 import Phoenix
 import Phoenix.Channel exposing (Channel)
 import Requests.ScrabbleApi as ScrabbleApi
-import Responses.Scrabble exposing (ScrabbleResponse)
+import Responses.Scrabble as ScrabbleResponse exposing (ScrabbleResponse)
 import Task
 import Time exposing (Time)
 import Types.Messages as Message exposing (Message)
@@ -129,7 +129,7 @@ update msg model =
             ( model, Cmd.none )
 
         SubmitScore ->
-            case ContextManager.validateSubmission UpdateScore model.context of
+            case ContextManager.validateSubmission UpdateScoreV2 model.context of
                 Ok cmd ->
                     ( model, cmd )
 
@@ -171,12 +171,24 @@ update msg model =
             ( { model | context = updatedContext }, Cmd.none )
 
         UpdateLeaderboard payload ->
-            Debug.log "UpdateLeaderboard"
-                ( model, Cmd.none )
+            case Json.decodeValue Leaderboard.decoder payload of
+                Ok result ->
+                    ( { model | leaderboard = result }, Cmd.none )
+
+                Err _ ->
+                    ( model, Cmd.none )
 
         UpdateScoreV2 payload ->
-            Debug.log "UpdateScoreV2"
-                ( model, Cmd.none )
+            case Json.decodeValue ScrabbleResponse.decoder payload of
+                Ok response ->
+                    let
+                        updates =
+                            ContextManager.update response model
+                    in
+                    ( { model | score = updates.score, context = updates.context, tileBag = updates.tileBag, messages = updates.messages }, Cmd.none )
+
+                Err _ ->
+                    ( { model | messages = ( Message.Error, "Something went wrong" ) :: model.messages }, Cmd.none )
 
         SocketConnect ->
             ( model, Cmd.none )
