@@ -15,7 +15,7 @@ type alias Config msg =
     , onScoreUpdate : Encode.Value -> msg
     }
 
-
+-- 9b92a0d3.ngrok.io
 socketUrl : String
 socketUrl =
     "ws://localhost:4000/socket/websocket"

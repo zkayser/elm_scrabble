@@ -4,6 +4,7 @@ defmodule ElmScrabbleWeb.ScrabbleChannel do
 
 	def join("scrabble:lobby", %{"user" => user}, socket) do
 		Logger.debug "Hello! You are about to join the scrabble lobby. message: #{inspect user}!"
+		Leaderboard.put(user)
 		socket = assign(socket, :user, user)
 		{:ok, socket}
 	end
@@ -23,6 +24,7 @@ defmodule ElmScrabbleWeb.ScrabbleChannel do
 	defp handle_scoring(user, word, multipliers, socket) do
 		case Scrabble.score(%{"word" => word, "multipliers" => multipliers}) do
 			{:error, reason} when is_binary(reason) ->
+				Logger.debug "That was a bad input: #{inspect word}"
 				push(socket, "score_update", %{error: reason})
 				{:noreply, socket}
 			{:error, _} -> {:noreply, socket}

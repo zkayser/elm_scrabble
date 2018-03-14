@@ -201,6 +201,10 @@ body {
 }
 
 /* Scoreboard */
+.scoreboard {
+	position: relative;
+}
+
 .scoreboard-header {
 	font-family: inherit;
 	font-size:  3rem;
@@ -292,6 +296,7 @@ input:focus, textarea:focus {
 	position: absolute;
 	z-index: 950;
 	top: 10%;
+	width: 100%;
 	justify-content: center;
 }
 
