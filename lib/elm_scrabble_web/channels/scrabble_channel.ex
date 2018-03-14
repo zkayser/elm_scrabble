@@ -7,7 +7,7 @@ defmodule ElmScrabbleWeb.ScrabbleChannel do
 		socket = assign(socket, :user, user)
 		{:ok, socket}
 	end
-	def join(channel, _, socket) do
+	def join(channel, _, _socket) do
 		{:error, %{reason: "Channel #{channel} does not exist"}}
 	end
 
