@@ -44,6 +44,7 @@ type alias Model =
 
 type Msg
     = CurrentTime Time
+    | ClearMessages Time
     | DragStarted Tile
     | DragEnd
     | Dropped Cell
@@ -98,6 +99,15 @@ update msg model =
                     GameContext.init model.context.grid playerTiles
             in
             ( { model | tileBag = newTileBag, turn = turn, context = context }, Cmd.none )
+
+        ClearMessages _ ->
+            let
+                newMessages =
+                    case model.messages of
+                        [] -> []
+                        message :: messages -> messages
+            in
+            ( { model | messages = newMessages}, Cmd.none)
 
         DragStarted tile ->
             ( { model | dragging = Just tile }, Cmd.none )
@@ -206,7 +216,12 @@ view model =
             ]
         , div [ Attributes.class "scoreboard-container" ]
             [ Scoreboard.view SubmitScore model ]
-        , div [ Attributes.classList [ ( "modal-container", showModal model ), ( "hidden", not (showModal model) ) ] ]
+        , div
+            [ Attributes.classList
+                [ ( "modal-container", showModal model )
+                , ( "hidden", not (showModal model) )
+                ]
+            ]
             [ Modal.view model.modal ]
         ]
 
@@ -216,8 +231,12 @@ subscriptions model =
     let
         channelSubscriptions =
             [ Phoenix.connect (LeaderboardChannel.socket socketConfig) model.channels ]
+        clearMessages =
+            case model.messages of
+                [] -> Sub.none
+                _ -> Time.every 3000 ClearMessages
     in
-    Sub.batch channelSubscriptions
+    Sub.batch <| clearMessages :: channelSubscriptions
 
 
 socketConfig : LeaderboardChannel.Config Msg

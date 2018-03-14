@@ -15,7 +15,7 @@ type alias Model r =
 
 view : msg -> Model r -> Html msg
 view submitMsg model =
-    div []
+    div [ Attributes.class "scoreboard" ]
         [ div [ Attributes.class "message-container" ]
             (viewErrorMessages model.messages)
         , h1 [ Attributes.class "scoreboard-header" ] [ text "Scoreboard" ]
