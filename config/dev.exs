@@ -42,7 +42,7 @@ config :elm_scrabble, ElmScrabbleWeb.Endpoint,
   ]
 
 # Scrabble Dictionary API config
-config :elm_scrabble, :dictionary_api, DictionaryApi
+config :elm_scrabble, :dictionary_api, WordsApi
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"

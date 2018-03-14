@@ -4,6 +4,9 @@ defmodule ElmScrabbleWeb.ScrabbleView do
 	def render("error.json", %{conn: %{assigns: assigns}}) do
 		%{status: assigns.status, message: assigns.message}
 	end
+	def render("success.json", %{conn: %{assigns: %{score: {:error, message}}}}) do
+		%{error: message}
+	end
 	def render("success.json", %{conn: %{assigns: assigns}}) do
 		%{score: assigns.score}
 	end

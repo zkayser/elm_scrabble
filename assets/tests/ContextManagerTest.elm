@@ -1,32 +1,24 @@
 module ContextManagerTest exposing (..)
 
-import Data.Grid as Grid
+import Data.Grid as Grid exposing (Tile)
+import Data.Move as Move exposing (Move)
 import Dict
 import Expect exposing (Expectation)
 import Helpers.ContextManager as Manager
 import Http
+import Json.Encode as Encode
 import Logic.GameContext as Context
 import Requests.ScrabbleApi as ScrabbleApi
+import Responses.Scrabble exposing (ScrabbleResponse)
 import Test exposing (..)
+import Types.Messages as Message
 
 
 suite : Test
 suite =
     describe "ContextManager"
-        [ describe "updateContext" <|
+        [ describe "validateSubmission" <|
             let
-                tileA =
-                    { letter = "A", id = 1, value = 1, multiplier = Grid.NoMultiplier }
-
-                tileB =
-                    { letter = "B", id = 2, value = 2, multiplier = Grid.NoMultiplier }
-
-                tileC =
-                    { letter = "C", id = 3, value = 3, multiplier = Grid.NoMultiplier }
-
-                tileD =
-                    { letter = "D", id = 4, value = 4, multiplier = Grid.NoMultiplier }
-
                 grid =
                     List.map
                         (\cell ->
@@ -39,47 +31,17 @@ suite =
                         )
                         Grid.init
 
-                movesMade =
-                    [ { tile = tileA, position = ( 8, 8 ) }, { tile = tileB, position = ( 8, 9 ) } ]
-
                 invalidMoves =
                     [ { tile = tileA, position = ( 1, 1 ) }, { tile = tileB, position = ( 15, 15 ) } ]
 
-                context =
-                    { grid = grid, movesMade = movesMade, tiles = [ tileC ] }
-
-                tileBag =
-                    [ tileD ]
-
-                expectedCmd =
-                    Http.send Fake (ScrabbleApi.getScore { word = "word", multipliers = Dict.empty })
+                invalidContext =
+                    { grid = grid, movesMade = invalidMoves, tiles = [ tileC ] }
             in
-            [ test "Given a valid play" <|
-                \_ ->
-                    let
-                        expectedContext =
-                            { grid = context.grid, movesMade = [], tiles = [ tileD, tileC ] }
-
-                        expectedTileBag =
-                            []
-
-                        update =
-                            Manager.updateContext Fake tileBag context
-
-                        ( updatedContext, updatedTileBag ) =
-                            case update of
-                                Ok ( newContext, _, newTileBag ) ->
-                                    ( newContext, newTileBag )
-
-                                _ ->
-                                    ( context, [] )
-                    in
-                    Expect.equal ( updatedContext, updatedTileBag ) ( expectedContext, expectedTileBag )
-            , test "Given an invalid play" <|
+            [ test "Given an invalid play" <|
                 \_ ->
                     let
                         update =
-                            Manager.updateContext Fake tileBag { context | movesMade = invalidMoves }
+                            Manager.validateSubmission Fake invalidContext
 
                         message =
                             case update of
@@ -91,8 +53,68 @@ suite =
                     in
                     Expect.equal message "Invalid play"
             ]
+        , describe "contextUpdate" <|
+            let
+                successResponse =
+                    { score = Just 6, error = Nothing }
+
+                errorMessage =
+                    "I'm pretty sure asdasdas is not a real word"
+
+                errorResponse =
+                    { score = Nothing, error = Just errorMessage }
+
+                context =
+                    { grid = Grid.init, movesMade = movesMade, tiles = [ tileC ] }
+
+                initialTileBag =
+                    [ tileD ]
+
+                expectedContext =
+                    { context | movesMade = [], tiles = [ tileD, tileC ] }
+
+                expectedTileBag =
+                    []
+
+                model =
+                    { score = 0, context = context, tileBag = initialTileBag, messages = [] }
+            in
+            [ test "Given a success response" <|
+                \_ ->
+                    Manager.update successResponse model
+                        |> Expect.equal { model | score = 6, context = expectedContext, tileBag = expectedTileBag }
+            , test "Given an error response" <|
+                \_ ->
+                    Manager.update errorResponse model
+                        |> Expect.equal { model | messages = [ ( Message.Error, errorMessage ) ] }
+            ]
         ]
 
 
+tileA : Tile
+tileA =
+    { letter = "A", id = 1, value = 1, multiplier = Grid.NoMultiplier }
+
+
+tileB : Tile
+tileB =
+    { letter = "B", id = 2, value = 2, multiplier = Grid.NoMultiplier }
+
+
+tileC : Tile
+tileC =
+    { letter = "C", id = 3, value = 3, multiplier = Grid.NoMultiplier }
+
+
+tileD : Tile
+tileD =
+    { letter = "D", id = 4, value = 4, multiplier = Grid.NoMultiplier }
+
+
+movesMade : List Move
+movesMade =
+    [ { tile = tileA, position = ( 8, 8 ) }, { tile = tileB, position = ( 8, 9 ) } ]
+
+
 type FakeMsg
-    = Fake (Result Http.Error Int)
+    = Fake (Result Http.Error ScrabbleResponse)

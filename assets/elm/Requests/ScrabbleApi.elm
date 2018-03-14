@@ -3,6 +3,7 @@ module Requests.ScrabbleApi exposing (getScore)
 import Data.ScrabblePlay as Play exposing (Play, encode)
 import Http
 import Json.Decode as Decode
+import Responses.Scrabble as ScrabbleResponse exposing (ScrabbleResponse)
 
 
 api : String
@@ -23,12 +24,12 @@ post url body decoder =
         }
 
 
-getScore : Play -> Http.Request Int
+getScore : Play -> Http.Request ScrabbleResponse
 getScore play =
     let
         jsonBody =
             Play.encode play
                 |> Http.jsonBody
     in
-    Decode.field "score" Decode.int
+    ScrabbleResponse.decoder
         |> Http.post api jsonBody
