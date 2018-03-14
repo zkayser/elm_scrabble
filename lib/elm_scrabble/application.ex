@@ -12,6 +12,7 @@ defmodule ElmScrabble.Application do
       supervisor(ElmScrabble.Repo, []),
       # Start the endpoint when the application starts
       supervisor(ElmScrabbleWeb.Endpoint, []),
+      worker(Leaderboard, [])
       # Start your own worker by calling: ElmScrabble.Worker.start_link(arg1, arg2, arg3)
       # worker(ElmScrabble.Worker, [arg1, arg2, arg3]),
     ]

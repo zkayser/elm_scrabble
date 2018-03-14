@@ -5,7 +5,7 @@ defmodule Scrabble do
 	def score(%{"word" => word, "multipliers" => multipliers}) do
 		case @dictionary_api.verify(word) do
 			:word_found -> _score(word, multipliers)
-			:word_not_found -> {:error, "Hey! I'm pretty sure #{word} is not a real word."}
+			:word_not_found -> {:error, "Hey! #{word} is not a real word!"}
 			{:error, reason} -> {:error, reason}
 		end
 	end
