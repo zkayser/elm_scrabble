@@ -3,6 +3,7 @@ module Views.Scoreboard exposing (view)
 import Html exposing (..)
 import Html.Attributes as Attributes
 import Html.Events as Events
+import Data.Leaderboard exposing (Leaderboard, Entry)
 import Types.Messages as Message exposing (Message)
 
 
@@ -10,6 +11,7 @@ type alias Model r =
     { r
         | score : Int
         , messages : List Message
+        , leaderboard : Leaderboard
     }
 
 
@@ -28,6 +30,7 @@ view submitMsg model =
                 ]
                 [ text "Get Score" ]
             ]
+        , viewLeaderboard model
         ]
 
 
@@ -44,3 +47,34 @@ viewError message =
 
         _ ->
             text ""
+
+viewLeaderboard : Model r -> Html msg
+viewLeaderboard model =
+    let
+        leaderboard =
+            model.leaderboard
+            |> List.sortBy .score
+            |> List.reverse
+            |> List.indexedMap (,)
+    in
+    div [ Attributes.class "leaderboard" ]
+        [ div [ Attributes.class "leaderboard-header", Attributes.classList [("hidden", List.length leaderboard == 0)] ]
+            [ span [ Attributes.class "header rank"] [ text "RANK"]
+            , span [ Attributes.class "header user" ] [ text "NAME" ]
+            , span [ Attributes.class "header score-entry" ] [text "SCORE"]
+            ]
+        , div [ Attributes.class "leaderboard-body"]
+            <| List.map viewEntry leaderboard
+        ]
+
+
+viewEntry : (Int, Entry) -> Html msg
+viewEntry (rank, entry) =
+    div [ Attributes.class "leaderboard-entry"]
+        [ span [ Attributes.class "rank" ]
+            [ text <| toString (rank + 1) ]
+        , span [ Attributes.class "user" ]
+            [ text entry.user ]
+        , span [ Attributes.class "score-entry" ]
+            [ text <| toString entry.score ]
+        ]
