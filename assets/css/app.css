@@ -286,3 +286,43 @@ input:focus, textarea:focus {
 	align-items: center;
 }
 
+/* Messages and Errors */
+.message-container {
+	display: flex;
+	position: absolute;
+	z-index: 950;
+	top: 10%;
+	justify-content: center;
+}
+
+.error {
+	display: flex;
+	height: 3rem;
+	width: 25rem;
+	box-shadow: 0.5rem 0.5rem 0.5rem black;
+	background-color: #e17171;
+	align-items: center;
+	justify-content: center;
+	animation: toast 0.75s ease-in-out;
+}
+
+@keyframes toast {
+	0% {
+		transform: translateY(100rem);
+		opacity: 0;
+	}
+
+	50% {
+		opacity: 0;
+	}
+
+	75% {
+		opacity: 0.5;
+	}
+
+	100% {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+

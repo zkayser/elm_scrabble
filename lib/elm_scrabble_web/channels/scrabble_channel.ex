@@ -23,7 +23,7 @@ defmodule ElmScrabbleWeb.ScrabbleChannel do
 	defp handle_scoring(user, word, multipliers, socket) do
 		case Scrabble.score(%{"word" => word, "multipliers" => multipliers}) do
 			{:error, reason} when is_binary(reason) ->
-				push(socket, "score_update", %{error: "reason"})
+				push(socket, "score_update", %{error: reason})
 				{:noreply, socket}
 			{:error, _} -> {:noreply, socket}
 			increment ->
