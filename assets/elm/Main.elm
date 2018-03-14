@@ -1,6 +1,8 @@
 module Main exposing (..)
 
+import Channels.LeaderboardChannel as LeaderboardChannel
 import Data.Grid as Grid exposing (Cell, Grid, Tile)
+import Data.Leaderboard as Leaderboard exposing (Leaderboard)
 import Data.Move as Move
 import Helpers.ContextManager as ContextManager
 import Helpers.TileManager as TileManager exposing (generateTileBag, shuffleTileBag)
@@ -11,6 +13,8 @@ import Http
 import Json.Decode as Json
 import Logic.GameContext as GameContext exposing (Context, Turn)
 import Logic.Validator as Validator exposing (ValidatorState(..))
+import Phoenix
+import Phoenix.Channel exposing (Channel)
 import Requests.ScrabbleApi as ScrabbleApi
 import Responses.Scrabble exposing (ScrabbleResponse)
 import Task
@@ -27,6 +31,8 @@ type alias Model =
     { tileBag : List Tile
     , dragAndDropConfig : DragAndDrop.Config Msg Tile Cell
     , dragging : Maybe Tile
+    , leaderboard : Leaderboard
+    , channels : List (Channel Msg)
     , turn : Turn
     , context : Context
     , score : Int
@@ -42,11 +48,15 @@ type Msg
     | DragEnd
     | Dropped Cell
     | DragOver Cell
+    | JoinedChannel Json.Value
+    | UpdateLeaderboard Json.Value
+    | UpdateScoreV2 Json.Value
     | SubmitScore
     | UpdateScore (Result Http.Error ScrabbleResponse)
     | SubmitForm
     | SetUsername String
     | SetWildcardLetter Tile String
+    | SocketConnect
 
 
 init : ( Model, Cmd Msg )
@@ -54,6 +64,8 @@ init =
     ( { tileBag = generateTileBag
       , dragAndDropConfig = dragAndDropConfig
       , dragging = Nothing
+      , leaderboard = []
+      , channels = []
       , context = GameContext.init Grid.init []
       , turn = GameContext.Active
       , score = 0
@@ -137,7 +149,16 @@ update msg model =
                     ( model, Cmd.none )
 
         SubmitForm ->
-            ( { model | modal = Modal.None }, Cmd.none )
+            let
+                channels =
+                    case model.channels of
+                        [] ->
+                            [ LeaderboardChannel.channel model socketConfig ]
+
+                        _ ->
+                            model.channels
+            in
+            ( { model | modal = Modal.None, channels = channels }, Cmd.none )
 
         SetUsername string ->
             ( { model | username = string }, Cmd.none )
@@ -148,6 +169,20 @@ update msg model =
                     ContextManager.updateContextWith tile letter model
             in
             ( { model | context = updatedContext }, Cmd.none )
+
+        UpdateLeaderboard payload ->
+            Debug.log "UpdateLeaderboard"
+                ( model, Cmd.none )
+
+        UpdateScoreV2 payload ->
+            Debug.log "UpdateScoreV2"
+                ( model, Cmd.none )
+
+        SocketConnect ->
+            ( model, Cmd.none )
+
+        JoinedChannel _ ->
+            ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -166,7 +201,20 @@ view model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    let
+        channelSubscriptions =
+            [ Phoenix.connect (LeaderboardChannel.socket socketConfig) model.channels ]
+    in
+    Sub.batch channelSubscriptions
+
+
+socketConfig : LeaderboardChannel.Config Msg
+socketConfig =
+    { onOpen = SocketConnect
+    , onJoin = JoinedChannel
+    , onUpdate = UpdateLeaderboard
+    , onScoreUpdate = UpdateScoreV2
+    }
 
 
 dragAndDropConfig : DragAndDrop.Config Msg Tile Cell
