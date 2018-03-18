@@ -6,7 +6,7 @@ import Dict
 import Expect exposing (Expectation)
 import Helpers.ContextManager as Manager
 import Http
-import Json.Encode as Encode
+import Json.Encode as Encode exposing (Value)
 import Logic.GameContext as Context
 import Requests.ScrabbleApi as ScrabbleApi
 import Responses.Scrabble exposing (ScrabbleResponse)
@@ -117,4 +117,4 @@ movesMade =
 
 
 type FakeMsg
-    = Fake (Result Http.Error ScrabbleResponse)
+    = Fake Value
