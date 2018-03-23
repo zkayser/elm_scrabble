@@ -1,16 +1,53 @@
 module Logic.Validator exposing (..)
 
-import Data.Grid exposing (Cell, Multiplier(..), Tile)
+import Data.Grid as Grid exposing (Cell, Multiplier(..), Tile)
 import Data.Move exposing (Move)
 import Data.ScrabblePlay as ScrabblePlay exposing (Play)
+import Logic.GameContext exposing (Context)
 
 
 type ValidatorState
     = NoMoveDetected
     | PossibleMoveFound (List Tile)
     | MoveDetected (List Tile)
-    | Validated Play
+    | Validated (List Play)
     | Invalidated
+
+
+validateV2 : Grid.Dimension -> Context -> ValidatorState
+validateV2 dimension context =
+    if context.firstPlay && not (List.member ( 8, 8 ) (List.map (\move -> move.position) context.movesMade)) then
+        Invalidated
+    else if not context.firstPlay && List.length context.movesMade == 1 then
+        Invalidated
+    else
+        case dimension of
+            Grid.Invalid ->
+                Invalidated
+
+            Grid.Row _ ->
+                case validate context.movesMade (Grid.get context.grid dimension) of
+                    Validated play ->
+                        let
+                            secondaryPlays =
+                                validateSecondary context (List.map (\move -> Grid.Column <| Tuple.second move.position) context.movesMade)
+                        in
+                        Validated <| play ++ secondaryPlays
+
+                    _ ->
+                        Invalidated
+
+            Grid.Column _ ->
+                case validate context.movesMade (Grid.get context.grid dimension) of
+                    Validated play ->
+                        let
+                            secondaryPlays =
+                                validateSecondary context (List.map (\move -> Grid.Row <| Tuple.first move.position) context.movesMade)
+                        in
+                        Validated <| play ++ secondaryPlays
+
+                    _ ->
+                        Invalidated
 
 
 {-| Loop over the cells in a row or column
@@ -68,7 +105,7 @@ updateState playedTiles cell currentState =
 
                 Nothing ->
                     if List.all (\tile -> List.member tile.id (idsFor tiles)) playedTiles then
-                        Validated <| ScrabblePlay.tilesToPlay tiles
+                        Validated <| [ ScrabblePlay.tilesToPlay tiles ]
                     else
                         Invalidated
 
@@ -77,6 +114,40 @@ updateState playedTiles cell currentState =
 
         Invalidated ->
             Invalidated
+
+
+validateSecondary : Context -> List Grid.Dimension -> List Play
+validateSecondary context dimensions =
+    List.foldr (\dimension scrabblePlays -> List.append scrabblePlays (secondaryFor context dimension)) [] dimensions
+
+
+secondaryFor : Context -> Grid.Dimension -> List Play
+secondaryFor context dimension =
+    case dimension of
+        Grid.Row row ->
+            case validate (List.filter (\move -> Tuple.first move.position == row) context.movesMade) (Grid.get context.grid dimension) of
+                Validated [ play ] ->
+                    if String.length play.word > 1 then
+                        [ play ]
+                    else
+                        []
+
+                _ ->
+                    []
+
+        Grid.Column column ->
+            case validate (List.filter (\move -> Tuple.second move.position == column) context.movesMade) (Grid.get context.grid dimension) of
+                Validated [ play ] ->
+                    if String.length play.word > 1 then
+                        [ play ]
+                    else
+                        []
+
+                _ ->
+                    []
+
+        _ ->
+            []
 
 
 finalizeState : ValidatorState -> ValidatorState

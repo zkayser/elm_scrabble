@@ -8,6 +8,7 @@ type alias Context =
     { grid : Grid
     , movesMade : List Move
     , tiles : List Tile
+    , firstPlay : Bool
     }
 
 
@@ -24,6 +25,7 @@ init grid tiles =
     { grid = grid
     , movesMade = []
     , tiles = tiles
+    , firstPlay = True
     }
 
 
@@ -61,7 +63,7 @@ update turn context move =
                         newTiles =
                             List.filter (\tile -> tile /= move.tile) context.tiles
                     in
-                    { grid = newGrid, movesMade = newMovesMade, tiles = newTiles }
+                    { grid = newGrid, movesMade = newMovesMade, tiles = newTiles, firstPlay = False }
 
                 False ->
                     context

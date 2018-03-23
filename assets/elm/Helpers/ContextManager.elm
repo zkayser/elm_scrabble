@@ -28,13 +28,7 @@ accordingly.
 -}
 validateSubmission : (Value -> msg) -> Context -> Result String (Cmd msg)
 validateSubmission msg context =
-    let
-        validation =
-            Move.validate context.movesMade
-                |> Grid.get context.grid
-                |> Validator.validate context.movesMade
-    in
-    case validation of
+    case Validator.validateV2 context (Move.validate context.movesMade) of
         Validated play ->
             Ok (Leaderboard.submitPlay play)
 

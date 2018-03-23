@@ -322,4 +322,4 @@ addMovesToGrid moves =
 
 buildPlayFor : String -> ValidatorState
 buildPlayFor word =
-    Validated { word = word, multipliers = Dict.fromList [ ( "DoubleWord", [] ) ] }
+    Validated [ { word = word, multipliers = Dict.fromList [ ( "DoubleWord", [] ) ] } ]
