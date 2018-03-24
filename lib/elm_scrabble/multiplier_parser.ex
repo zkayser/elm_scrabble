@@ -8,7 +8,7 @@ defmodule MultiplierParser do
 
 	def parse(_), do: {:error, :malformed_multipliers}
 
-	defp _parse([], acc), do: {:ok, acc}
+	defp _parse([], acc), do: {:ok, sort(acc)}
 	defp _parse([%{"DoubleWord" => []}|tail], acc), do: _parse(tail, [:double_word|acc])
 	defp _parse([%{"TripleWord" => []}|tail], acc), do: _parse(tail, [:triple_word|acc])
 	defp _parse([%{"DoubleLetter" => letters}|tail], acc) when is_list(letters) do
@@ -29,4 +29,18 @@ defmodule MultiplierParser do
 	defp _parse([%{"TripleLetter" => _}|_], _), do: {:error, {:invalid, :triple_letter}}
 	defp _parse([%{"Wildcard" => _}|_], _), do: {:error, {:invalid, :wildcard}}
 	defp _parse([object|_], _), do: {:error, {:invalid_key, hd(Map.keys(object))}}
+
+	defp sort(multipliers) do
+		grouped =
+			Enum.group_by(multipliers,
+				fn {multiplier, _} -> String.contains?(Atom.to_string(multiplier), "word")
+				   multiplier -> String.contains?(Atom.to_string(multiplier), "word")
+				end
+			)
+		if grouped[:true] && grouped[:false] do
+			grouped[:true] ++ grouped[:false]
+		else
+			multipliers
+		end
+	end
 end

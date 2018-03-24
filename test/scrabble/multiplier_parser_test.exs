@@ -38,7 +38,7 @@ defmodule MultiplierParserTest do
 		test "Multiple valid multipliers given" do
 			multipliers = [%{"DoubleWord" => []}, %{"TripleLetter" => ["a", "b"]}, %{"Wildcard" => ["a"]}]
 			assert {:ok, expected} = MultiplierParser.parse(multipliers)
-			assert expected == [:double_word, triple_letter: ~w(a b), wildcard: ~w(a)] |> Enum.reverse
+			assert expected == [:double_word, wildcard: ~w(a), triple_letter: ~w(a b)]
 		end
 
 		test "Multiple invalid multipliers given" do
