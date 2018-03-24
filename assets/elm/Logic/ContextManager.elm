@@ -1,11 +1,11 @@
-module Helpers.ContextManager exposing (..)
+module Logic.ContextManager exposing (..)
 
 import Channels.LeaderboardChannel as Leaderboard
+import Data.GameContext as Context exposing (Context)
 import Data.Grid as Grid exposing (Tile)
 import Data.Move as Move
 import Http
 import Json.Decode as Decode exposing (Value)
-import Logic.GameContext as Context exposing (Context)
 import Logic.Validator as Validator exposing (ValidatorState(..))
 import Requests.ScrabbleApi as Api
 import Responses.Scrabble as ScrabbleResponse exposing (ScrabbleResponse)

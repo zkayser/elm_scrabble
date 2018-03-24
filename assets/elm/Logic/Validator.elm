@@ -1,9 +1,9 @@
 module Logic.Validator exposing (..)
 
+import Data.GameContext exposing (Context)
 import Data.Grid as Grid exposing (Cell, Multiplier(..), Tile)
 import Data.Move exposing (Move)
 import Data.ScrabblePlay as ScrabblePlay exposing (Play)
-import Logic.GameContext exposing (Context)
 
 
 type ValidatorState

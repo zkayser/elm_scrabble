@@ -1,4 +1,4 @@
-module Helpers.TileManager exposing (generateTileBag, shuffleTileBag)
+module Logic.TileManager exposing (generateTileBag, shuffleTileBag)
 
 import Data.Grid as Grid exposing (Multiplier(..), Tile)
 import Random

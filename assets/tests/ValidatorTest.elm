@@ -1,8 +1,9 @@
 module ValidatorTest exposing (..)
 
-import Data.Grid as Grid exposing (..)
-import Data.Move exposing (Move)
-import Data.ScrabblePlay exposing (Play)
+import Data.GameContext exposing (Context)
+import Data.Grid as Grid exposing (Dimension(..), Grid, Position)
+import Data.Move as Move exposing (Move)
+import Data.ScrabblePlay as Play exposing (Play)
 import Dict
 import Expect exposing (Expectation)
 import Logic.Validator as Validator exposing (ValidatorState(..))
@@ -11,315 +12,208 @@ import Test exposing (..)
 
 suite : Test
 suite =
-    describe "Validator" <|
-        let
-            tileA =
-                { letter = "A", id = 1, value = 1, multiplier = Grid.NoMultiplier }
+    describe "Validator"
+        [ test "A move is valid if it is the first tile played & on the center piece" <|
+            \_ ->
+                let
+                    moves =
+                        createMoves [ "A" ] [ ( 8, 8 ) ] 0
+                in
+                moves
+                    |> insertMovesIntoContext
+                    |> insertGridIntoContext (insertMovesIntoGrid moves)
+                    |> toggleFirstPlayForContext
+                    |> Validator.validateV2 (Row 8)
+                    |> Expect.equal (Validated [ buildPlayFor "A" ])
+        , test "A move is invalid if it is the first tile played & not on the center piece" <|
+            \_ ->
+                let
+                    moves =
+                        createMoves [ "A" ] [ ( 8, 7 ) ] 0
+                in
+                moves
+                    |> insertMovesIntoContext
+                    |> insertGridIntoContext (insertMovesIntoGrid moves)
+                    |> toggleFirstPlayForContext
+                    |> Validator.validateV2 (Row 8)
+                    |> Expect.equal Invalidated
+        , test "A non-first play move is invalid if it contains only one unconnected tile" <|
+            \_ ->
+                let
+                    existingMoves =
+                        createMoves [ "A" ] [ ( 8, 8 ) ] 2
 
-            tileB =
-                { letter = "B", id = 2, value = 2, multiplier = Grid.TripleWord }
+                    playerMoves =
+                        createMoves [ "B" ] [ ( 6, 13 ) ] 0
+                in
+                playerMoves
+                    |> insertMovesIntoContext
+                    |> insertGridIntoContext (insertMovesIntoGrid (playerMoves ++ existingMoves))
+                    |> Validator.validateV2 (Row 6)
+                    |> Expect.equal Invalidated
+        , test "A move is valid if all tiles played are in the same row with no gaps" <|
+            \_ ->
+                let
+                    moves =
+                        createMoves [ "A", "T" ] [ ( 8, 8 ), ( 8, 9 ) ] 0
+                in
+                moves
+                    |> insertMovesIntoContext
+                    |> insertGridIntoContext (insertMovesIntoGrid moves)
+                    |> Validator.validateV2 (Row 8)
+                    |> Expect.equal (Validated [ buildPlayFor "AT" ])
+        , test "A move is valid if all tiles played are in same row with existing tiles in between" <|
+            \_ ->
+                let
+                    existingMoves =
+                        createMoves [ "S" ] [ ( 8, 8 ) ] 3
 
-            tileC =
-                { letter = "C", id = 3, value = 3, multiplier = Grid.DoubleLetter }
+                    playerMoves =
+                        createMoves [ "A", "H" ] [ ( 8, 7 ), ( 8, 9 ) ] 0
+                in
+                playerMoves
+                    |> insertMovesIntoContext
+                    |> insertGridIntoContext (insertMovesIntoGrid (playerMoves ++ existingMoves))
+                    |> Validator.validateV2 (Row 8)
+                    |> Expect.equal (Validated [ buildPlayFor "ASH" ])
+        , test "A move is invalid if there are spaces between the tiles played in a row" <|
+            \_ ->
+                let
+                    moves =
+                        createMoves [ "A", "B" ] [ ( 8, 7 ), ( 8, 9 ) ] 0
+                in
+                moves
+                    |> insertMovesIntoContext
+                    |> insertGridIntoContext (insertMovesIntoGrid moves)
+                    |> Validator.validateV2 (Row 8)
+                    |> Expect.equal Invalidated
+        , test "A move is valid if all tiles played are in the same column with no gaps" <|
+            \_ ->
+                let
+                    moves =
+                        createMoves [ "A", "T" ] [ ( 8, 8 ), ( 9, 8 ) ] 0
+                in
+                moves
+                    |> insertMovesIntoContext
+                    |> insertGridIntoContext (insertMovesIntoGrid moves)
+                    |> Validator.validateV2 (Column 8)
+                    |> Expect.equal (Validated [ buildPlayFor "AT" ])
+        , test "A move is valid if all tiles played are in same column with existing tiles between" <|
+            \_ ->
+                let
+                    existingMoves =
+                        createMoves [ "S" ] [ ( 8, 8 ) ] 3
 
-            tileS =
-                { letter = "S", id = 4, value = 4, multiplier = Grid.Wildcard }
+                    playerMoves =
+                        createMoves [ "A", "H" ] [ ( 7, 8 ), ( 9, 8 ) ] 0
+                in
+                playerMoves
+                    |> insertMovesIntoContext
+                    |> insertGridIntoContext (insertMovesIntoGrid (playerMoves ++ existingMoves))
+                    |> Validator.validateV2 (Column 8)
+                    |> Expect.equal (Validated [ buildPlayFor "ASH" ])
+        , test "A move is invalid if there are spaces between the tiles played in a column" <|
+            \_ ->
+                let
+                    moves =
+                        createMoves [ "A", "B" ] [ ( 7, 8 ), ( 9, 8 ) ] 0
+                in
+                moves
+                    |> insertMovesIntoContext
+                    |> insertGridIntoContext (insertMovesIntoGrid moves)
+                    |> Validator.validateV2 (Column 8)
+                    |> Expect.equal Invalidated
+        , test "A move is invalid if its tiles are played in completely different rows and columns" <|
+            \_ ->
+                let
+                    moves =
+                        createMoves [ "A", "S" ] [ ( 8, 8 ), ( 1, 1 ) ] 0
+                in
+                moves
+                    |> insertMovesIntoContext
+                    |> insertGridIntoContext (insertMovesIntoGrid moves)
+                    |> Validator.validateV2 (Row 8)
+                    |> Expect.equal Invalidated
+        , test "Valid move along row picks up tangential column moves" <|
+            \_ ->
+                let
+                    existingMoves =
+                        createMoves [ "C", "T", "A" ] [ ( 7, 8 ), ( 9, 8 ), ( 7, 9 ) ] 4
 
-            validMovesRow =
-                fakeMoves [ tileC, tileA, tileB ] [ ( 8, 6 ), ( 8, 7 ), ( 8, 8 ) ]
+                    playerMoves =
+                        createMoves [ "S", "A", "T" ] [ ( 8, 7 ), ( 8, 8 ), ( 8, 9 ) ] 0
 
-            validMovesColumn =
-                fakeMoves [ tileC, tileA, tileB ] [ ( 6, 8 ), ( 7, 8 ), ( 8, 8 ) ]
+                    expectedSecondaryPlay1 =
+                        { word = "AT", multipliers = Dict.fromList [ ( "DoubleLetter", [ "A" ] ) ] }
 
-            rowWithGap =
-                fakeMoves [ tileC, tileB ] [ ( 8, 6 ), ( 8, 8 ) ]
-
-            columnWithGap =
-                fakeMoves [ tileC, tileB ] [ ( 6, 8 ), ( 8, 8 ) ]
-        in
-        [ describe "Simple"
-            [ test "Valid along a row" <|
-                \_ ->
-                    let
-                        grid =
-                            validMovesRow
-                                |> addMovesToGrid
-                    in
-                    Row 8
-                        |> Grid.get grid
-                        |> Validator.validate validMovesRow
-                        |> Expect.equal (buildPlayFor "CAB")
-            , test "Valid along a column" <|
-                \_ ->
-                    let
-                        grid =
-                            validMovesColumn
-                                |> addMovesToGrid
-                    in
-                    Column 8
-                        |> Grid.get grid
-                        |> Validator.validate validMovesColumn
-                        |> Expect.equal (buildPlayFor "CAB")
-            , test "Valid row with a gap in player moves" <|
-                \_ ->
-                    let
-                        grid =
-                            rowWithGap
-                                |> addMovesToGrid
-                                |> List.map
-                                    (\cell ->
-                                        if cell.position == ( 8, 7 ) then
-                                            { cell | tile = Just tileA }
-                                        else
-                                            cell
-                                    )
-                    in
-                    Row 8
-                        |> Grid.get grid
-                        |> Validator.validate rowWithGap
-                        |> Expect.equal (buildPlayFor "CAB")
-            , test "Valid column with a gap in player moves" <|
-                \_ ->
-                    let
-                        grid =
-                            columnWithGap
-                                |> addMovesToGrid
-                                |> List.map
-                                    (\cell ->
-                                        if cell.position == ( 7, 8 ) then
-                                            { cell | tile = Just tileA }
-                                        else
-                                            cell
-                                    )
-                    in
-                    Column 8
-                        |> Grid.get grid
-                        |> Validator.validate columnWithGap
-                        |> Expect.equal (buildPlayFor "CAB")
-            , test "Invalid along a row" <|
-                \_ ->
-                    let
-                        grid =
-                            rowWithGap
-                                |> addMovesToGrid
-                    in
-                    Row 8
-                        |> Grid.get grid
-                        |> Validator.validate rowWithGap
-                        |> Expect.equal Invalidated
-            , test "Invalid along a column" <|
-                \_ ->
-                    let
-                        grid =
-                            columnWithGap
-                                |> addMovesToGrid
-                    in
-                    Column 8
-                        |> Grid.get grid
-                        |> Validator.validate columnWithGap
-                        |> Expect.equal Invalidated
-            , test "Empty row (or column) is invalid" <|
-                \_ ->
-                    Grid.get Grid.init (Row 8)
-                        |> Validator.validate validMovesRow
-                        |> Expect.equal Invalidated
-            ]
-        , describe "Complex - Existing tile detected first" <|
-            let
-                validRowWithGap =
-                    let
-                        grid =
-                            validMovesRow
-                                |> addMovesToGrid
-                                |> List.map
-                                    (\cell ->
-                                        if cell.position == ( 8, 2 ) then
-                                            { cell | tile = Just tileS }
-                                        else
-                                            cell
-                                    )
-                    in
-                    Row 8
-                        |> Grid.get grid
-
-                validColumnWithGap =
-                    let
-                        grid =
-                            validMovesColumn
-                                |> addMovesToGrid
-                                |> List.map
-                                    (\cell ->
-                                        if cell.position == ( 2, 8 ) then
-                                            { cell | tile = Just tileS }
-                                        else
-                                            cell
-                                    )
-                    in
-                    Column 8
-                        |> Grid.get grid
-
-                validRowNoGap =
-                    let
-                        grid =
-                            validMovesRow
-                                |> addMovesToGrid
-                                |> List.map
-                                    (\cell ->
-                                        if cell.position == ( 8, 5 ) then
-                                            { cell | tile = Just tileS }
-                                        else
-                                            cell
-                                    )
-                    in
-                    Row 8
-                        |> Grid.get grid
-
-                validColumnNoGap =
-                    let
-                        grid =
-                            validMovesColumn
-                                |> addMovesToGrid
-                                |> List.map
-                                    (\cell ->
-                                        if cell.position == ( 5, 8 ) then
-                                            { cell | tile = Just tileS }
-                                        else
-                                            cell
-                                    )
-                    in
-                    Column 8
-                        |> Grid.get grid
-
-                invalidRowWithGaps =
-                    let
-                        grid =
-                            rowWithGap
-                                |> addMovesToGrid
-                                |> List.map
-                                    (\cell ->
-                                        if cell.position == ( 8, 2 ) then
-                                            { cell | tile = Just tileS }
-                                        else
-                                            cell
-                                    )
-                    in
-                    Row 8
-                        |> Grid.get grid
-
-                invalidColumnWithGaps =
-                    let
-                        grid =
-                            columnWithGap
-                                |> addMovesToGrid
-                                |> List.map
-                                    (\cell ->
-                                        if cell.position == ( 2, 8 ) then
-                                            { cell | tile = Just tileS }
-                                        else
-                                            cell
-                                    )
-                    in
-                    Column 8
-                        |> Grid.get grid
-
-                invalidRowNoGap =
-                    let
-                        grid =
-                            rowWithGap
-                                |> addMovesToGrid
-                                |> List.map
-                                    (\cell ->
-                                        if cell.position == ( 8, 5 ) then
-                                            { cell | tile = Just tileS }
-                                        else
-                                            cell
-                                    )
-                    in
-                    Row 8
-                        |> Grid.get grid
-
-                invalidColumnNoGap =
-                    let
-                        grid =
-                            columnWithGap
-                                |> addMovesToGrid
-                                |> List.map
-                                    (\cell ->
-                                        if cell.position == ( 5, 8 ) then
-                                            { cell | tile = Just tileS }
-                                        else
-                                            cell
-                                    )
-                    in
-                    Column 8
-                        |> Grid.get grid
-            in
-            [ test "Row play is valid with existing tiles detected first, with gaps until valid play" <|
-                \_ ->
-                    validRowWithGap
-                        |> Validator.validate validMovesRow
-                        |> Expect.equal (buildPlayFor "CAB")
-            , test "Column play is valid with existing tiles detected first, with gaps until valid play" <|
-                \_ ->
-                    validColumnWithGap
-                        |> Validator.validate validMovesColumn
-                        |> Expect.equal (buildPlayFor "CAB")
-            , test "Row play is valid with existing tiles detected first, no gaps until valid play" <|
-                \_ ->
-                    validRowNoGap
-                        |> Validator.validate validMovesRow
-                        |> Expect.equal (buildPlayFor "SCAB")
-            , test "Column play is valid with existing tiles detected first, no gaps until valid play" <|
-                \_ ->
-                    validColumnNoGap
-                        |> Validator.validate validMovesColumn
-                        |> Expect.equal (buildPlayFor "SCAB")
-            , test "Row play is invalid with gap between existing tile and first moved tile" <|
-                \_ ->
-                    invalidRowWithGaps
-                        |> Validator.validate rowWithGap
-                        |> Expect.equal Invalidated
-            , test "Column play is invalid with gap between existing tile and first moved tile" <|
-                \_ ->
-                    invalidColumnWithGaps
-                        |> Validator.validate columnWithGap
-                        |> Expect.equal Invalidated
-            , test "Row play is invalid with no gap between existing tile and first moved tile" <|
-                \_ ->
-                    invalidRowNoGap
-                        |> Validator.validate rowWithGap
-                        |> Expect.equal Invalidated
-            , test "Column play is invalid with no gap between existing tile and first moved tile" <|
-                \_ ->
-                    invalidColumnNoGap
-                        |> Validator.validate columnWithGap
-                        |> Expect.equal Invalidated
-            ]
+                    expectedSecondaryPlay2 =
+                        { word = "CAT", multipliers = Dict.fromList [ ( "DoubleWord", [] ) ] }
+                in
+                playerMoves
+                    |> insertMovesIntoContext
+                    |> insertGridIntoContext (insertMovesIntoGrid (playerMoves ++ existingMoves))
+                    |> Validator.validateV2 (Row 8)
+                    |> Expect.equal (Validated [ buildPlayFor "SAT", expectedSecondaryPlay1, expectedSecondaryPlay2 ])
         ]
 
 
-fakeMoves : List Tile -> List Position -> List Move
-fakeMoves tiles positions =
-    List.map2 (\tile position -> { tile = tile, position = position }) tiles positions
+createMoves : List String -> List Position -> Int -> List Move
+createMoves letters positions idStartInt =
+    List.map2 buildMove letters positions
+        |> List.indexedMap
+            (\int move ->
+                let
+                    tile =
+                        move.tile
+
+                    newTile =
+                        { tile | id = idStartInt + int }
+                in
+                { move | tile = newTile }
+            )
 
 
-addMovesToGrid : List Move -> Grid
-addMovesToGrid moves =
-    List.foldr
-        (\move grid ->
-            List.map
-                (\cell ->
-                    if cell.position == move.position then
-                        { cell | tile = Just move.tile }
-                    else
-                        cell
-                )
-                grid
+buildMove : String -> Position -> Move
+buildMove letter position =
+    { tile = { letter = letter, id = 1, value = 1, multiplier = Grid.NoMultiplier }, position = position }
+
+
+insertMovesIntoGrid : List Move -> Grid
+insertMovesIntoGrid moves =
+    List.foldr (\move grid -> insertMoveIntoGrid move grid) Grid.init moves
+
+
+insertMoveIntoGrid : Move -> Grid -> Grid
+insertMoveIntoGrid move grid =
+    List.map
+        (\cell ->
+            if cell.position == move.position then
+                { cell | tile = Just move.tile }
+            else
+                cell
         )
-        Grid.init
-        moves
+        grid
 
 
-buildPlayFor : String -> ValidatorState
+insertMovesIntoContext : List Move -> Context
+insertMovesIntoContext moves =
+    { movesMade = moves, grid = [], tiles = [], firstPlay = False }
+
+
+insertGridIntoContext : Grid -> Context -> Context
+insertGridIntoContext newGrid context =
+    { context | grid = newGrid }
+
+
+toggleFirstPlayForContext : Context -> Context
+toggleFirstPlayForContext context =
+    { context | firstPlay = not context.firstPlay }
+
+
+
+-- A helper to create scrabble plays
+
+
+buildPlayFor : String -> Play
 buildPlayFor word =
-    Validated [ { word = word, multipliers = Dict.fromList [ ( "DoubleWord", [] ) ] } ]
+    { word = word, multipliers = Dict.fromList [ ( "DoubleWord", [] ) ] }

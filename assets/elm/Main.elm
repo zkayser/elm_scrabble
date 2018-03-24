@@ -1,17 +1,17 @@
 module Main exposing (..)
 
 import Channels.LeaderboardChannel as LeaderboardChannel
+import Data.GameContext as GameContext exposing (Context, Turn)
 import Data.Grid as Grid exposing (Cell, Grid, Tile)
 import Data.Leaderboard as Leaderboard exposing (Leaderboard)
 import Data.Move as Move
-import Helpers.ContextManager as ContextManager
-import Helpers.TileManager as TileManager exposing (generateTileBag, shuffleTileBag)
 import Html exposing (..)
 import Html.Attributes as Attributes
 import Html.Events as Events
 import Http
 import Json.Decode as Json
-import Logic.GameContext as GameContext exposing (Context, Turn)
+import Logic.ContextManager as ContextManager
+import Logic.TileManager as TileManager exposing (generateTileBag, shuffleTileBag)
 import Logic.Validator as Validator exposing (ValidatorState(..))
 import Phoenix
 import Phoenix.Channel exposing (Channel)
@@ -104,10 +104,13 @@ update msg model =
             let
                 newMessages =
                     case model.messages of
-                        [] -> []
-                        message :: messages -> messages
+                        [] ->
+                            []
+
+                        message :: messages ->
+                            messages
             in
-            ( { model | messages = newMessages}, Cmd.none)
+            ( { model | messages = newMessages }, Cmd.none )
 
         DragStarted tile ->
             ( { model | dragging = Just tile }, Cmd.none )
@@ -231,10 +234,14 @@ subscriptions model =
     let
         channelSubscriptions =
             [ Phoenix.connect (LeaderboardChannel.socket socketConfig) model.channels ]
+
         clearMessages =
             case model.messages of
-                [] -> Sub.none
-                _ -> Time.every 3000 ClearMessages
+                [] ->
+                    Sub.none
+
+                _ ->
+                    Time.every 3000 ClearMessages
     in
     Sub.batch <| clearMessages :: channelSubscriptions
 

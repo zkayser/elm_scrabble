@@ -1,10 +1,10 @@
 module Views.TileHolder exposing (..)
 
+import Data.GameContext exposing (Context)
 import Data.Grid as Grid exposing (Cell, Tile)
 import Html exposing (..)
 import Html.Attributes as Attributes exposing (class)
 import Html.Events as Events exposing (on)
-import Logic.GameContext exposing (Context)
 import Widgets.DragAndDrop as DragAndDrop exposing (Config)
 
 

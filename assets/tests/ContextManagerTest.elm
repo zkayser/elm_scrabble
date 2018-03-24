@@ -1,13 +1,13 @@
 module ContextManagerTest exposing (..)
 
+import Data.GameContext as Context
 import Data.Grid as Grid exposing (Tile)
 import Data.Move as Move exposing (Move)
 import Dict
 import Expect exposing (Expectation)
-import Helpers.ContextManager as Manager
 import Http
 import Json.Encode as Encode exposing (Value)
-import Logic.GameContext as Context
+import Logic.ContextManager as Manager
 import Requests.ScrabbleApi as ScrabbleApi
 import Responses.Scrabble exposing (ScrabbleResponse)
 import Test exposing (..)

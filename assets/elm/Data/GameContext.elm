@@ -1,4 +1,4 @@
-module Logic.GameContext exposing (..)
+module Data.GameContext exposing (..)
 
 import Data.Grid as Grid exposing (Grid, Position, Tile)
 import Data.Move as Move exposing (Move)
