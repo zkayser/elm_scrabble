@@ -19,7 +19,38 @@ validate dimension context =
     if context.firstPlay && not (List.member ( 8, 8 ) (List.map (\move -> move.position) context.movesMade)) then
         Invalidated
     else if not context.firstPlay && List.length context.movesMade == 1 then
-        Invalidated
+        case List.head context.movesMade of
+            Just move ->
+                if hasNeighbor move.position context.grid then
+                    case handleValidate context.movesMade (Grid.get context.grid dimension) of
+                        Validated [ play ] ->
+                            if String.length play.word == 1 then
+                                -- Only the secondary plays may be valid now
+                                let
+                                    secondaryPlays =
+                                        validateSecondary context (List.map (\move -> Grid.Column <| Tuple.second move.position) context.movesMade)
+                                in
+                                case List.length secondaryPlays of
+                                    0 ->
+                                        Invalidated
+
+                                    -- If there are 0 secondary plays, then the play is invalid
+                                    _ ->
+                                        Validated secondaryPlays
+                            else
+                                let
+                                    secondaryPlays =
+                                        validateSecondary context (List.map (\move -> Grid.Column <| Tuple.second move.position) context.movesMade)
+                                in
+                                Validated <| play :: secondaryPlays
+
+                        _ ->
+                            Invalidated
+                else
+                    Invalidated
+
+            Nothing ->
+                Invalidated
     else
         case dimension of
             Grid.Invalid ->
@@ -163,3 +194,21 @@ finalizeState state =
 idsFor : List Tile -> List Int
 idsFor tiles =
     List.map .id tiles
+
+
+hasNeighbor : Grid.Position -> Grid.Grid -> Bool
+hasNeighbor position grid =
+    (List.length <| List.filterMap (hasNeighboringTile position) grid) > 0
+
+
+hasNeighboringTile : Grid.Position -> Cell -> Maybe Grid.Position
+hasNeighboringTile ( row, col ) cell =
+    if List.member cell.position [ ( row + 1, col ), ( row - 1, col ), ( row, col + 1 ), ( row, col - 1 ) ] then
+        case cell.tile of
+            Just tile ->
+                Just cell.position
+
+            Nothing ->
+                Nothing
+    else
+        Nothing

@@ -154,6 +154,20 @@ suite =
                     |> insertGridIntoContext (insertMovesIntoGrid (playerMoves ++ existingMoves))
                     |> Validator.validate (Row 8)
                     |> Expect.equal (Validated [ buildPlayFor "SAT", expectedSecondaryPlay1, expectedSecondaryPlay2 ])
+        , test "A play should be valid with only one move if connected to an existing tile (not firstPlay)" <|
+            \_ ->
+                let
+                    playerMoves =
+                        createMoves [ "B" ] [ ( 9, 8 ) ] 0
+
+                    existingMoves =
+                        createMoves [ "C", "A", "T" ] [ ( 8, 7 ), ( 8, 8 ), ( 8, 9 ) ] 2
+                in
+                playerMoves
+                    |> insertMovesIntoContext
+                    |> insertGridIntoContext (insertMovesIntoGrid (playerMoves ++ existingMoves))
+                    |> Validator.validate (Row 9)
+                    |> Expect.equal (Validated [ buildPlayFor "AB" ])
         ]
 
 
