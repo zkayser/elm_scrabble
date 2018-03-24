@@ -8,7 +8,8 @@ defmodule ElmScrabbleWeb.ScrabbleView do
 		%{error: message}
 	end
 	def render("success.json", %{conn: %{assigns: assigns}}) do
-		%{score: assigns.score}
+		{:ok, score} = assigns.score
+		%{score: score}
 	end
 
 end

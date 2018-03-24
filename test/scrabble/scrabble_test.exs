@@ -37,46 +37,55 @@ defmodule ScrabbleTest do
     end
   end
 
-  describe "Scrabble.score/2" do
+  describe "Scrabble.score/1 single play version" do
     test "no multipliers or wildcard characters" do
       scrabble_play = %{"word" => @default, "multipliers" => []}
-      assert Scrabble.score(scrabble_play) == Scrabble.raw_score(@default)
+      assert Scrabble.score(scrabble_play) == {:ok, Scrabble.raw_score(@default)}
     end
 
     test "double letter multiplier" do
-      scrabble_play = %{"word" => @default, "multipliers" => [double_letter: ["s"]]}
+      scrabble_play = %{"word" => @default, "multipliers" => [%{"DoubleLetter" => ["s"]}]}
       score = Scrabble.score(scrabble_play)
-      assert score == Scrabble.raw_score(@default) + Scrabble.raw_score("s")
+      assert score == {:ok, Scrabble.raw_score(@default) + Scrabble.raw_score("s")}
     end
 
     test "triple letter multiplier" do
-      scrabble_play = %{"word" => @default, "multipliers" => [triple_letter: ["s"]]}
+      scrabble_play = %{"word" => @default, "multipliers" => [%{"TripleLetter" => ["s"]}]}
       score = Scrabble.score(scrabble_play)
-      assert score == Scrabble.raw_score(@default) + Scrabble.raw_score("s") * 3
+      assert score == {:ok, Scrabble.raw_score(@default) + Scrabble.raw_score("s") * 3}
     end
 
     test "double word multiplier" do
-      scrabble_play = %{"word" => @default, "multipliers" => [:double_word]}
+      scrabble_play = %{"word" => @default, "multipliers" => [%{"DoubleWord" => []}]}
       score = Scrabble.score(scrabble_play)
-      assert score == Scrabble.raw_score(@default) * 2
+      assert score == {:ok, Scrabble.raw_score(@default) * 2}
     end
 
     test "triple word multiplier" do
-      scrabble_play = %{"word" => @default, "multipliers" => [:triple_word]}
+      scrabble_play = %{"word" => @default, "multipliers" => [%{"TripleWord" => []}]}
       score = Scrabble.score(scrabble_play)
-      assert score == Scrabble.raw_score(@default) * 3
+      assert score == {:ok, Scrabble.raw_score(@default) * 3}
     end
 
     test "letter multiplier with word multiplier" do
-      scrabble_play = %{"word" => @default, "multipliers" => [:double_word, triple_letter: ~w(s a)]}
+      scrabble_play = %{"word" => @default, "multipliers" => [%{"DoubleWord" => []}, %{"TripleLetter" => ~w(s a)}]}
       score = Scrabble.score(scrabble_play)
       expected = Scrabble.raw_score(@default) * 2 + Scrabble.raw_score("s") * 3 + Scrabble.raw_score("a") * 3
-      assert score == expected
+      assert score == {:ok, expected}
     end
 
     test "wildcard" do
-      scrabble_play = %{"word" => @default, "multipliers" => [wildcard: ~w(s)]}
-      assert Scrabble.score(scrabble_play) == Scrabble.raw_score(@default) - Scrabble.raw_score("s")
+      scrabble_play = %{"word" => @default, "multipliers" => [%{"Wildcard" => ~w(s)}]}
+      assert Scrabble.score(scrabble_play) == {:ok, Scrabble.raw_score(@default) - Scrabble.raw_score("s")}
+    end
+  end
+
+  describe "Scrabble.score/1 multiple play version" do
+    test "multiple plays with valid multipliers" do
+      play_one = %{"word" => @default, "multipliers" => [%{"DoubleWord" => []}]}
+      play_two = %{"word" => @default, "multipliers" => [%{"TripleWord" => []}]}
+      expected = (Scrabble.raw_score(@default) * 2) + (Scrabble.raw_score(@default) * 3)
+      assert Scrabble.score(%{"plays" => [play_one, play_two]}) == {:ok, expected}
     end
   end
 end

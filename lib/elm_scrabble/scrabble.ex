@@ -2,11 +2,18 @@ defmodule Scrabble do
 
 	@dictionary_api Application.get_env(:elm_scrabble, :dictionary_api)
 
+	def score(%{"plays" => plays}) when is_list(plays) do
+		results = for play <- plays, do: score(play)
+		case Enum.any?(results, fn {status, _} -> status == :error end) do
+			true -> {:errors, Enum.filter(results, fn {status, _} -> status == :error end)}
+			false -> {:ok, Enum.reduce(results, 0, fn({_, score}, acc) -> acc + score end)}
+		end
+	end
+
 	def score(%{"word" => word, "multipliers" => multipliers}) do
-		case @dictionary_api.verify(word) do
-			:word_found -> _score(word, multipliers)
-			:word_not_found -> {:error, "Hey! #{word} is not a real word!"}
-			{:error, reason} -> {:error, reason}
+		case MultiplierParser.parse(multipliers) do
+			{:error, _} -> {:error, "It looks like you have some invalid multipliers."}
+			{:ok, multipliers} ->	verify_word(word, multipliers)
 		end
 	end
 
@@ -44,10 +51,18 @@ defmodule Scrabble do
 	end
 
 	defp handle_multiplier({:triple_letter, letters}, current_score) when is_list(letters) do
-		Enum.reduce(letters, 0, fn (letter, acc) -> get_score(letter) * 3 + acc end) + current_score
+		Enum.reduce(letters, 0, fn (letter, acc) ->	get_score(letter) * 3 + acc end) + current_score
 	end
 
 	defp handle_multiplier(:double_word, current_score), do: current_score * 2
 	defp handle_multiplier(:triple_word, current_score), do: current_score * 3
 	defp handle_multiplier(_, current_score), do: current_score
+
+	defp verify_word(word, multipliers) do
+		case @dictionary_api.verify(word) do
+			:word_found -> {:ok, _score(word, multipliers)}
+			:word_not_found -> {:error, "Hey! #{word} is not a real word!"}
+			{:error, reason} -> {:error, reason}
+		end
+	end
 end
