@@ -14,11 +14,8 @@ defmodule ElmScrabbleWeb.ScrabbleChannel do
 
 	def handle_in("submit_play", %{"plays" => _} = plays, socket) do
 		case Scrabble.score(plays) do
-			{:error, reason} when is_binary(reason) ->
-				push(socket, "score_update", %{error: reason})
-				{:noreply, socket}
-			{:error, _} ->
-				push(socket, "score_update", %{error: "An error occurred. We are looking into it."})
+			{:errors, errors} ->
+				for {:error, reason} <- errors, do: push(socket, "score_update", %{error: reason})
 				{:noreply, socket}
 			{:ok, score_increment} ->
 				Leaderboard.update(socket.assigns[:user], score_increment)
