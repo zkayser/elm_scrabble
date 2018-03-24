@@ -12,7 +12,7 @@ defmodule ElmScrabbleWeb.ScrabbleChannel do
 		{:error, %{reason: "Channel #{channel} does not exist"}}
 	end
 
-	def handle_in("submit_play", %{"plays" => plays}, socket) do
+	def handle_in("submit_play", %{"plays" => _} = plays, socket) do
 		case Scrabble.score(plays) do
 			{:error, reason} when is_binary(reason) ->
 				push(socket, "score_update", %{error: reason})
