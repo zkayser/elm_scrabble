@@ -44,7 +44,7 @@ suite =
                             List.filter (\tile -> tile /= fakeTileWith 1 "A") initialTiles
                     in
                     update initialContext move
-                        |> Expect.equal { grid = expectedGrid, movesMade = expectedMoves, tiles = expectedTiles }
+                        |> Expect.equal { grid = expectedGrid, movesMade = expectedMoves, tiles = expectedTiles, firstPlay = False }
             , test "A tile cannot be placed on top of another tile on the grid" <|
                 \_ ->
                     let
@@ -65,7 +65,7 @@ suite =
                                 initialContext.grid
 
                         newContext =
-                            { grid = startGrid, movesMade = [ { tile = tileA, position = ( 8, 8 ) } ], tiles = List.filter (\tile -> tile /= tileA) initialContext.tiles }
+                            { grid = startGrid, movesMade = [ { tile = tileA, position = ( 8, 8 ) } ], tiles = List.filter (\tile -> tile /= tileA) initialContext.tiles, firstPlay = False }
 
                         move =
                             { tile = tileB, position = ( 8, 8 ) }
@@ -93,7 +93,7 @@ suite =
                             List.filter (\tile -> tile /= tileA) initialContext.tiles
 
                         newContext =
-                            { grid = startGrid, movesMade = [ { tile = tileA, position = ( 8, 8 ) } ], tiles = newTiles }
+                            { grid = startGrid, movesMade = [ { tile = tileA, position = ( 8, 8 ) } ], tiles = newTiles, firstPlay = False }
 
                         move =
                             { tile = tileA, position = ( 7, 7 ) }
@@ -112,7 +112,7 @@ suite =
                             [ move ]
 
                         expectedContext =
-                            { grid = expectedGrid, movesMade = expectedMovesMade, tiles = newTiles }
+                            { grid = expectedGrid, movesMade = expectedMovesMade, tiles = newTiles, firstPlay = False }
                     in
                     move
                         |> update newContext

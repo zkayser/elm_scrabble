@@ -56,6 +56,12 @@ encode play =
         ]
 
 
+encodeList : List Play -> Encode.Value
+encodeList plays =
+    Encode.object
+        [ ( "plays", Encode.list <| List.map (\play -> encode play) plays ) ]
+
+
 encodeMultipliers : Multipliers -> Encode.Value
 encodeMultipliers multipliers =
     Dict.toList multipliers

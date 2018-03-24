@@ -15,7 +15,7 @@ type alias Config msg =
     , onScoreUpdate : Encode.Value -> msg
     }
 
--- 9b92a0d3.ngrok.io
+
 socketUrl : String
 socketUrl =
     "ws://localhost:4000/socket/websocket"
@@ -36,11 +36,11 @@ channel model config =
         |> Channel.on "score_update" (\payload -> config.onScoreUpdate payload)
 
 
-submitPlay : Play -> Cmd msg
-submitPlay play =
+submitPlay : List Play -> Cmd msg
+submitPlay plays =
     let
         push =
             Push.init "scrabble:lobby" "submit_play"
-                |> Push.withPayload (Play.encode play)
+                |> Push.withPayload (Play.encodeList plays)
     in
     Phoenix.push socketUrl push

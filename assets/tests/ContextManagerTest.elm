@@ -35,7 +35,7 @@ suite =
                     [ { tile = tileA, position = ( 1, 1 ) }, { tile = tileB, position = ( 15, 15 ) } ]
 
                 invalidContext =
-                    { grid = grid, movesMade = invalidMoves, tiles = [ tileC ] }
+                    { grid = grid, movesMade = invalidMoves, tiles = [ tileC ], firstPlay = False }
             in
             [ test "Given an invalid play" <|
                 \_ ->
@@ -65,13 +65,13 @@ suite =
                     { score = Nothing, error = Just errorMessage }
 
                 context =
-                    { grid = Grid.init, movesMade = movesMade, tiles = [ tileC ] }
+                    { grid = Grid.init, movesMade = movesMade, tiles = [ tileC ], firstPlay = False }
 
                 initialTileBag =
                     [ tileD ]
 
                 expectedContext =
-                    { context | movesMade = [], tiles = [ tileD, tileC ] }
+                    { context | movesMade = [], tiles = [ tileD, tileC ], firstPlay = False }
 
                 expectedTileBag =
                     []
