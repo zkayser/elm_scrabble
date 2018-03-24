@@ -14,8 +14,8 @@ type ValidatorState
     | Invalidated
 
 
-validateV2 : Grid.Dimension -> Context -> ValidatorState
-validateV2 dimension context =
+validate : Grid.Dimension -> Context -> ValidatorState
+validate dimension context =
     if context.firstPlay && not (List.member ( 8, 8 ) (List.map (\move -> move.position) context.movesMade)) then
         Invalidated
     else if not context.firstPlay && List.length context.movesMade == 1 then
@@ -26,7 +26,7 @@ validateV2 dimension context =
                 Invalidated
 
             Grid.Row _ ->
-                case validate context.movesMade (Grid.get context.grid dimension) of
+                case handleValidate context.movesMade (Grid.get context.grid dimension) of
                     Validated play ->
                         let
                             secondaryPlays =
@@ -38,7 +38,7 @@ validateV2 dimension context =
                         Invalidated
 
             Grid.Column _ ->
-                case validate context.movesMade (Grid.get context.grid dimension) of
+                case handleValidate context.movesMade (Grid.get context.grid dimension) of
                     Validated play ->
                         let
                             secondaryPlays =
@@ -63,8 +63,8 @@ the move is not validated, the accumulator value
 remains `Invalidated`. If there is no move detected
 by the end of the reduction, `Invalidated` is returned.
 -}
-validate : List Move -> List Cell -> ValidatorState
-validate moves cells =
+handleValidate : List Move -> List Cell -> ValidatorState
+handleValidate moves cells =
     let
         playedTiles =
             List.map (\move -> move.tile) moves
@@ -125,7 +125,7 @@ secondaryFor : Context -> Grid.Dimension -> List Play
 secondaryFor context dimension =
     case dimension of
         Grid.Row row ->
-            case validate (List.filter (\move -> Tuple.first move.position == row) context.movesMade) (Grid.get context.grid dimension) of
+            case handleValidate (List.filter (\move -> Tuple.first move.position == row) context.movesMade) (Grid.get context.grid dimension) of
                 Validated [ play ] ->
                     if String.length play.word > 1 then
                         [ play ]
@@ -136,7 +136,7 @@ secondaryFor context dimension =
                     []
 
         Grid.Column column ->
-            case validate (List.filter (\move -> Tuple.second move.position == column) context.movesMade) (Grid.get context.grid dimension) of
+            case handleValidate (List.filter (\move -> Tuple.second move.position == column) context.movesMade) (Grid.get context.grid dimension) of
                 Validated [ play ] ->
                     if String.length play.word > 1 then
                         [ play ]

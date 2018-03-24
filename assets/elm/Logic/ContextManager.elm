@@ -28,7 +28,7 @@ accordingly.
 -}
 validateSubmission : (Value -> msg) -> Context -> Result String (Cmd msg)
 validateSubmission msg context =
-    case Validator.validateV2 (Move.validate context.movesMade) context of
+    case Validator.validate (Move.validate context.movesMade) context of
         Validated play ->
             Ok (Leaderboard.submitPlay play)
 

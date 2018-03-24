@@ -23,7 +23,7 @@ suite =
                     |> insertMovesIntoContext
                     |> insertGridIntoContext (insertMovesIntoGrid moves)
                     |> toggleFirstPlayForContext
-                    |> Validator.validateV2 (Row 8)
+                    |> Validator.validate (Row 8)
                     |> Expect.equal (Validated [ buildPlayFor "A" ])
         , test "A move is invalid if it is the first tile played & not on the center piece" <|
             \_ ->
@@ -35,7 +35,7 @@ suite =
                     |> insertMovesIntoContext
                     |> insertGridIntoContext (insertMovesIntoGrid moves)
                     |> toggleFirstPlayForContext
-                    |> Validator.validateV2 (Row 8)
+                    |> Validator.validate (Row 8)
                     |> Expect.equal Invalidated
         , test "A non-first play move is invalid if it contains only one unconnected tile" <|
             \_ ->
@@ -49,7 +49,7 @@ suite =
                 playerMoves
                     |> insertMovesIntoContext
                     |> insertGridIntoContext (insertMovesIntoGrid (playerMoves ++ existingMoves))
-                    |> Validator.validateV2 (Row 6)
+                    |> Validator.validate (Row 6)
                     |> Expect.equal Invalidated
         , test "A move is valid if all tiles played are in the same row with no gaps" <|
             \_ ->
@@ -60,7 +60,7 @@ suite =
                 moves
                     |> insertMovesIntoContext
                     |> insertGridIntoContext (insertMovesIntoGrid moves)
-                    |> Validator.validateV2 (Row 8)
+                    |> Validator.validate (Row 8)
                     |> Expect.equal (Validated [ buildPlayFor "AT" ])
         , test "A move is valid if all tiles played are in same row with existing tiles in between" <|
             \_ ->
@@ -74,7 +74,7 @@ suite =
                 playerMoves
                     |> insertMovesIntoContext
                     |> insertGridIntoContext (insertMovesIntoGrid (playerMoves ++ existingMoves))
-                    |> Validator.validateV2 (Row 8)
+                    |> Validator.validate (Row 8)
                     |> Expect.equal (Validated [ buildPlayFor "ASH" ])
         , test "A move is invalid if there are spaces between the tiles played in a row" <|
             \_ ->
@@ -85,7 +85,7 @@ suite =
                 moves
                     |> insertMovesIntoContext
                     |> insertGridIntoContext (insertMovesIntoGrid moves)
-                    |> Validator.validateV2 (Row 8)
+                    |> Validator.validate (Row 8)
                     |> Expect.equal Invalidated
         , test "A move is valid if all tiles played are in the same column with no gaps" <|
             \_ ->
@@ -96,7 +96,7 @@ suite =
                 moves
                     |> insertMovesIntoContext
                     |> insertGridIntoContext (insertMovesIntoGrid moves)
-                    |> Validator.validateV2 (Column 8)
+                    |> Validator.validate (Column 8)
                     |> Expect.equal (Validated [ buildPlayFor "AT" ])
         , test "A move is valid if all tiles played are in same column with existing tiles between" <|
             \_ ->
@@ -110,7 +110,7 @@ suite =
                 playerMoves
                     |> insertMovesIntoContext
                     |> insertGridIntoContext (insertMovesIntoGrid (playerMoves ++ existingMoves))
-                    |> Validator.validateV2 (Column 8)
+                    |> Validator.validate (Column 8)
                     |> Expect.equal (Validated [ buildPlayFor "ASH" ])
         , test "A move is invalid if there are spaces between the tiles played in a column" <|
             \_ ->
@@ -121,7 +121,7 @@ suite =
                 moves
                     |> insertMovesIntoContext
                     |> insertGridIntoContext (insertMovesIntoGrid moves)
-                    |> Validator.validateV2 (Column 8)
+                    |> Validator.validate (Column 8)
                     |> Expect.equal Invalidated
         , test "A move is invalid if its tiles are played in completely different rows and columns" <|
             \_ ->
@@ -132,7 +132,7 @@ suite =
                 moves
                     |> insertMovesIntoContext
                     |> insertGridIntoContext (insertMovesIntoGrid moves)
-                    |> Validator.validateV2 (Row 8)
+                    |> Validator.validate (Row 8)
                     |> Expect.equal Invalidated
         , test "Valid move along row picks up tangential column moves" <|
             \_ ->
@@ -152,7 +152,7 @@ suite =
                 playerMoves
                     |> insertMovesIntoContext
                     |> insertGridIntoContext (insertMovesIntoGrid (playerMoves ++ existingMoves))
-                    |> Validator.validateV2 (Row 8)
+                    |> Validator.validate (Row 8)
                     |> Expect.equal (Validated [ buildPlayFor "SAT", expectedSecondaryPlay1, expectedSecondaryPlay2 ])
         ]
 
