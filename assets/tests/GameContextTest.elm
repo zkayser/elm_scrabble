@@ -44,7 +44,7 @@ suite =
                             List.filter (\tile -> tile /= fakeTileWith 1 "A") initialTiles
                     in
                     update initialContext move
-                        |> Expect.equal { grid = expectedGrid, movesMade = expectedMoves, tiles = expectedTiles, firstPlay = False }
+                        |> Expect.equal { grid = expectedGrid, movesMade = expectedMoves, tiles = expectedTiles, firstPlay = True }
             , test "A tile cannot be placed on top of another tile on the grid" <|
                 \_ ->
                     let

@@ -63,7 +63,7 @@ update turn context move =
                         newTiles =
                             List.filter (\tile -> tile /= move.tile) context.tiles
                     in
-                    { grid = newGrid, movesMade = newMovesMade, tiles = newTiles, firstPlay = False }
+                    { grid = newGrid, movesMade = newMovesMade, tiles = newTiles, firstPlay = context.firstPlay }
 
                 False ->
                     context

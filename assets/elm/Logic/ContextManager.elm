@@ -51,7 +51,7 @@ update scrabbleResponse model =
                     model.context
 
                 newContext =
-                    { context | tiles = newTiles ++ context.tiles, movesMade = [] }
+                    { context | tiles = newTiles ++ context.tiles, movesMade = [], firstPlay = False }
             in
             { model | score = model.score + score, context = newContext, tileBag = newTileBag }
 
