@@ -168,6 +168,23 @@ suite =
                     |> insertGridIntoContext (insertMovesIntoGrid (playerMoves ++ existingMoves))
                     |> Validator.validate (Row 9)
                     |> Expect.equal (Validated [ buildPlayFor "AB" ])
+        , test "A play should be valid on row 1 if connected to existing tiles" <|
+            \_ ->
+                let
+                    playerMoves =
+                        createMoves [ "S", "A" ] [ ( 8, 1 ), ( 8, 2 ) ] 0
+
+                    existingMoves =
+                        createMoves [ "A", "T" ] [ ( 7, 3 ), ( 8, 3 ) ] 4
+
+                    expectedPlay =
+                        { word = "SAT", multipliers = Dict.fromList [ ( "TripleWord", [] ) ] }
+                in
+                playerMoves
+                    |> insertMovesIntoContext
+                    |> insertGridIntoContext (insertMovesIntoGrid (playerMoves ++ existingMoves))
+                    |> Validator.validate (Row 8)
+                    |> Expect.equal (Validated [ expectedPlay ])
         ]
 
 

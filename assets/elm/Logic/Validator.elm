@@ -101,7 +101,7 @@ handleValidate moves cells =
             List.map (\move -> move.tile) moves
     in
     List.foldr (\cell state -> updateState playedTiles cell state) NoMoveDetected cells
-        |> finalizeState
+        |> finalizeState playedTiles
 
 
 updateState : List Tile -> Cell -> ValidatorState -> ValidatorState
@@ -181,11 +181,17 @@ secondaryFor context dimension =
             []
 
 
-finalizeState : ValidatorState -> ValidatorState
-finalizeState state =
+finalizeState : List Tile -> ValidatorState -> ValidatorState
+finalizeState playedTiles state =
     case state of
         NoMoveDetected ->
             Invalidated
+
+        MoveDetected tiles ->
+            if List.all (\tile -> List.member tile.id (idsFor tiles)) playedTiles then
+                Validated <| [ ScrabblePlay.tilesToPlay tiles ]
+            else
+                Invalidated
 
         _ ->
             state
