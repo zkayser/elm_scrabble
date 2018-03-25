@@ -77,7 +77,7 @@ suite =
                     []
 
                 expectedRetired =
-                    [ { letter = "A", id = 1, value = 1, multiplier = Grid.NoMultiplier }, { letter = "B", id = 2, value = 2, multiplier = Grid.NoMultiplier } ]
+                    [ { letter = "B", id = 2, value = 2, multiplier = Grid.NoMultiplier }, { letter = "A", id = 1, value = 1, multiplier = Grid.NoMultiplier } ]
 
                 model =
                     { score = 0, context = context, tileBag = initialTileBag, messages = [], retiredTiles = [] }

@@ -231,7 +231,7 @@ update msg model =
                         updates =
                             ContextManager.update response model
                     in
-                    ( { model | score = updates.score, context = updates.context, tileBag = updates.tileBag, messages = updates.messages, retiredTiles = model.retiredTiles ++ updates.retiredTiles }, Cmd.none )
+                    ( { model | score = updates.score, context = updates.context, tileBag = updates.tileBag, messages = updates.messages, retiredTiles = updates.retiredTiles }, Cmd.none )
 
                 Err _ ->
                     ( { model | messages = ( Message.Error, "Something went wrong" ) :: model.messages }, Cmd.none )

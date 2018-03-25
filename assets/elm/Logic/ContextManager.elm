@@ -54,10 +54,13 @@ update scrabbleResponse model =
                 retiredTiles =
                     List.map (\move -> move.tile) model.context.movesMade
 
+                updatedRetiredTiles =
+                    appendTilesToRetired model.retiredTiles retiredTiles
+
                 newContext =
                     { context | tiles = newTiles ++ context.tiles, movesMade = [], firstPlay = False }
             in
-            { model | score = model.score + score, context = newContext, tileBag = newTileBag, retiredTiles = retiredTiles }
+            { model | score = model.score + score, context = newContext, tileBag = newTileBag, retiredTiles = updatedRetiredTiles }
 
         Nothing ->
             case scrabbleResponse.error of
@@ -106,3 +109,13 @@ updateContextWith tile letter model =
 
         _ ->
             context
+
+
+appendTilesToRetired : List Tile -> List Tile -> List Tile
+appendTilesToRetired existing new =
+    case new of
+        [] ->
+            existing
+
+        tile :: tiles ->
+            appendTilesToRetired (tile :: existing) tiles
