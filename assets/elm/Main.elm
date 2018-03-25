@@ -50,6 +50,8 @@ type Msg
     | DragEnd
     | Dropped Cell
     | DragOver Cell
+    | TileHolderDrop
+    | TileHolderDragover
     | JoinedChannel Json.Value
     | UpdateLeaderboard Json.Value
     | UpdateScoreV2 Json.Value
@@ -143,6 +145,48 @@ update msg model =
         DragOver cell ->
             ( model, Cmd.none )
 
+        TileHolderDrop ->
+            case model.dragging of
+                Just tile ->
+                    let
+                        context =
+                            model.context
+
+                        tiles =
+                            context.tiles
+
+                        newContext =
+                            case List.member tile tiles of
+                                True ->
+                                    context
+
+                                False ->
+                                    let
+                                        newGrid =
+                                            List.map
+                                                (\cell ->
+                                                    if cell.tile == Just tile then
+                                                        { cell | tile = Nothing }
+                                                    else
+                                                        cell
+                                                )
+                                                context.grid
+
+                                        newMovesMade =
+                                            List.filter
+                                                (\move -> move.tile /= tile)
+                                                context.movesMade
+                                    in
+                                    { context | tiles = tile :: tiles, grid = newGrid, movesMade = newMovesMade }
+                    in
+                    ( { model | context = newContext }, Cmd.none )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        TileHolderDragover ->
+            ( model, Cmd.none )
+
         SubmitScore ->
             case ContextManager.validateSubmission UpdateScoreV2 model.context of
                 Ok cmd ->
@@ -200,7 +244,7 @@ update msg model =
                         updates =
                             ContextManager.update response model
                     in
-                    ( { model | score = updates.score, context = updates.context, tileBag = updates.tileBag, messages = updates.messages, retiredTiles = updates.retiredTiles }, Cmd.none )
+                    ( { model | score = updates.score, context = updates.context, tileBag = updates.tileBag, messages = updates.messages, retiredTiles = model.retiredTiles ++ updates.retiredTiles }, Cmd.none )
 
                 Err _ ->
                     ( { model | messages = ( Message.Error, "Something went wrong" ) :: model.messages }, Cmd.none )
@@ -217,7 +261,7 @@ view model =
     div [ Attributes.class "scrabble" ]
         [ div [ Attributes.class "container" ]
             [ Board.view model
-            , TileHolder.view model
+            , TileHolder.view TileHolderDrop TileHolderDragover model
             ]
         , div [ Attributes.class "scoreboard-container" ]
             [ Scoreboard.view SubmitScore model ]

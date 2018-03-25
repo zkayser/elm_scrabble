@@ -19,9 +19,9 @@ type alias Model r msg =
     }
 
 
-view : Model r msg -> Html msg
-view model =
-    div [ class "tileholder" ]
+view : msg -> msg -> Model r msg -> Html msg
+view dropMsg dragOverMsg model =
+    div ([ class "tileholder" ] ++ DragAndDrop.droppable dropMsg dragOverMsg)
         [ viewTiles model ]
 
 
