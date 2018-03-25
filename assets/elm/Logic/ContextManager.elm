@@ -111,6 +111,28 @@ updateContextWith tile letter model =
             context
 
 
+discardTiles : Model r -> Model r
+discardTiles model =
+    case model.context.movesMade of
+        [] ->
+            case List.length model.tileBag of
+                0 ->
+                    { model | messages = ( Message.Error, "There are no more tiles left" ) :: model.messages }
+
+                _ ->
+                    let
+                        context =
+                            model.context
+
+                        newContext =
+                            { context | tiles = List.take 7 model.tileBag }
+                    in
+                    { model | context = newContext, tileBag = List.drop 7 model.tileBag }
+
+        _ ->
+            { model | messages = ( Message.Error, "You must discard ALL of your current tiles" ) :: model.messages }
+
+
 appendTilesToRetired : List Tile -> List Tile -> List Tile
 appendTilesToRetired existing new =
     case new of

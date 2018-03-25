@@ -91,6 +91,71 @@ suite =
                     Manager.update errorResponse model
                         |> Expect.equal { model | messages = [ ( Message.Error, errorMessage ) ] }
             ]
+        , describe "discardTiles"
+            [ test "With tiles remaining in the tilebag and no moves made" <|
+                \_ ->
+                    let
+                        initialTileBag =
+                            List.map createTile [ "T", "U", "V", "W", "X", "Y", "Z" ]
+
+                        context =
+                            { grid = Grid.init, movesMade = [], tiles = [ tileA, tileB, tileC, tileD ], firstPlay = False }
+
+                        expectedContext =
+                            { context | tiles = initialTileBag }
+
+                        expectedTileBag =
+                            []
+
+                        model =
+                            { score = 0, context = context, tileBag = initialTileBag, messages = [], retiredTiles = [] }
+                    in
+                    Manager.discardTiles model
+                        |> Expect.equal { model | context = expectedContext, tileBag = [] }
+            , test "With moves already made" <|
+                \_ ->
+                    let
+                        context =
+                            { grid = Grid.init, movesMade = movesMade, tiles = [], firstPlay = False }
+
+                        model =
+                            { score = 0, context = context, tileBag = [], messages = [], retiredTiles = [] }
+
+                        updatedModel =
+                            Manager.discardTiles model
+                    in
+                    Expect.equal 1 (List.length updatedModel.messages)
+            , test "With fewer than 7 tiles left in the tileBag" <|
+                \_ ->
+                    let
+                        initialTileBag =
+                            List.map createTile [ "W", "X", "Y", "Z" ]
+
+                        context =
+                            { grid = Grid.init, movesMade = [], tiles = [ tileA, tileB ], firstPlay = False }
+
+                        expectedContext =
+                            { context | tiles = initialTileBag }
+
+                        model =
+                            { score = 0, context = context, tileBag = initialTileBag, messages = [], retiredTiles = [] }
+                    in
+                    Manager.discardTiles model
+                        |> Expect.equal { model | tileBag = [], context = expectedContext }
+            , test "With no more tiles left in the tileBag" <|
+                \_ ->
+                    let
+                        context =
+                            { grid = Grid.init, movesMade = [], tiles = [ tileA, tileB ], firstPlay = False }
+
+                        model =
+                            { score = 0, context = context, tileBag = [], messages = [], retiredTiles = [] }
+
+                        updatedModel =
+                            Manager.discardTiles model
+                    in
+                    Expect.equal 1 (List.length updatedModel.messages)
+            ]
         ]
 
 
@@ -112,6 +177,11 @@ tileC =
 tileD : Tile
 tileD =
     { letter = "D", id = 4, value = 4, multiplier = Grid.NoMultiplier }
+
+
+createTile : String -> Tile
+createTile letter =
+    { letter = letter, id = 1, value = 4, multiplier = Grid.NoMultiplier }
 
 
 movesMade : List Move
