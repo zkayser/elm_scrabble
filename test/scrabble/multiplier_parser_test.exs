@@ -18,16 +18,19 @@ defmodule MultiplierParserTest do
 
 		test "DoubleLetter" do
 			assert {:ok, [double_letter: ~w(a b)]} = MultiplierParser.parse([%{"DoubleLetter" => ["a", "b"]}])
+			assert {:ok, [double_letter: ~w(a b)]} = MultiplierParser.parse([%{"DoubleLetter" => ["A", "B"]}])
 			assert {:ok, [double_letter: ~w(a)]} = MultiplierParser.parse([%{"DoubleLetter" => ["a", "鷹"]}])
 		end
 
 		test "TripleLetter" do
 			assert {:ok, [triple_letter: ~w(a b)]} = MultiplierParser.parse([%{"TripleLetter" => ["a", "b"]}])
+			assert {:ok, [triple_letter: ~w(a b)]} = MultiplierParser.parse([%{"TripleLetter" => ["A", "B"]}])
 			assert {:ok, [triple_letter: ~w(a)]} = MultiplierParser.parse([%{"TripleLetter" => ["a", "鷹"]}])
 		end
 
 		test "Wildcard" do
 			assert {:ok, [wildcard: ~w(a b)]} = MultiplierParser.parse([%{"Wildcard" => ["a", "b"]}])
+			assert {:ok, [wildcard: ~w(a b)]} = MultiplierParser.parse([%{"Wildcard" => ["A", "B"]}])
 			assert {:ok, [wildcard: ~w(a)]} = MultiplierParser.parse([%{"Wildcard" => ["a", "鷹"]}])
 		end
 
