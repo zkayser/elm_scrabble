@@ -181,15 +181,20 @@ doubleLetterPositions =
     ]
 
 
-cellToHtml : Config msg Tile Cell -> Cell -> Html msg
-cellToHtml config cell =
+cellToHtml : Config msg Tile Cell -> Cell -> List Tile -> Html msg
+cellToHtml config cell retiredTiles =
     let
         dropConfig =
             droppable (config.dropMsg cell) (config.dragOverMsg cell)
     in
     case cell.tile of
         Just tile ->
-            tileToHtml config tile
+            case List.member tile retiredTiles of
+                False ->
+                    tileToHtml config tile
+
+                True ->
+                    disableDragOnTile tile
 
         _ ->
             case cell.multiplier of
@@ -221,6 +226,14 @@ tileToHtml config tile =
             draggable (config.dragStartMsg tile) config.dragEndMsg
     in
     div ([ class "cell tile" ] ++ dragConfig)
+        [ span [ class "letter" ] [ text tile.letter ]
+        , span [ class "value" ] [ text <| toString tile.value ]
+        ]
+
+
+disableDragOnTile : Tile -> Html msg
+disableDragOnTile tile =
+    div [ class "cell tile" ]
         [ span [ class "letter" ] [ text tile.letter ]
         , span [ class "value" ] [ text <| toString tile.value ]
         ]

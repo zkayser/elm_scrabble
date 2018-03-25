@@ -18,6 +18,7 @@ type alias Model r =
         , context : Context
         , tileBag : List Tile
         , messages : List Message
+        , retiredTiles : List Tile
     }
 
 
@@ -50,10 +51,13 @@ update scrabbleResponse model =
                 context =
                     model.context
 
+                retiredTiles =
+                    List.map (\move -> move.tile) model.context.movesMade
+
                 newContext =
                     { context | tiles = newTiles ++ context.tiles, movesMade = [], firstPlay = False }
             in
-            { model | score = model.score + score, context = newContext, tileBag = newTileBag }
+            { model | score = model.score + score, context = newContext, tileBag = newTileBag, retiredTiles = retiredTiles }
 
         Nothing ->
             case scrabbleResponse.error of

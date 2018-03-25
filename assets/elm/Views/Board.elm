@@ -12,10 +12,11 @@ type alias Model r msg =
     { r
         | context : Context
         , dragAndDropConfig : Config msg Tile Cell
+        , retiredTiles : List Tile
     }
 
 
 view : Model r msg -> Html msg
 view model =
     div [ Attributes.class "board" ] <|
-        List.map (\cell -> Grid.cellToHtml model.dragAndDropConfig cell) model.context.grid
+        List.map (\cell -> Grid.cellToHtml model.dragAndDropConfig cell model.retiredTiles) model.context.grid

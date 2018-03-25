@@ -76,13 +76,16 @@ suite =
                 expectedTileBag =
                     []
 
+                expectedRetired =
+                    [ { letter = "A", id = 1, value = 1, multiplier = Grid.NoMultiplier }, { letter = "B", id = 2, value = 2, multiplier = Grid.NoMultiplier } ]
+
                 model =
-                    { score = 0, context = context, tileBag = initialTileBag, messages = [] }
+                    { score = 0, context = context, tileBag = initialTileBag, messages = [], retiredTiles = [] }
             in
             [ test "Given a success response" <|
                 \_ ->
                     Manager.update successResponse model
-                        |> Expect.equal { model | score = 6, context = expectedContext, tileBag = expectedTileBag }
+                        |> Expect.equal { model | score = 6, context = expectedContext, tileBag = expectedTileBag, retiredTiles = expectedRetired }
             , test "Given an error response" <|
                 \_ ->
                     Manager.update errorResponse model

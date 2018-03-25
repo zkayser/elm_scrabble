@@ -36,6 +36,7 @@ type alias Model =
     , turn : Turn
     , context : Context
     , score : Int
+    , retiredTiles : List Tile
     , messages : List Message
     , username : String
     , modal : Modal Msg
@@ -70,6 +71,7 @@ init =
       , context = GameContext.init Grid.init []
       , turn = GameContext.Active
       , score = 0
+      , retiredTiles = []
       , messages = []
       , username = ""
       , modal = Modal.UserPrompt SubmitForm SetUsername
@@ -198,7 +200,7 @@ update msg model =
                         updates =
                             ContextManager.update response model
                     in
-                    ( { model | score = updates.score, context = updates.context, tileBag = updates.tileBag, messages = updates.messages }, Cmd.none )
+                    ( { model | score = updates.score, context = updates.context, tileBag = updates.tileBag, messages = updates.messages, retiredTiles = updates.retiredTiles }, Cmd.none )
 
                 Err _ ->
                     ( { model | messages = ( Message.Error, "Something went wrong" ) :: model.messages }, Cmd.none )
