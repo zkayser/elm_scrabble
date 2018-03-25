@@ -8,14 +8,16 @@ defmodule ElmScrabbleWeb.ScrabbleChannel do
 		socket = assign(socket, :user, user)
 		{:ok, socket}
 	end
-	def join(channel, _, socket) do
+	def join(channel, _, _socket) do
 		{:error, %{reason: "Channel #{channel} does not exist"}}
 	end
 
 	def handle_in("submit_play", %{"plays" => _} = plays, socket) do
 		case Scrabble.score(plays) do
 			{:errors, errors} ->
-				for {:error, reason} <- errors, do: push(socket, "score_update", %{error: reason})
+				for {:error, reason} <- errors do
+				 if is_binary(reason), do: push(socket, "score_update", %{error: reason})
+				end
 				{:noreply, socket}
 			{:ok, score_increment} ->
 				Leaderboard.update(socket.assigns[:user], score_increment)

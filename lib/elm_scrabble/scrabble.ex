@@ -51,7 +51,7 @@ defmodule Scrabble do
 	end
 
 	defp handle_multiplier({:triple_letter, letters}, current_score) when is_list(letters) do
-		Enum.reduce(letters, 0, fn (letter, acc) ->	get_score(letter) * 3 + acc end) + current_score
+		Enum.reduce(letters, 0, fn (letter, acc) -> get_score(letter) * 3 + acc end) + current_score
 	end
 
 	defp handle_multiplier(:double_word, current_score), do: current_score * 2

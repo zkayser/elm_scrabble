@@ -87,5 +87,11 @@ defmodule ScrabbleTest do
       expected = (Scrabble.raw_score(@default) * 2) + (Scrabble.raw_score(@default) * 3)
       assert Scrabble.score(%{"plays" => [play_one, play_two]}) == {:ok, expected}
     end
+
+    test "Letter multipliers get scored correctly" do
+      plays = %{"plays" => [%{"multipliers" => [%{"TripleLetter" => ["Y"]}], "word" => "RAY"}]}
+      expected = (Scrabble.raw_score("ray") + (Scrabble.raw_score("y") * 3))
+      assert {:ok, expected} == Scrabble.score(plays)
+    end
   end
 end

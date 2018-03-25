@@ -12,15 +12,15 @@ defmodule MultiplierParser do
 	defp _parse([%{"DoubleWord" => []}|tail], acc), do: _parse(tail, [:double_word|acc])
 	defp _parse([%{"TripleWord" => []}|tail], acc), do: _parse(tail, [:triple_word|acc])
 	defp _parse([%{"DoubleLetter" => letters}|tail], acc) when is_list(letters) do
-		letters = Enum.filter(letters, &(&1 =~ @is_valid_letter))
+		letters = Enum.filter(letters, &(&1 =~ @is_valid_letter)) |> Enum.map(&String.downcase/1)
 		_parse(tail, [{:double_letter, letters}|acc])
 	end
 	defp _parse([%{"TripleLetter" => letters}|tail], acc) when is_list(letters) do
-		letters = Enum.filter(letters, &(&1 =~ @is_valid_letter))
+		letters = Enum.filter(letters, &(&1 =~ @is_valid_letter)) |> Enum.map(&String.downcase/1)
 		_parse(tail, [{:triple_letter, letters}|acc])
 	end
 	defp _parse([%{"Wildcard" => wildcards}|tail], acc) when is_list(wildcards) do
-		wildcards = Enum.filter(wildcards, &(&1 =~ @is_valid_letter))
+		wildcards = Enum.filter(wildcards, &(&1 =~ @is_valid_letter)) |> Enum.map(&String.downcase/1)
 		_parse(tail, [{:wildcard, wildcards}|acc])
 	end
 	defp _parse([%{"DoubleWord" => _}|_], _), do: {:error, {:invalid, :double_word}}
