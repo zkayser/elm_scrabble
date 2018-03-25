@@ -54,9 +54,8 @@ type Msg
     | TileHolderDragover
     | JoinedChannel Json.Value
     | UpdateLeaderboard Json.Value
-    | UpdateScoreV2 Json.Value
+    | UpdateScore Json.Value
     | SubmitScore
-    | UpdateScore (Result Http.Error ScrabbleResponse)
     | SubmitForm
     | SetUsername String
     | SetWildcardLetter Tile String
@@ -188,24 +187,12 @@ update msg model =
             ( model, Cmd.none )
 
         SubmitScore ->
-            case ContextManager.validateSubmission UpdateScoreV2 model.context of
+            case ContextManager.validateSubmission UpdateScore model.context of
                 Ok cmd ->
                     ( model, cmd )
 
                 Err message ->
                     ( { model | messages = [ ( Message.Error, message ) ] }, Cmd.none )
-
-        UpdateScore result ->
-            case result of
-                Ok scrabbleResponse ->
-                    let
-                        updates =
-                            ContextManager.update scrabbleResponse model
-                    in
-                    ( { model | score = updates.score, context = updates.context, tileBag = updates.tileBag, messages = updates.messages }, Cmd.none )
-
-                Err _ ->
-                    ( model, Cmd.none )
 
         SubmitForm ->
             let
@@ -237,7 +224,7 @@ update msg model =
                 Err _ ->
                     ( model, Cmd.none )
 
-        UpdateScoreV2 payload ->
+        UpdateScore payload ->
             case Json.decodeValue ScrabbleResponse.decoder payload of
                 Ok response ->
                     let
@@ -297,7 +284,7 @@ socketConfig =
     { onOpen = SocketConnect
     , onJoin = JoinedChannel
     , onUpdate = UpdateLeaderboard
-    , onScoreUpdate = UpdateScoreV2
+    , onScoreUpdate = UpdateScore
     }
 
 
