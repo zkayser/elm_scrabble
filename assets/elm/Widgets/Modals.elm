@@ -32,7 +32,7 @@ view modal =
                 [ Html.form [ onSubmit submitMsg ]
                     [ input
                         [ onInput (\string -> inputMsg string)
-                        , placeholder "What letter do you want this tile to represent?"
+                        , placeholder "Enter a letter"
                         ]
                         []
                     , a [ class "btn medium-btn", onClick submitMsg ] [ text "OK" ]
