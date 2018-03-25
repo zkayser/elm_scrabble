@@ -185,6 +185,14 @@ body {
 	font-size: 2rem;
 }
 
+.discard-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 2rem;
+	background-color: #fa5b5b;
+}
+
 .vertical-container {
 	display: flex;
 	flex-direction: column;

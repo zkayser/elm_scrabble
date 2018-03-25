@@ -1,21 +1,22 @@
 module Views.Scoreboard exposing (view)
 
+import Data.Leaderboard exposing (Entry, Leaderboard)
 import Html exposing (..)
 import Html.Attributes as Attributes
 import Html.Events as Events
-import Data.Leaderboard exposing (Leaderboard, Entry)
 import Types.Messages as Message exposing (Message)
 
 
-type alias Model r =
+type alias Model r msg =
     { r
         | score : Int
         , messages : List Message
         , leaderboard : Leaderboard
+        , discardTilesMsg : msg
     }
 
 
-view : msg -> Model r -> Html msg
+view : msg -> Model r msg -> Html msg
 view submitMsg model =
     div [ Attributes.class "scoreboard" ]
         [ div [ Attributes.class "message-container" ]
@@ -29,6 +30,13 @@ view submitMsg model =
                 , Events.onClick submitMsg
                 ]
                 [ text "Get Score" ]
+            ]
+        , div [ Attributes.class "submit-row" ]
+            [ a
+                [ Attributes.class "btn discard-btn"
+                , Events.onClick model.discardTilesMsg
+                ]
+                [ text "Discard Tiles" ]
             ]
         , viewLeaderboard model
         ]
@@ -48,29 +56,30 @@ viewError message =
         _ ->
             text ""
 
-viewLeaderboard : Model r -> Html msg
+
+viewLeaderboard : Model r msg -> Html msg
 viewLeaderboard model =
     let
         leaderboard =
             model.leaderboard
-            |> List.sortBy .score
-            |> List.reverse
-            |> List.indexedMap (,)
+                |> List.sortBy .score
+                |> List.reverse
+                |> List.indexedMap (,)
     in
     div [ Attributes.class "leaderboard" ]
-        [ div [ Attributes.class "leaderboard-header", Attributes.classList [("hidden", List.length leaderboard == 0)] ]
-            [ span [ Attributes.class "header rank"] [ text "RANK"]
+        [ div [ Attributes.class "leaderboard-header", Attributes.classList [ ( "hidden", List.length leaderboard == 0 ) ] ]
+            [ span [ Attributes.class "header rank" ] [ text "RANK" ]
             , span [ Attributes.class "header user" ] [ text "NAME" ]
-            , span [ Attributes.class "header score-entry" ] [text "SCORE"]
+            , span [ Attributes.class "header score-entry" ] [ text "SCORE" ]
             ]
-        , div [ Attributes.class "leaderboard-body"]
-            <| List.map viewEntry leaderboard
+        , div [ Attributes.class "leaderboard-body" ] <|
+            List.map viewEntry leaderboard
         ]
 
 
-viewEntry : (Int, Entry) -> Html msg
-viewEntry (rank, entry) =
-    div [ Attributes.class "leaderboard-entry"]
+viewEntry : ( Int, Entry ) -> Html msg
+viewEntry ( rank, entry ) =
+    div [ Attributes.class "leaderboard-entry" ]
         [ span [ Attributes.class "rank" ]
             [ text <| toString (rank + 1) ]
         , span [ Attributes.class "user" ]

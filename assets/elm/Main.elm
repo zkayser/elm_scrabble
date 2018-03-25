@@ -40,12 +40,14 @@ type alias Model =
     , messages : List Message
     , username : String
     , modal : Modal Msg
+    , discardTilesMsg : Msg
     }
 
 
 type Msg
     = CurrentTime Time
     | ClearMessages Time
+    | DiscardTiles
     | DragStarted Tile
     | DragEnd
     | Dropped Cell
@@ -76,6 +78,7 @@ init =
       , messages = []
       , username = ""
       , modal = Modal.UserPrompt SubmitForm SetUsername
+      , discardTilesMsg = DiscardTiles
       }
     , Task.perform CurrentTime Time.now
     )
@@ -114,6 +117,13 @@ update msg model =
                             messages
             in
             ( { model | messages = newMessages }, Cmd.none )
+
+        DiscardTiles ->
+            let
+                updates =
+                    ContextManager.discardTiles model
+            in
+            ( { model | context = updates.context, messages = updates.messages, tileBag = updates.tileBag }, Cmd.none )
 
         DragStarted tile ->
             ( { model | dragging = Just tile }, Cmd.none )
