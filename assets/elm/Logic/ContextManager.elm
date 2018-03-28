@@ -1,13 +1,8 @@
-module Logic.ContextManager exposing (..)
+module Logic.ContextManager exposing (discardTiles, handleTileDrop, update, updateContextWith)
 
-import Channels.LeaderboardChannel as Leaderboard
 import Data.GameContext as Context exposing (Context)
 import Data.Grid as Grid exposing (Tile)
 import Data.Move as Move
-import Http
-import Json.Decode as Decode exposing (Value)
-import Logic.Validator as Validator exposing (ValidatorState(..))
-import Requests.ScrabbleApi as Api
 import Responses.Scrabble as ScrabbleResponse exposing (ScrabbleResponse)
 import Types.Messages as Message exposing (Message)
 
@@ -20,26 +15,6 @@ type alias Model r =
         , messages : List Message
         , retiredTiles : List Tile
     }
-
-
-{-| This function can fail if an invalid play is attempted.
-To account for this, a `Result String (Context, Cmd msg, List Tile )`
-type is returned so that the caller of the function can react
-accordingly.
--}
-validateSubmission : (Value -> msg) -> Context -> Result String (Cmd msg)
-validateSubmission msg context =
-    if not <| isCenterPlayed context then
-        Err "You must play a tile on the center piece"
-    else if isFloatingTile context then
-        Err "You must place your tiles in sequence"
-    else
-        case Validator.validate (Move.validate context.movesMade) context of
-            Validated play ->
-                Ok (Leaderboard.submitPlay play)
-
-            _ ->
-                Err "Invalid play"
 
 
 update : ScrabbleResponse -> Model r -> Model r
@@ -148,46 +123,25 @@ appendTilesToRetired existing new =
             appendTilesToRetired (tile :: existing) tiles
 
 
-isCenterPlayed : Context -> Bool
-isCenterPlayed context =
-    let
-        list =
-            List.filter (\cell -> cell.isCenter) context.grid
-    in
-    case list of
-        center :: tail ->
-            center.tile /= Nothing
+handleTileDrop : Tile -> Context -> Context
+handleTileDrop tile context =
+    case List.member tile context.tiles of
+        True ->
+            context
 
-        _ ->
-            False
+        False ->
+            let
+                newGrid =
+                    List.map
+                        (\cell ->
+                            if cell.tile == Just tile then
+                                { cell | tile = Nothing }
+                            else
+                                cell
+                        )
+                        context.grid
 
-
-isFloatingTile : Context -> Bool
-isFloatingTile context =
-    if List.length context.movesMade > 1 then
-        False
-    else
-        case List.head context.movesMade of
-            Just move ->
-                (not <| hasNeighbor move.position context.grid) && (move.position /= ( 8, 8 ))
-
-            _ ->
-                False
-
-
-hasNeighbor : Grid.Position -> Grid.Grid -> Bool
-hasNeighbor position grid =
-    (List.length <| List.filterMap (hasNeighboringTile position) grid) > 0
-
-
-hasNeighboringTile : Grid.Position -> Grid.Cell -> Maybe Grid.Position
-hasNeighboringTile ( row, col ) cell =
-    if List.member cell.position [ ( row + 1, col ), ( row - 1, col ), ( row, col + 1 ), ( row, col - 1 ) ] then
-        case cell.tile of
-            Just tile ->
-                Just cell.position
-
-            Nothing ->
-                Nothing
-    else
-        Nothing
+                newMovesMade =
+                    List.filter (\move -> move.tile /= tile) context.movesMade
+            in
+            { context | tiles = tile :: context.tiles, grid = newGrid, movesMade = newMovesMade }

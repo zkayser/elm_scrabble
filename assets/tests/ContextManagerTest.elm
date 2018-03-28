@@ -17,62 +17,7 @@ import Types.Messages as Message
 suite : Test
 suite =
     describe "ContextManager"
-        [ describe "validateSubmission" <|
-            let
-                grid =
-                    List.map
-                        (\cell ->
-                            if cell.isCenter then
-                                { cell | tile = Just tileA }
-                            else if cell.position == ( 8, 9 ) then
-                                { cell | tile = Just tileB }
-                            else
-                                cell
-                        )
-                        Grid.init
-
-                invalidMoves =
-                    [ { tile = tileA, position = ( 1, 1 ) }, { tile = tileB, position = ( 15, 15 ) } ]
-
-                invalidContext =
-                    { grid = grid, movesMade = invalidMoves, tiles = [ tileC ] }
-            in
-            [ test "Given an invalid play" <|
-                \_ ->
-                    let
-                        update =
-                            Manager.validateSubmission Fake invalidContext
-
-                        message =
-                            case update of
-                                Err response ->
-                                    response
-
-                                _ ->
-                                    "This string should not match"
-                    in
-                    Expect.equal message "Invalid play"
-            , test "Empty center piece is invalid" <|
-                \_ ->
-                    let
-                        context =
-                            { grid = Grid.init, movesMade = [], tiles = [ tileA ] }
-                    in
-                    context
-                        |> Manager.validateSubmission Fake
-                        |> Expect.equal (Err "You must play a tile on the center piece")
-            , test "The center has a tile" <|
-                \_ ->
-                    { grid = grid, movesMade = [ { tile = tileC, position = ( 8, 7 ) } ], tiles = [] }
-                        |> Manager.validateSubmission Fake
-                        |> Expect.notEqual (Err "You must play a tile on the center piece")
-            , test "A floating tile is played" <|
-                \_ ->
-                    { grid = grid, movesMade = [ { tile = tileC, position = ( 5, 5 ) } ], tiles = [] }
-                        |> Manager.validateSubmission Fake
-                        |> Expect.equal (Err "You must place your tiles in sequence")
-            ]
-        , describe "contextUpdate" <|
+        [ describe "contextUpdate" <|
             let
                 successResponse =
                     { score = Just 6, error = Nothing }
@@ -174,6 +119,35 @@ suite =
                             Manager.discardTiles model
                     in
                     Expect.equal 1 (List.length updatedModel.messages)
+            ]
+        , describe "handleDrop"
+            [ test "Dropping a tile from the board" <|
+                \_ ->
+                    let
+                        startGrid =
+                            List.map
+                                (\cell ->
+                                    if cell.isCenter then
+                                        { cell | tile = Just tileA }
+                                    else
+                                        cell
+                                )
+                                Grid.init
+
+                        context =
+                            { grid = startGrid, movesMade = [ { tile = tileA, position = ( 8, 8 ) } ], tiles = [ tileC, tileD ] }
+
+                        expectedTiles =
+                            [ tileA, tileC, tileD ]
+                    in
+                    context
+                        |> Manager.handleTileDrop tileA
+                        |> Expect.equal { grid = Grid.init, movesMade = [], tiles = expectedTiles }
+            , test "Dropping a tile not on the board" <|
+                \_ ->
+                    { grid = Grid.init, movesMade = [], tiles = [ tileA, tileB ] }
+                        |> Manager.handleTileDrop tileA
+                        |> Expect.equal { grid = Grid.init, movesMade = [], tiles = [ tileA, tileB ] }
             ]
         ]
 

@@ -1,6 +1,8 @@
-module Logic.TileManager exposing (generateTileBag, shuffleTileBag)
+module Logic.TileManager exposing (generateTileBag, handleDrop, shuffleTileBag)
 
+import Data.GameContext exposing (Context)
 import Data.Grid as Grid exposing (Multiplier(..), Tile)
+import Logic.ContextManager as ContextManager
 import Random
 import Time exposing (Time)
 
@@ -81,3 +83,24 @@ multiplierFor letter =
         Wildcard
     else
         NoMultiplier
+
+
+
+---- Handle drop update for tile holder
+
+
+type alias Model r =
+    { r
+        | dragging : Maybe Tile
+        , context : Context
+    }
+
+
+handleDrop : Model r -> Model r
+handleDrop model =
+    case model.dragging of
+        Just tile ->
+            { model | context = ContextManager.handleTileDrop tile model.context }
+
+        Nothing ->
+            model

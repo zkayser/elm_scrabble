@@ -11,8 +11,8 @@ import Html.Events as Events
 import Http
 import Json.Decode as Json
 import Logic.ContextManager as ContextManager
+import Logic.SubmissionValidator as SubmissionValidator
 import Logic.TileManager as TileManager exposing (generateTileBag, shuffleTileBag)
-import Logic.Validator as Validator exposing (ValidatorState(..))
 import Phoenix
 import Phoenix.Channel exposing (Channel)
 import Requests.ScrabbleApi as ScrabbleApi
@@ -165,37 +165,10 @@ update msg model =
             case model.dragging of
                 Just tile ->
                     let
-                        context =
-                            model.context
-
-                        tiles =
-                            context.tiles
-
-                        newContext =
-                            case List.member tile tiles of
-                                True ->
-                                    context
-
-                                False ->
-                                    let
-                                        newGrid =
-                                            List.map
-                                                (\cell ->
-                                                    if cell.tile == Just tile then
-                                                        { cell | tile = Nothing }
-                                                    else
-                                                        cell
-                                                )
-                                                context.grid
-
-                                        newMovesMade =
-                                            List.filter
-                                                (\move -> move.tile /= tile)
-                                                context.movesMade
-                                    in
-                                    { context | tiles = tile :: tiles, grid = newGrid, movesMade = newMovesMade }
+                        updates =
+                            TileManager.handleDrop model
                     in
-                    ( { model | context = newContext }, Cmd.none )
+                    ( { model | context = updates.context }, Cmd.none )
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -204,7 +177,7 @@ update msg model =
             ( model, Cmd.none )
 
         SubmitScore ->
-            case ContextManager.validateSubmission UpdateScore model.context of
+            case SubmissionValidator.validateSubmission UpdateScore model.context of
                 Ok cmd ->
                     ( model, cmd )
 

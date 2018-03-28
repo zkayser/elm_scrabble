@@ -165,7 +165,7 @@ handleValidationForPlay tiles cell =
     case tiles of
         [ tile ] ->
             if cell.position == ( 8, 7 ) then
-                -- (We're folding from right, so 8, 7 is right after the center piece)
+                -- We're folding from right, so (8, 7) is right after the center piece
                 -- The center is the only place where an isolated, one-off tile can be
                 -- played legally, so we form a play for it here:
                 [ ScrabblePlay.tilesToPlay tiles ]
