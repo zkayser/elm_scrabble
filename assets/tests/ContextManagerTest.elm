@@ -35,7 +35,7 @@ suite =
                     [ { tile = tileA, position = ( 1, 1 ) }, { tile = tileB, position = ( 15, 15 ) } ]
 
                 invalidContext =
-                    { grid = grid, movesMade = invalidMoves, tiles = [ tileC ], firstPlay = False }
+                    { grid = grid, movesMade = invalidMoves, tiles = [ tileC ] }
             in
             [ test "Given an invalid play" <|
                 \_ ->
@@ -52,6 +52,25 @@ suite =
                                     "This string should not match"
                     in
                     Expect.equal message "Invalid play"
+            , test "Empty center piece is invalid" <|
+                \_ ->
+                    let
+                        context =
+                            { grid = Grid.init, movesMade = [], tiles = [ tileA ] }
+                    in
+                    context
+                        |> Manager.validateSubmission Fake
+                        |> Expect.equal (Err "You must play a tile on the center piece")
+            , test "The center has a tile" <|
+                \_ ->
+                    { grid = grid, movesMade = [ { tile = tileC, position = ( 8, 7 ) } ], tiles = [] }
+                        |> Manager.validateSubmission Fake
+                        |> Expect.notEqual (Err "You must play a tile on the center piece")
+            , test "A floating tile is played" <|
+                \_ ->
+                    { grid = grid, movesMade = [ { tile = tileC, position = ( 5, 5 ) } ], tiles = [] }
+                        |> Manager.validateSubmission Fake
+                        |> Expect.equal (Err "You must place your tiles in sequence")
             ]
         , describe "contextUpdate" <|
             let
@@ -65,13 +84,13 @@ suite =
                     { score = Nothing, error = Just errorMessage }
 
                 context =
-                    { grid = Grid.init, movesMade = movesMade, tiles = [ tileC ], firstPlay = False }
+                    { grid = Grid.init, movesMade = movesMade, tiles = [ tileC ] }
 
                 initialTileBag =
                     [ tileD ]
 
                 expectedContext =
-                    { context | movesMade = [], tiles = [ tileD, tileC ], firstPlay = False }
+                    { context | movesMade = [], tiles = [ tileD, tileC ] }
 
                 expectedTileBag =
                     []
@@ -99,7 +118,7 @@ suite =
                             List.map createTile [ "T", "U", "V", "W", "X", "Y", "Z" ]
 
                         context =
-                            { grid = Grid.init, movesMade = [], tiles = [ tileA, tileB, tileC, tileD ], firstPlay = False }
+                            { grid = Grid.init, movesMade = [], tiles = [ tileA, tileB, tileC, tileD ] }
 
                         expectedContext =
                             { context | tiles = initialTileBag }
@@ -116,7 +135,7 @@ suite =
                 \_ ->
                     let
                         context =
-                            { grid = Grid.init, movesMade = movesMade, tiles = [], firstPlay = False }
+                            { grid = Grid.init, movesMade = movesMade, tiles = [] }
 
                         model =
                             { score = 0, context = context, tileBag = [], messages = [], retiredTiles = [] }
@@ -132,7 +151,7 @@ suite =
                             List.map createTile [ "W", "X", "Y", "Z" ]
 
                         context =
-                            { grid = Grid.init, movesMade = [], tiles = [ tileA, tileB ], firstPlay = False }
+                            { grid = Grid.init, movesMade = [], tiles = [ tileA, tileB ] }
 
                         expectedContext =
                             { context | tiles = initialTileBag }
@@ -146,7 +165,7 @@ suite =
                 \_ ->
                     let
                         context =
-                            { grid = Grid.init, movesMade = [], tiles = [ tileA, tileB ], firstPlay = False }
+                            { grid = Grid.init, movesMade = [], tiles = [ tileA, tileB ] }
 
                         model =
                             { score = 0, context = context, tileBag = [], messages = [], retiredTiles = [] }

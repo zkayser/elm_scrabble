@@ -16,69 +16,33 @@ type ValidatorState
 
 validate : Grid.Dimension -> Context -> ValidatorState
 validate dimension context =
-    if context.firstPlay && not (List.member ( 8, 8 ) (List.map (\move -> move.position) context.movesMade)) then
-        Invalidated
-    else if not context.firstPlay && List.length context.movesMade == 1 then
-        case List.head context.movesMade of
-            Just move ->
-                if hasNeighbor move.position context.grid then
-                    case handleValidate context.movesMade (Grid.get context.grid dimension) of
-                        Validated [ play ] ->
-                            if String.length play.word == 1 then
-                                -- Only the secondary plays may be valid now
-                                let
-                                    secondaryPlays =
-                                        validateSecondary context (List.map (\move -> Grid.Column <| Tuple.second move.position) context.movesMade)
-                                in
-                                case List.length secondaryPlays of
-                                    0 ->
-                                        Invalidated
+    case dimension of
+        Grid.Invalid ->
+            Invalidated
 
-                                    -- If there are 0 secondary plays, then the play is invalid
-                                    _ ->
-                                        Validated secondaryPlays
-                            else
-                                let
-                                    secondaryPlays =
-                                        validateSecondary context (List.map (\move -> Grid.Column <| Tuple.second move.position) context.movesMade)
-                                in
-                                Validated <| play :: secondaryPlays
+        Grid.Row _ ->
+            case handleValidate context.movesMade (Grid.get context.grid dimension) of
+                Validated play ->
+                    let
+                        secondaryPlays =
+                            validateSecondary context (List.map (\move -> Grid.Column <| Tuple.second move.position) context.movesMade)
+                    in
+                    Validated <| play ++ secondaryPlays
 
-                        _ ->
-                            Invalidated
-                else
+                _ ->
                     Invalidated
 
-            Nothing ->
-                Invalidated
-    else
-        case dimension of
-            Grid.Invalid ->
-                Invalidated
+        Grid.Column _ ->
+            case handleValidate context.movesMade (Grid.get context.grid dimension) of
+                Validated play ->
+                    let
+                        secondaryPlays =
+                            validateSecondary context (List.map (\move -> Grid.Row <| Tuple.first move.position) context.movesMade)
+                    in
+                    Validated <| play ++ secondaryPlays
 
-            Grid.Row _ ->
-                case handleValidate context.movesMade (Grid.get context.grid dimension) of
-                    Validated play ->
-                        let
-                            secondaryPlays =
-                                validateSecondary context (List.map (\move -> Grid.Column <| Tuple.second move.position) context.movesMade)
-                        in
-                        Validated <| play ++ secondaryPlays
-
-                    _ ->
-                        Invalidated
-
-            Grid.Column _ ->
-                case handleValidate context.movesMade (Grid.get context.grid dimension) of
-                    Validated play ->
-                        let
-                            secondaryPlays =
-                                validateSecondary context (List.map (\move -> Grid.Row <| Tuple.first move.position) context.movesMade)
-                        in
-                        Validated <| play ++ secondaryPlays
-
-                    _ ->
-                        Invalidated
+                _ ->
+                    Invalidated
 
 
 {-| Loop over the cells in a row or column
@@ -136,7 +100,7 @@ updateState playedTiles cell currentState =
 
                 Nothing ->
                     if List.all (\tile -> List.member tile.id (idsFor tiles)) playedTiles then
-                        Validated <| [ ScrabblePlay.tilesToPlay tiles ]
+                        Validated <| handleValidationForPlay tiles cell
                     else
                         Invalidated
 
@@ -157,22 +121,16 @@ secondaryFor context dimension =
     case dimension of
         Grid.Row row ->
             case handleValidate (List.filter (\move -> Tuple.first move.position == row) context.movesMade) (Grid.get context.grid dimension) of
-                Validated [ play ] ->
-                    if String.length play.word > 1 then
-                        [ play ]
-                    else
-                        []
+                Validated play ->
+                    List.filter (\play -> String.length play.word > 1) play
 
                 _ ->
                     []
 
         Grid.Column column ->
             case handleValidate (List.filter (\move -> Tuple.second move.position == column) context.movesMade) (Grid.get context.grid dimension) of
-                Validated [ play ] ->
-                    if String.length play.word > 1 then
-                        [ play ]
-                    else
-                        []
+                Validated play ->
+                    List.filter (\play -> String.length play.word > 1) play
 
                 _ ->
                     []
@@ -189,7 +147,7 @@ finalizeState playedTiles state =
 
         MoveDetected tiles ->
             if List.all (\tile -> List.member tile.id (idsFor tiles)) playedTiles then
-                Validated <| [ ScrabblePlay.tilesToPlay tiles ]
+                Validated <| List.filter (\play -> String.length play.word > 1) [ ScrabblePlay.tilesToPlay tiles ]
             else
                 Invalidated
 
@@ -202,19 +160,19 @@ idsFor tiles =
     List.map .id tiles
 
 
-hasNeighbor : Grid.Position -> Grid.Grid -> Bool
-hasNeighbor position grid =
-    (List.length <| List.filterMap (hasNeighboringTile position) grid) > 0
+handleValidationForPlay : List Tile -> Cell -> List Play
+handleValidationForPlay tiles cell =
+    case tiles of
+        [ tile ] ->
+            if cell.position == ( 8, 7 ) then
+                -- (We're folding from right, so 8, 7 is right after the center piece)
+                -- The center is the only place where an isolated, one-off tile can be
+                -- played legally, so we form a play for it here:
+                [ ScrabblePlay.tilesToPlay tiles ]
+            else
+                -- If there was only one tile, on the main handleValidation
+                -- loop, it is not valid so return an empty list of plays:
+                []
 
-
-hasNeighboringTile : Grid.Position -> Cell -> Maybe Grid.Position
-hasNeighboringTile ( row, col ) cell =
-    if List.member cell.position [ ( row + 1, col ), ( row - 1, col ), ( row, col + 1 ), ( row, col - 1 ) ] then
-        case cell.tile of
-            Just tile ->
-                Just cell.position
-
-            Nothing ->
-                Nothing
-    else
-        Nothing
+        _ ->
+            [ ScrabblePlay.tilesToPlay tiles ]

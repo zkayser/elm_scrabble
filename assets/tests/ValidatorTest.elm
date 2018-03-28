@@ -13,45 +13,7 @@ import Test exposing (..)
 suite : Test
 suite =
     describe "Validator"
-        [ test "A move is valid if it is the first tile played & on the center piece" <|
-            \_ ->
-                let
-                    moves =
-                        createMoves [ "A" ] [ ( 8, 8 ) ] 0
-                in
-                moves
-                    |> insertMovesIntoContext
-                    |> insertGridIntoContext (insertMovesIntoGrid moves)
-                    |> toggleFirstPlayForContext
-                    |> Validator.validate (Row 8)
-                    |> Expect.equal (Validated [ buildPlayFor "A" ])
-        , test "A move is invalid if it is the first tile played & not on the center piece" <|
-            \_ ->
-                let
-                    moves =
-                        createMoves [ "A" ] [ ( 8, 7 ) ] 0
-                in
-                moves
-                    |> insertMovesIntoContext
-                    |> insertGridIntoContext (insertMovesIntoGrid moves)
-                    |> toggleFirstPlayForContext
-                    |> Validator.validate (Row 8)
-                    |> Expect.equal Invalidated
-        , test "A non-first play move is invalid if it contains only one unconnected tile" <|
-            \_ ->
-                let
-                    existingMoves =
-                        createMoves [ "A" ] [ ( 8, 8 ) ] 2
-
-                    playerMoves =
-                        createMoves [ "B" ] [ ( 6, 13 ) ] 0
-                in
-                playerMoves
-                    |> insertMovesIntoContext
-                    |> insertGridIntoContext (insertMovesIntoGrid (playerMoves ++ existingMoves))
-                    |> Validator.validate (Row 6)
-                    |> Expect.equal Invalidated
-        , test "A move is valid if all tiles played are in the same row with no gaps" <|
+        [ test "A move is valid if all tiles played are in the same row with no gaps" <|
             \_ ->
                 let
                     moves =
@@ -175,7 +137,7 @@ suite =
                         createMoves [ "S", "A" ] [ ( 8, 1 ), ( 8, 2 ) ] 0
 
                     existingMoves =
-                        createMoves [ "A", "T" ] [ ( 7, 3 ), ( 8, 3 ) ] 4
+                        createMoves [ "A", "T", "Y" ] [ ( 7, 3 ), ( 8, 3 ), ( 8, 8 ) ] 4
 
                     expectedPlay =
                         { word = "SAT", multipliers = Dict.fromList [ ( "TripleWord", [] ) ] }
@@ -228,17 +190,12 @@ insertMoveIntoGrid move grid =
 
 insertMovesIntoContext : List Move -> Context
 insertMovesIntoContext moves =
-    { movesMade = moves, grid = [], tiles = [], firstPlay = False }
+    { movesMade = moves, grid = [], tiles = [] }
 
 
 insertGridIntoContext : Grid -> Context -> Context
 insertGridIntoContext newGrid context =
     { context | grid = newGrid }
-
-
-toggleFirstPlayForContext : Context -> Context
-toggleFirstPlayForContext context =
-    { context | firstPlay = not context.firstPlay }
 
 
 

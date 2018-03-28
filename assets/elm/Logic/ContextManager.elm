@@ -29,12 +29,17 @@ accordingly.
 -}
 validateSubmission : (Value -> msg) -> Context -> Result String (Cmd msg)
 validateSubmission msg context =
-    case Validator.validate (Move.validate context.movesMade) context of
-        Validated play ->
-            Ok (Leaderboard.submitPlay play)
+    if not <| isCenterPlayed context then
+        Err "You must play a tile on the center piece"
+    else if isFloatingTile context then
+        Err "You must place your tiles in sequence"
+    else
+        case Validator.validate (Move.validate context.movesMade) context of
+            Validated play ->
+                Ok (Leaderboard.submitPlay play)
 
-        _ ->
-            Err "Invalid play"
+            _ ->
+                Err "Invalid play"
 
 
 update : ScrabbleResponse -> Model r -> Model r
@@ -58,7 +63,7 @@ update scrabbleResponse model =
                     appendTilesToRetired model.retiredTiles retiredTiles
 
                 newContext =
-                    { context | tiles = newTiles ++ context.tiles, movesMade = [], firstPlay = False }
+                    { context | tiles = newTiles ++ context.tiles, movesMade = [] }
             in
             { model | score = model.score + score, context = newContext, tileBag = newTileBag, retiredTiles = updatedRetiredTiles }
 
@@ -141,3 +146,48 @@ appendTilesToRetired existing new =
 
         tile :: tiles ->
             appendTilesToRetired (tile :: existing) tiles
+
+
+isCenterPlayed : Context -> Bool
+isCenterPlayed context =
+    let
+        list =
+            List.filter (\cell -> cell.isCenter) context.grid
+    in
+    case list of
+        center :: tail ->
+            center.tile /= Nothing
+
+        _ ->
+            False
+
+
+isFloatingTile : Context -> Bool
+isFloatingTile context =
+    if List.length context.movesMade > 1 then
+        False
+    else
+        case List.head context.movesMade of
+            Just move ->
+                (not <| hasNeighbor move.position context.grid) && (move.position /= ( 8, 8 ))
+
+            _ ->
+                False
+
+
+hasNeighbor : Grid.Position -> Grid.Grid -> Bool
+hasNeighbor position grid =
+    (List.length <| List.filterMap (hasNeighboringTile position) grid) > 0
+
+
+hasNeighboringTile : Grid.Position -> Grid.Cell -> Maybe Grid.Position
+hasNeighboringTile ( row, col ) cell =
+    if List.member cell.position [ ( row + 1, col ), ( row - 1, col ), ( row, col + 1 ), ( row, col - 1 ) ] then
+        case cell.tile of
+            Just tile ->
+                Just cell.position
+
+            Nothing ->
+                Nothing
+    else
+        Nothing

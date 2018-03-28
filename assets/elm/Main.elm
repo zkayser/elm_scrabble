@@ -41,6 +41,7 @@ type alias Model =
     , username : String
     , modal : Modal Msg
     , discardTilesMsg : Msg
+    , finishedTurnMsg : Msg
     }
 
 
@@ -52,6 +53,7 @@ type Msg
     | DragEnd
     | Dropped Cell
     | DragOver Cell
+    | FinishTurn
     | TileHolderDrop
     | TileHolderDragover
     | JoinedChannel Json.Value
@@ -78,6 +80,7 @@ init =
       , messages = []
       , username = ""
       , modal = Modal.UserPrompt SubmitForm SetUsername
+      , finishedTurnMsg = FinishTurn
       , discardTilesMsg = DiscardTiles
       }
     , Task.perform CurrentTime Time.now
@@ -153,6 +156,10 @@ update msg model =
 
         DragOver cell ->
             ( model, Cmd.none )
+
+        FinishTurn ->
+            Debug.log "You are now inactive"
+                ( { model | turn = GameContext.Inactive }, Cmd.none )
 
         TileHolderDrop ->
             case model.dragging of

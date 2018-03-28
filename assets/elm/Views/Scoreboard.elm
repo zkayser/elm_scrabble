@@ -13,6 +13,7 @@ type alias Model r msg =
         , messages : List Message
         , leaderboard : Leaderboard
         , discardTilesMsg : msg
+        , finishedTurnMsg : msg
     }
 
 
@@ -37,6 +38,13 @@ view submitMsg model =
                 , Events.onClick model.discardTilesMsg
                 ]
                 [ text "Discard Tiles" ]
+            ]
+        , div [ Attributes.class "submit-row" ]
+            [ a
+                [ Attributes.class "btn discard-btn"
+                , Events.onClick model.finishedTurnMsg
+                ]
+                [ text "Quit" ]
             ]
         , viewLeaderboard model
         ]
