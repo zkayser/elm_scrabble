@@ -158,8 +158,7 @@ update msg model =
             ( model, Cmd.none )
 
         FinishTurn ->
-            Debug.log "You are now inactive"
-                ( { model | turn = GameContext.Inactive }, Cmd.none )
+            ( { model | turn = GameContext.Inactive }, Cmd.none )
 
         TileHolderDrop ->
             case model.dragging of

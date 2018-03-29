@@ -7,33 +7,25 @@ import Random
 import Time exposing (Time)
 
 
--- Generate the bag of tiles
+type alias Model r =
+    { r
+        | dragging : Maybe Tile
+        , context : Context
+    }
 
 
-generateTileBag : List Tile
-generateTileBag =
-    List.foldr doGenerateTiles [] frequencyList
-        |> List.indexedMap (\index letter -> { letter = letter, id = index, value = valueFor letter, multiplier = multiplierFor letter })
+
+---- Handle drop update for tile holder
 
 
-doGenerateTiles : ( Int, List String ) -> List String -> List String
-doGenerateTiles ( frequency, list ) accumulator =
-    List.map (\string -> List.repeat frequency string) list
-        |> List.concat
-        |> List.append accumulator
+handleDrop : Model r -> Model r
+handleDrop model =
+    case model.dragging of
+        Just tile ->
+            { model | context = ContextManager.handleTileDrop tile model.context }
 
-
-frequencyList : List ( Int, List String )
-frequencyList =
-    [ ( 12, [ "E" ] )
-    , ( 9, [ "A", "I" ] )
-    , ( 8, [ "O" ] )
-    , ( 6, [ "N", "R", "T" ] )
-    , ( 4, [ "L", "S", "U", "D" ] )
-    , ( 3, [ "G" ] )
-    , ( 2, [ "B", "C", "M", "P", "F", "H", "V", "W", "Y", "" ] )
-    , ( 1, [ "K", "J", "X", "Q", "Z" ] )
-    ]
+        Nothing ->
+            model
 
 
 
@@ -54,7 +46,37 @@ shuffleTileBag tiles time =
 
 
 
--- Generate the point value for a given letter
+-- Generate the bag of tiles
+
+
+generateTileBag : List Tile
+generateTileBag =
+    List.foldr doGenerateTiles [] frequencyList
+        |> List.indexedMap (\index letter -> { letter = letter, id = index, value = valueFor letter, multiplier = multiplierFor letter })
+
+
+
+-- INTERNAL
+
+
+doGenerateTiles : ( Int, List String ) -> List String -> List String
+doGenerateTiles ( frequency, list ) accumulator =
+    List.map (\string -> List.repeat frequency string) list
+        |> List.concat
+        |> List.append accumulator
+
+
+frequencyList : List ( Int, List String )
+frequencyList =
+    [ ( 12, [ "E" ] )
+    , ( 9, [ "A", "I" ] )
+    , ( 8, [ "O" ] )
+    , ( 6, [ "N", "R", "T" ] )
+    , ( 4, [ "L", "S", "U", "D" ] )
+    , ( 3, [ "G" ] )
+    , ( 2, [ "B", "C", "M", "P", "F", "H", "V", "W", "Y", "" ] )
+    , ( 1, [ "K", "J", "X", "Q", "Z" ] )
+    ]
 
 
 valueFor : String -> Int
@@ -83,24 +105,3 @@ multiplierFor letter =
         Wildcard
     else
         NoMultiplier
-
-
-
----- Handle drop update for tile holder
-
-
-type alias Model r =
-    { r
-        | dragging : Maybe Tile
-        , context : Context
-    }
-
-
-handleDrop : Model r -> Model r
-handleDrop model =
-    case model.dragging of
-        Just tile ->
-            { model | context = ContextManager.handleTileDrop tile model.context }
-
-        Nothing ->
-            model

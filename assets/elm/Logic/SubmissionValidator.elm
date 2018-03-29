@@ -14,16 +14,6 @@ type ContextError
     | NoError
 
 
-errors : Context -> ContextError
-errors context =
-    if not <| isCenterPlayed context then
-        CenterNotPlayed
-    else if isFloatingTile context then
-        FloatingTile
-    else
-        NoError
-
-
 {-| This function can fail if an invalid play is attempted.
 To account for this, a `Result String (Context, Cmd msg, List Tile )`
 type is returned so that the caller of the function can react
@@ -45,6 +35,20 @@ validateSubmission msg context =
 
                 _ ->
                     Err "Invalid play"
+
+
+
+-- INTERNAL
+
+
+errors : Context -> ContextError
+errors context =
+    if not <| isCenterPlayed context then
+        CenterNotPlayed
+    else if isFloatingTile context then
+        FloatingTile
+    else
+        NoError
 
 
 isCenterPlayed : Context -> Bool

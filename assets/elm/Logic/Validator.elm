@@ -1,4 +1,4 @@
-module Logic.Validator exposing (..)
+module Logic.Validator exposing (ValidatorState(..), validate)
 
 import Data.GameContext exposing (Context)
 import Data.Grid as Grid exposing (Cell, Multiplier(..), Tile)
@@ -43,6 +43,10 @@ validate dimension context =
 
                 _ ->
                     Invalidated
+
+
+
+-- INTERNAL
 
 
 {-| Loop over the cells in a row or column

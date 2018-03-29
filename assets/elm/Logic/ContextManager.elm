@@ -113,16 +113,6 @@ discardTiles model =
             { model | messages = ( Message.Error, "You must discard ALL of your current tiles" ) :: model.messages }
 
 
-appendTilesToRetired : List Tile -> List Tile -> List Tile
-appendTilesToRetired existing new =
-    case new of
-        [] ->
-            existing
-
-        tile :: tiles ->
-            appendTilesToRetired (tile :: existing) tiles
-
-
 handleTileDrop : Tile -> Context -> Context
 handleTileDrop tile context =
     case List.member tile context.tiles of
@@ -145,3 +135,17 @@ handleTileDrop tile context =
                     List.filter (\move -> move.tile /= tile) context.movesMade
             in
             { context | tiles = tile :: context.tiles, grid = newGrid, movesMade = newMovesMade }
+
+
+
+-- INTERNAL
+
+
+appendTilesToRetired : List Tile -> List Tile -> List Tile
+appendTilesToRetired existing new =
+    case new of
+        [] ->
+            existing
+
+        tile :: tiles ->
+            appendTilesToRetired (tile :: existing) tiles
