@@ -8,6 +8,7 @@ import Dict
 import Expect exposing (Expectation)
 import Logic.Validator as Validator exposing (ValidatorState(..))
 import Test exposing (..)
+import TestData exposing (..)
 
 
 suite : Test
@@ -148,60 +149,3 @@ suite =
                     |> Validator.validate (Row 8)
                     |> Expect.equal (Validated [ expectedPlay ])
         ]
-
-
-createMoves : List String -> List Position -> Int -> List Move
-createMoves letters positions idStartInt =
-    List.map2 buildMove letters positions
-        |> List.indexedMap
-            (\int move ->
-                let
-                    tile =
-                        move.tile
-
-                    newTile =
-                        { tile | id = idStartInt + int }
-                in
-                { move | tile = newTile }
-            )
-
-
-buildMove : String -> Position -> Move
-buildMove letter position =
-    { tile = { letter = letter, id = 1, value = 1, multiplier = Grid.NoMultiplier }, position = position }
-
-
-insertMovesIntoGrid : List Move -> Grid
-insertMovesIntoGrid moves =
-    List.foldr (\move grid -> insertMoveIntoGrid move grid) Grid.init moves
-
-
-insertMoveIntoGrid : Move -> Grid -> Grid
-insertMoveIntoGrid move grid =
-    List.map
-        (\cell ->
-            if cell.position == move.position then
-                { cell | tile = Just move.tile }
-            else
-                cell
-        )
-        grid
-
-
-insertMovesIntoContext : List Move -> Context
-insertMovesIntoContext moves =
-    { movesMade = moves, grid = [], tiles = [] }
-
-
-insertGridIntoContext : Grid -> Context -> Context
-insertGridIntoContext newGrid context =
-    { context | grid = newGrid }
-
-
-
--- A helper to create scrabble plays
-
-
-buildPlayFor : String -> Play
-buildPlayFor word =
-    { word = word, multipliers = Dict.fromList [ ( "DoubleWord", [] ) ] }

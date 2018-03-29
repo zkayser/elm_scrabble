@@ -11,7 +11,12 @@ import Logic.ContextManager as Manager
 import Requests.ScrabbleApi as ScrabbleApi
 import Responses.Scrabble exposing (ScrabbleResponse)
 import Test exposing (..)
+import TestData exposing (..)
 import Types.Messages as Message
+
+
+type FakeMsg
+    = Fake Value
 
 
 suite : Test
@@ -150,37 +155,3 @@ suite =
                         |> Expect.equal { grid = Grid.init, movesMade = [], tiles = [ tileA, tileB ] }
             ]
         ]
-
-
-tileA : Tile
-tileA =
-    { letter = "A", id = 1, value = 1, multiplier = Grid.NoMultiplier }
-
-
-tileB : Tile
-tileB =
-    { letter = "B", id = 2, value = 2, multiplier = Grid.NoMultiplier }
-
-
-tileC : Tile
-tileC =
-    { letter = "C", id = 3, value = 3, multiplier = Grid.NoMultiplier }
-
-
-tileD : Tile
-tileD =
-    { letter = "D", id = 4, value = 4, multiplier = Grid.NoMultiplier }
-
-
-createTile : String -> Tile
-createTile letter =
-    { letter = letter, id = 1, value = 4, multiplier = Grid.NoMultiplier }
-
-
-movesMade : List Move
-movesMade =
-    [ { tile = tileA, position = ( 8, 8 ) }, { tile = tileB, position = ( 8, 9 ) } ]
-
-
-type FakeMsg
-    = Fake Value
