@@ -57,10 +57,11 @@ that will hold an intermediate representation of
 possible moves in the list of tiles carried around
 by the `PossibleMoveFound` and `MoveDetected` values.
 If a move is validated, the tiles are mapped into a
-string that represents the word being played. If
-the move is not validated, the accumulator value
-remains `Invalidated`. If there is no move detected
-by the end of the reduction, `Invalidated` is returned.
+`Play` record representing the data structure that
+will be sent to the server. If the move is not
+validated, the accumulator value remains `Invalidated`.
+If there is no move detected by the end of the fold,
+`Invalidated` is returned.
 -}
 handleValidate : List Move -> List Cell -> ValidatorState
 handleValidate moves cells =
@@ -68,7 +69,7 @@ handleValidate moves cells =
         playedTiles =
             List.map (\move -> move.tile) moves
     in
-    List.foldr (\cell state -> updateState playedTiles cell state) NoMoveDetected cells
+    List.foldr (updateState playedTiles) NoMoveDetected cells
         |> finalizeState playedTiles
 
 

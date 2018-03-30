@@ -16,7 +16,7 @@ or is valid for a `Row` or `Column`
 -}
 validate : List Move -> Grid.Dimension
 validate moves =
-    case List.map (\move -> move.position) moves of
+    case List.map .position moves of
         [] ->
             Invalid
 
