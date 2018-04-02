@@ -20,24 +20,12 @@ validate dimension context =
         Grid.Invalid ->
             Invalidated
 
-        Grid.Row _ ->
+        _ ->
             case handleValidate context.movesMade (Grid.get context.grid dimension) of
                 Validated play ->
                     let
                         secondaryPlays =
-                            validateSecondary context (List.map (\move -> Grid.Column <| Tuple.second move.position) context.movesMade)
-                    in
-                    Validated <| play ++ secondaryPlays
-
-                _ ->
-                    Invalidated
-
-        Grid.Column _ ->
-            case handleValidate context.movesMade (Grid.get context.grid dimension) of
-                Validated play ->
-                    let
-                        secondaryPlays =
-                            validateSecondary context (List.map (\move -> Grid.Row <| Tuple.first move.position) context.movesMade)
+                            validateSecondary context <| getSecondaryDimensionsFor dimension context.movesMade
                     in
                     Validated <| play ++ secondaryPlays
 
@@ -181,3 +169,18 @@ handleValidationForPlay tiles cell =
 
         _ ->
             [ ScrabblePlay.tilesToPlay tiles ]
+
+
+getSecondaryDimensionsFor : Grid.Dimension -> List Move -> List Grid.Dimension
+getSecondaryDimensionsFor dimension moves =
+    -- validateSecondary context (getSecondaryDimensionsFor dimension context.movesMade)
+    -- (List.map (\move -> Grid.Column <| Tuple.second move.position) context.movesMade)
+    case dimension of
+        Grid.Column _ ->
+            List.map (\move -> Grid.Row <| Tuple.first move.position) moves
+
+        Grid.Row _ ->
+            List.map (\move -> Grid.Column <| Tuple.second move.position) moves
+
+        _ ->
+            List.map (\move -> Grid.Invalid) moves
