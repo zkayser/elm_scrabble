@@ -2,9 +2,9 @@ defmodule Scrabble.Grid do
   alias Scrabble.Cell
   alias Scrabble.Multiplier
   alias Scrabble.Position
-  @type grid :: [Cell.t()]
+  @type t :: [Cell.t()]
 
-  @spec setup() :: grid
+  @spec setup() :: t()
   def setup do
     for x <- 1..225 do
       position = %Position{row: row_for(x), col: col_for(x)}

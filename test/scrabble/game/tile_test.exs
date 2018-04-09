@@ -12,7 +12,7 @@ defmodule TileTest do
              }
     end
 
-    test "with wildcards" do
+    test "gives wildcards the correct multiplier and value" do
       assert Tile.create({1, ""}) == %Tile{letter: "", id: 1, value: 0, multiplier: :wildcard}
     end
   end
