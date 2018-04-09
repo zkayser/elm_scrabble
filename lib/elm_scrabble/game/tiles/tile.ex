@@ -13,7 +13,7 @@ defmodule Scrabble.Tile do
             id: 1,
             value: 1
 
-  @spec create({pos_integer(), String.t()}) :: t()
+  @spec create({String.t(), pos_integer()}) :: t()
   def create({"", id}), do: %__MODULE__{letter: "", multiplier: :wildcard, id: id, value: 0}
 
   def create({letter, id}) do

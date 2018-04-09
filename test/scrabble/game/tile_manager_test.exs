@@ -3,8 +3,9 @@ defmodule TileManagerTest do
   use ExUnit.Case
 
   describe "generate/0" do
-    test "creates a list of 100 unique tiles" do
-      assert Enum.uniq(TileManager.generate()) |> length() == 100
+    test "creates a tilebag of unique tiles" do
+      {in_play, rest} = TileManager.generate()
+      assert (in_play ++ rest) |> Enum.uniq() |> length() == 100
     end
   end
 end
