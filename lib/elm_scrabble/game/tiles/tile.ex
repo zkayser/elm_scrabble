@@ -14,9 +14,9 @@ defmodule Scrabble.Tile do
             value: 1
 
   @spec create({pos_integer(), String.t()}) :: t()
-  def create({id, ""}), do: %__MODULE__{letter: "", multiplier: :wildcard, id: id, value: 0}
+  def create({"", id}), do: %__MODULE__{letter: "", multiplier: :wildcard, id: id, value: 0}
 
-  def create({id, letter}) do
+  def create({letter, id}) do
     %__MODULE__{letter: letter, multiplier: :no_multiplier, id: id, value: val_for(letter)}
   end
 
