@@ -8,7 +8,7 @@ defmodule BoardTest do
       board = Board.new()
       assert %Board{} = board
       assert board.validity == :invalid
-      assert length(board.grid) == @default_grid_cells
+      assert length(Map.keys(board.grid)) == @default_grid_cells
     end
   end
 end
