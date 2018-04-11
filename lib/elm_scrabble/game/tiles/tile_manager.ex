@@ -37,15 +37,6 @@ defmodule Scrabble.TileManager do
     }
   end
 
-  @spec generate() :: tile_state()
-  def generate do
-    Enum.reduce(@frequency_list, [], &expand_letters/2)
-    |> Enum.with_index()
-    |> Enum.map(&Tile.create/1)
-    |> Enum.shuffle()
-    |> Enum.split(@initial_tile_count)
-  end
-
   @spec handle_played(t(), Tile.t()) :: t()
   def handle_played(tile_manager, tile) do
     %__MODULE__{
@@ -53,6 +44,14 @@ defmodule Scrabble.TileManager do
       | in_play: Enum.reject(tile_manager.in_play, &(&1 == tile)),
         played: [tile | tile_manager.played]
     }
+  end
+
+  defp generate do
+    Enum.reduce(@frequency_list, [], &expand_letters/2)
+    |> Enum.with_index()
+    |> Enum.map(&Tile.create/1)
+    |> Enum.shuffle()
+    |> Enum.split(@initial_tile_count)
   end
 
   # Add the number of letters into the accumulator,
