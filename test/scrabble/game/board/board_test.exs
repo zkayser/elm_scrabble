@@ -35,7 +35,7 @@ defmodule BoardTest do
     test "does not update if the tile has already been played" do
       board =
         Board.new()
-        |> Map.put(:played, [@tile])
+        |> Map.put(:tile_state, %Scrabble.TileManager{in_play: [], played: [@tile]})
 
       update = Board.play(board, @tile, {1, 1})
 
