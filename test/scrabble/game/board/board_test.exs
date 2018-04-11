@@ -14,15 +14,15 @@ defmodule BoardTest do
   end
 
   describe "play/3" do
-    test "it updates the grid and moves the tile from current to played" do
+    test "it updates the grid and moves the tile from in_play to played" do
       board =
         Board.new()
-        |> Map.put(:current_tiles, [@tile])
+        |> Map.put(:tile_state, %Scrabble.TileManager{in_play: [@tile]})
         |> Board.play(@tile, {1, 1})
 
       assert board.grid[Scrabble.Position.make(1, 1)].tile == @tile
-      assert @tile in board.played
-      refute @tile in board.current_tiles
+      assert @tile in board.tile_state.played
+      refute @tile in board.tile_state.in_play
     end
 
     test "does not update if the tile is not in the current tiles" do

@@ -5,36 +5,26 @@ defmodule Scrabble.Board.Impl do
 
   @type t :: %__MODULE__{
           grid: Grid.t(),
-          tilebag: [Scrabble.Tile.t()],
-          current_tiles: [Scrabble.Tile.t()],
-          played: [Scrabble.Tile.t()],
+          tile_state: TileManager.t(),
           validity: validity()
         }
   @type validity :: :valid | :invalid
 
-  defstruct grid: [],
-            tilebag: [],
-            current_tiles: [],
-            played: [],
+  defstruct grid: Grid.setup(),
+            tile_state: TileManager.new(),
             validity: :invalid
 
   @spec new() :: t()
   def new do
-    {current, remainder} = TileManager.generate()
-
-    %__MODULE__{
-      grid: Grid.setup(),
-      tilebag: remainder,
-      current_tiles: current
-    }
+    %__MODULE__{}
   end
 
   @spec play(t(), Tile.t(), {pos_integer(), pos_integer()}) :: t()
-  def play(%__MODULE__{current_tiles: tiles, played: played} = board, tile, position) do
-    with true <- tile in tiles && tile not in played do
+  def play(%__MODULE__{tile_state: tiles} = board, tile, position) do
+    with true <- tile in tiles.in_play && tile not in tiles.played do
       case Grid.place_tile(board.grid, tile, position) do
         {:ok, new_grid} ->
-          process({board, [{:update_grid, new_grid}, {:tile_to_played, tile}]})
+          update_state({board, [{:update_grid, new_grid}, {:tile_played, tile}]})
 
         {:error, _} ->
           board
@@ -46,7 +36,7 @@ defmodule Scrabble.Board.Impl do
 
   def play(board, _, _), do: board
 
-  defp process({board, updates}) when is_list(updates) do
+  defp update_state({board, updates}) when is_list(updates) do
     Enum.reduce(updates, board, &handle_update/2)
   end
 
@@ -54,9 +44,7 @@ defmodule Scrabble.Board.Impl do
     %__MODULE__{board | grid: new_grid}
   end
 
-  defp handle_update({:tile_to_played, tile}, board) do
-    board
-    |> Map.put(:current_tiles, Enum.reject(board.current_tiles, &(&1 == tile)))
-    |> Map.put(:played, [tile | board.played])
+  defp handle_update({:tile_played, tile}, board) do
+    %__MODULE__{board | tile_state: TileManager.handle_played(board.tile_state, tile)}
   end
 end

@@ -1,9 +1,15 @@
 defmodule Scrabble.TileManager do
   alias Scrabble.Tile
 
-  @type tile_bag :: [Scrabble.Tile.t()]
-  @type tiles_in_play :: [Scrabble.Tile.t()]
+  @type tile_bag :: [Tile.t()]
+  @type tiles_in_play :: [Tile.t()]
   @type tile_state :: {tiles_in_play, tile_bag}
+  @type t :: %__MODULE__{
+          in_play: [Tile.t()],
+          tile_bag: [Tile.t()],
+          played: [Tile.t()]
+        }
+
   @frequency_list [
     {12, ~w(E)},
     {9, ~w(A I)},
@@ -16,6 +22,21 @@ defmodule Scrabble.TileManager do
   ]
   @initial_tile_count 7
 
+  defstruct in_play: [],
+            tile_bag: [],
+            played: []
+
+  @spec new() :: t()
+  def new() do
+    {in_play, remainder} = generate()
+
+    %__MODULE__{
+      in_play: in_play,
+      tile_bag: remainder,
+      played: []
+    }
+  end
+
   @spec generate() :: tile_state()
   def generate do
     Enum.reduce(@frequency_list, [], &expand_letters/2)
@@ -23,6 +44,15 @@ defmodule Scrabble.TileManager do
     |> Enum.map(&Tile.create/1)
     |> Enum.shuffle()
     |> Enum.split(@initial_tile_count)
+  end
+
+  @spec handle_played(t(), Tile.t()) :: t()
+  def handle_played(tile_manager, tile) do
+    %__MODULE__{
+      tile_manager
+      | in_play: Enum.reject(tile_manager.in_play, &(&1 == tile)),
+        played: [tile | tile_manager.played]
+    }
   end
 
   # Add the number of letters into the accumulator,
