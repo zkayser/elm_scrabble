@@ -20,7 +20,7 @@ defmodule Scrabble.TileManager do
     {2, ~w(B C M P F H V W Y) ++ [""]},
     {1, ~w(K J X Q Z)}
   ]
-  @initial_tile_count 7
+  @max_tile_count 7
 
   defstruct in_play: [],
             tile_bag: [],
@@ -46,12 +46,28 @@ defmodule Scrabble.TileManager do
     }
   end
 
+  @spec replenish(t()) :: t()
+  def replenish(%__MODULE__{tile_bag: []} = state), do: state
+
+  def replenish(%__MODULE__{in_play: in_play} = state) when length(in_play) == 7 do
+    state
+  end
+
+  def replenish(state) do
+    count = @max_tile_count - length(state.in_play)
+
+    {now_in_play, remainder} =
+      {Enum.take(state.tile_bag, count), Enum.drop(state.tile_bag, count)}
+
+    %__MODULE__{state | tile_bag: remainder, in_play: state.in_play ++ now_in_play}
+  end
+
   defp generate do
     Enum.reduce(@frequency_list, [], &expand_letters/2)
     |> Enum.with_index()
     |> Enum.map(&Tile.create/1)
     |> Enum.shuffle()
-    |> Enum.split(@initial_tile_count)
+    |> Enum.split(@max_tile_count)
   end
 
   # Add the number of letters into the accumulator,
