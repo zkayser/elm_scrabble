@@ -16,7 +16,7 @@ defmodule Scrabble.Board.Impl do
 
   @spec new() :: t()
   def new do
-    %__MODULE__{}
+    %__MODULE__{tile_state: TileManager.new()}
   end
 
   @spec play(t(), Tile.t(), {pos_integer(), pos_integer()}) :: t()
