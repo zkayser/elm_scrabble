@@ -10,7 +10,8 @@ defmodule Scrabble.Board.Validator do
           lower_bound: Position.t() | :undetermined,
           upper_bound: Position.t() | :undetermined,
           word: String.t() | :empty,
-          message: String.t()
+          message: String.t(),
+          invalid_at: [Position.t()]
         }
   @typep dimension :: :row | :col
 
@@ -21,7 +22,8 @@ defmodule Scrabble.Board.Validator do
             lower_bound: :undetermined,
             upper_bound: :undetermined,
             word: :empty,
-            message: ""
+            message: "",
+            invalid_at: []
 
   @spec validate(Board.t(), dimension, pos_integer()) :: t()
   def validate(%{moves: moves, grid: grid}, dimension, number) do
@@ -88,8 +90,20 @@ defmodule Scrabble.Board.Validator do
 
   defp invalidated?(%__MODULE__{selection: selection} = validator) do
     case Enum.all?(selection, fn {_, cell} -> cell.tile != :empty end) do
-      true -> %__MODULE__{validator | invalidated?: false}
-      false -> %__MODULE__{validator | invalidated?: true, message: "Invalid move."}
+      true ->
+        %__MODULE__{validator | invalidated?: false}
+
+      false ->
+        invalid_positions =
+          Enum.filter(selection, fn {_, cell} -> cell.tile == :empty end)
+          |> Enum.map(fn {pos, _} -> pos end)
+
+        %__MODULE__{
+          validator
+          | invalidated?: true,
+            message: "Invalid move.",
+            invalid_at: invalid_positions
+        }
     end
   end
 

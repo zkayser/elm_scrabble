@@ -157,7 +157,9 @@ defmodule BoardTest do
         |> Map.put(:tile_state, played: tiles)
         |> Map.put(:grid, grid)
 
-      assert {:invalid, "Invalid move."} = Board.validate(board).validity
+      validated = Board.validate(board)
+      assert {:invalid, "Invalid move."} = validated.validity
+      assert [Position.make(8, 9)] == validated.invalid_at
     end
 
     test "does not validate if the center piece has not been played" do
@@ -174,8 +176,9 @@ defmodule BoardTest do
         |> Map.put(:tile_state, played: tiles)
         |> Map.put(:grid, grid)
 
-      assert {:invalid, "You must play a tile on the center piece."} =
-               Board.validate(board).validity
+      validated = Board.validate(board)
+      assert {:invalid, "You must play a tile on the center piece."} = validated.validity
+      assert [Position.make(8, 8)] == validated.invalid_at
     end
   end
 end

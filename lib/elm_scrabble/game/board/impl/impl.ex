@@ -1,5 +1,5 @@
 defmodule Scrabble.Board.Impl do
-  alias Scrabble.{Grid, Tile, TileManager, Moves}
+  alias Scrabble.{Grid, Tile, TileManager, Moves, Position}
   alias Scrabble.Board.Validator
   alias Scrabble.Board.ApiParams, as: Params
 
@@ -7,7 +7,8 @@ defmodule Scrabble.Board.Impl do
           grid: Grid.t(),
           tile_state: TileManager.t(),
           moves: Moves.t(),
-          validity: validity()
+          validity: validity(),
+          invalid_at: [Position.t()]
         }
   @type validity :: {:valid, String.t()} | {:invalid, message()}
   @type message :: String.t()
@@ -15,7 +16,8 @@ defmodule Scrabble.Board.Impl do
   defstruct grid: Grid.setup(),
             tile_state: TileManager.new(),
             moves: [],
-            validity: {:invalid, "You haven't made any moves yet."}
+            validity: {:invalid, "You haven't made any moves yet."},
+            invalid_at: []
 
   @spec new() :: t()
   def new do
@@ -62,8 +64,8 @@ defmodule Scrabble.Board.Impl do
     if Grid.is_center_played?(grid) do
       with {dimension, number} <- Moves.validate(moves) do
         case Validator.validate(board, dimension, number) do
-          %{invalidated?: true, message: message} ->
-            %__MODULE__{board | validity: {:invalid, message}}
+          %{invalidated?: true, message: message, invalid_at: invalid} ->
+            %__MODULE__{board | validity: {:invalid, message}, invalid_at: invalid}
 
           %{selection: selection, word: word} ->
             %__MODULE__{
@@ -77,7 +79,11 @@ defmodule Scrabble.Board.Impl do
           %__MODULE__{board | validity: :invalid}
       end
     else
-      %__MODULE__{board | validity: {:invalid, "You must play a tile on the center piece."}}
+      %__MODULE__{
+        board
+        | validity: {:invalid, "You must play a tile on the center piece."},
+          invalid_at: [Position.make(8, 8)]
+      }
     end
   end
 
