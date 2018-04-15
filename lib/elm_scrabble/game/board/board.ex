@@ -7,6 +7,10 @@ defmodule Scrabble.Board do
     {board, pid}
   end
 
+  def play(board, params) when is_list(params) do
+    GenServer.call(board, {:play, params})
+  end
+
   def play(board, tile, {row, col}) when row < 16 and col < 16 and row > 0 and col > 0 do
     GenServer.call(board, {:play, tile, {row, col}})
   end
