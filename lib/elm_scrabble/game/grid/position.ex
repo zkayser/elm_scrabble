@@ -7,6 +7,8 @@ defmodule Scrabble.Position do
   defstruct row: 1,
             col: 1
 
+  @behaviour Access
+
   @doc """
   A convenience function for creating position
   structs
@@ -19,4 +21,24 @@ defmodule Scrabble.Position do
   def make(_, _) do
     raise ArgumentError, message: "Positions must have positive, integer values for row and col"
   end
+
+  # Access callbacks
+  def fetch(term, :col) do
+    {:ok, term.col}
+  end
+
+  def fetch(term, :row) do
+    {:ok, term.row}
+  end
+
+  def get(term, :col, _) do
+    fetch(term, :col)
+  end
+
+  def get(term, :row, _) do
+    fetch(term, :row)
+  end
+
+  def get_and_update(position, _, _), do: position
+  def pop(position, _), do: position
 end

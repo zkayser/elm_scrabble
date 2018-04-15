@@ -1,17 +1,18 @@
 defmodule Scrabble.Board.Impl do
-  alias Scrabble.Grid
-  alias Scrabble.Tile
-  alias Scrabble.TileManager
+  alias Scrabble.{Grid, Tile, TileManager, Moves}
+  alias Scrabble.Board.Validator
 
   @type t :: %__MODULE__{
           grid: Grid.t(),
           tile_state: TileManager.t(),
+          moves: Moves.t(),
           validity: validity()
         }
-  @type validity :: :valid | :invalid
+  @type validity :: {:valid, String.t()} | :invalid
 
   defstruct grid: Grid.setup(),
             tile_state: TileManager.new(),
+            moves: [],
             validity: :invalid
 
   @spec new() :: t()
@@ -24,7 +25,9 @@ defmodule Scrabble.Board.Impl do
     with true <- tile in tiles.in_play && tile not in tiles.played do
       case Grid.place_tile(board.grid, tile, position) do
         {:ok, new_grid} ->
-          update_state({board, [{:update_grid, new_grid}, {:tile_played, tile}]})
+          update_state(
+            {board, [{:update_grid, new_grid}, {:tile_played, tile}, {:add_move, position}]}
+          )
 
         {:error, _} ->
           board
@@ -36,6 +39,18 @@ defmodule Scrabble.Board.Impl do
 
   def play(board, _, _), do: board
 
+  @spec validate(t()) :: t()
+  def validate(%__MODULE__{moves: moves, grid: grid} = board) do
+    if Grid.is_center_played?(grid) do
+      with {dimension, number} <- Moves.validate(moves) do
+        Validator.validate(board, dimension, number)
+      else
+        _ ->
+          %__MODULE__{board | validity: :invalid}
+      end
+    end
+  end
+
   defp update_state({board, updates}) when is_list(updates) do
     Enum.reduce(updates, board, &handle_update/2)
   end
@@ -46,5 +61,9 @@ defmodule Scrabble.Board.Impl do
 
   defp handle_update({:tile_played, tile}, board) do
     %__MODULE__{board | tile_state: TileManager.handle_played(board.tile_state, tile)}
+  end
+
+  defp handle_update({:add_move, {row, col}}, board) do
+    %__MODULE__{board | moves: [Scrabble.Position.make(row, col) | board.moves]}
   end
 end

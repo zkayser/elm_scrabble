@@ -6,6 +6,6 @@ defmodule Scrabble.Cell do
         }
 
   defstruct tile: :empty,
-            position: %{x: 0, y: 0},
+            position: %Scrabble.Position{row: 1, col: 1},
             multiplier: :no_multiplier
 end

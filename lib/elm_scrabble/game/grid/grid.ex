@@ -5,6 +5,9 @@ defmodule Scrabble.Grid do
   @type t :: %{required(Position.t()) => Cell.t()}
   @typep result :: {:ok | :error, t()}
   @typep position :: {pos_integer(), pos_integer()}
+  @typep dimension :: {:row | :col, pos_integer()}
+
+  defguard is_valid(first, last) when first > 0 and last <= 15
 
   @spec setup() :: t()
   def setup do
@@ -27,6 +30,13 @@ defmodule Scrabble.Grid do
     length(Map.keys(grid))
   end
 
+  def place_tiles(grid, tiles) do
+    case Enum.reduce(tiles, grid, fn {tile, pos}, new_grid -> place_tile(new_grid, tile, pos) end) do
+      {:ok, grid} -> {:ok, grid}
+      {:error, _} -> {:error, grid}
+    end
+  end
+
   @spec place_tile(t() | result, Scrabble.Tile.t(), position) :: result
   def place_tile(%{} = grid, %Scrabble.Tile{} = tile, {row, col}) do
     do_place_tile(grid, tile, {row, col})
@@ -37,6 +47,45 @@ defmodule Scrabble.Grid do
   end
 
   def place_tile({:error, grid}, _, _), do: {:error, grid}
+
+  @spec is_center_played?(t()) :: boolean()
+  def is_center_played?(grid) do
+    grid[Position.make(8, 8)].tile != :empty
+  end
+
+  @spec get(t(), dimension()) :: t()
+  def get(grid, {:row, num}) when num > 0 and num <= 15 do
+    Enum.reduce(grid, %{}, fn {%{row: row} = pos, _}, acc ->
+      if row == num, do: Map.put(acc, pos, grid[pos]), else: acc
+    end)
+  end
+
+  def get(grid, {:col, num}) when num > 0 and num <= 15 do
+    Enum.reduce(grid, %{}, fn {%{col: col} = pos, _}, acc ->
+      if col == num, do: Map.put(acc, pos, grid[pos]), else: acc
+    end)
+  end
+
+  def get(grid, _), do: grid
+
+  @spec get_tiles_from_range(t(), Range.t(), :row | :col) :: [Scrabble.Tile.t()]
+  def get_tiles_from_range(subgrid, %{first: first, last: last}, dim)
+      when is_valid(first, last) do
+    subgrid
+    |> Enum.filter(fn {pos, _} ->
+      pos[opposite_of(dim)] >= first && pos[opposite_of(dim)] <= last
+    end)
+    |> Enum.filter(fn {_, %Cell{tile: tile}} -> tile != :empty end)
+    |> Enum.map(fn {_, %Cell{tile: tile}} -> tile end)
+    |> maybe_reverse(dim)
+  end
+
+  def get_tiles_from_range(_, _, _), do: []
+
+  @spec update_subgrid(t(), t()) :: t()
+  def update_subgrid(grid, subgrid) do
+    Enum.reduce(subgrid, grid, fn {pos, cell}, new_grid -> Map.put(new_grid, pos, cell) end)
+  end
 
   defp do_place_tile(grid, tile, {row, col}) do
     with %Cell{tile: :empty} = cell <- grid[Position.make(row, col)] do
@@ -49,6 +98,12 @@ defmodule Scrabble.Grid do
   defp build_grid(key_value, acc) do
     Enum.into(key_value, acc)
   end
+
+  defp opposite_of(:col), do: :row
+  defp opposite_of(:row), do: :col
+
+  defp maybe_reverse(list, :row), do: list
+  defp maybe_reverse(list, :col), do: Enum.reverse(list)
 
   defp row_for(number) do
     (number / 15)
