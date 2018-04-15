@@ -15,7 +15,7 @@ defmodule Scrabble.Board.Impl do
   defstruct grid: Grid.setup(),
             tile_state: TileManager.new(),
             moves: [],
-            validity: :invalid
+            validity: {:invalid, "You haven't made any moves yet."}
 
   @spec new() :: t()
   def new do
@@ -27,7 +27,7 @@ defmodule Scrabble.Board.Impl do
     converted = Enum.map(api_params, &Params.convert/1)
 
     case converted
-         |> Enum.all?(fn {tile, _} -> tile in tiles.in_played && tile not in tiles.played end) do
+         |> Enum.all?(fn {tile, _} -> tile in tiles.in_play && tile not in tiles.played end) do
       true ->
         Enum.reduce(converted, board, fn {tile, position}, board ->
           play(board, tile, position)

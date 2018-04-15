@@ -10,7 +10,7 @@ defmodule BoardTest do
     test "Generates a new board setup and board is initially invalid" do
       board = Board.new()
       assert %Board{} = board
-      assert board.validity == :invalid
+      assert board.validity == {:invalid, "You haven't made any moves yet."}
       assert length(Map.keys(board.grid)) == @default_grid_cells
     end
   end
@@ -43,6 +43,22 @@ defmodule BoardTest do
       update = Board.play(board, @tile, {1, 1})
 
       assert update == board
+    end
+  end
+
+  describe "play/2" do
+    test "is a convenience wrapper to run play/3 with multiple tiles & positions" do
+      board =
+        Board.new()
+        |> Map.put(:tile_state, %Scrabble.TileManager{in_play: [@tile, @tile2]})
+        |> Board.play([{@tile, {1, 1}}, {@tile2, {1, 2}}])
+
+      assert board.grid[Position.make(1, 1)].tile == @tile
+      assert board.grid[Position.make(1, 2)].tile == @tile2
+      assert @tile in board.tile_state.played
+      assert @tile2 in board.tile_state.played
+      refute @tile in board.tile_state.in_play
+      refute @tile in board.tile_state.in_play
     end
   end
 

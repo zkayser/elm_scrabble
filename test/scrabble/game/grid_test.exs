@@ -83,19 +83,25 @@ defmodule GridTest do
 
   describe "get_tiles_from_range/3" do
     test "returns a list of tiles from a given range along a row" do
-      assert [@tile2, @tile] =
-               Grid.setup()
-               |> Map.put(Position.make(8, 8), %Scrabble.Cell{tile: @tile})
-               |> Map.put(Position.make(8, 9), %Scrabble.Cell{tile: @tile2})
-               |> Grid.get_tiles_from_range(8..9, :row)
+      tiles =
+        Grid.setup()
+        |> Map.put(Position.make(8, 8), %Scrabble.Cell{tile: @tile})
+        |> Map.put(Position.make(8, 9), %Scrabble.Cell{tile: @tile2})
+        |> Grid.get_tiles_from_range(8..9, :row)
+
+      assert @tile in tiles
+      assert @tile2 in tiles
     end
 
     test "returns a list of tiles from a given range along a col" do
-      assert [@tile, @tile2] ==
-               Grid.setup()
-               |> Map.put(Position.make(8, 8), %Scrabble.Cell{tile: @tile})
-               |> Map.put(Position.make(9, 8), %Scrabble.Cell{tile: @tile2})
-               |> Grid.get_tiles_from_range(8..9, :col)
+      tiles =
+        Grid.setup()
+        |> Map.put(Position.make(8, 8), %Scrabble.Cell{tile: @tile})
+        |> Map.put(Position.make(9, 8), %Scrabble.Cell{tile: @tile2})
+        |> Grid.get_tiles_from_range(8..9, :col)
+
+      assert @tile in tiles
+      assert @tile2 in tiles
     end
 
     test "returns an empty list if given an invalid range" do
