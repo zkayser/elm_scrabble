@@ -83,7 +83,7 @@ defmodule GridTest do
 
   describe "get_tiles_from_range/3" do
     test "returns a list of tiles from a given range along a row" do
-      assert [@tile, @tile2] =
+      assert [@tile2, @tile] =
                Grid.setup()
                |> Map.put(Position.make(8, 8), %Scrabble.Cell{tile: @tile})
                |> Map.put(Position.make(8, 9), %Scrabble.Cell{tile: @tile2})

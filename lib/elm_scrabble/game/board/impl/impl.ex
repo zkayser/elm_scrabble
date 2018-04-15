@@ -1,6 +1,7 @@
 defmodule Scrabble.Board.Impl do
   alias Scrabble.{Grid, Tile, TileManager, Moves}
   alias Scrabble.Board.Validator
+  alias Scrabble.Board.ApiParams, as: Params
 
   @type t :: %__MODULE__{
           grid: Grid.t(),
@@ -8,7 +9,8 @@ defmodule Scrabble.Board.Impl do
           moves: Moves.t(),
           validity: validity()
         }
-  @type validity :: {:valid, String.t()} | :invalid
+  @type validity :: {:valid, String.t()} | {:invalid, message()}
+  @type message :: String.t()
 
   defstruct grid: Grid.setup(),
             tile_state: TileManager.new(),
@@ -18,6 +20,22 @@ defmodule Scrabble.Board.Impl do
   @spec new() :: t()
   def new do
     %__MODULE__{tile_state: TileManager.new()}
+  end
+
+  @spec play(t(), [Params.t()]) :: t()
+  def play(%__MODULE__{tile_state: tiles} = board, api_params) do
+    converted = Enum.map(api_params, &Params.convert/1)
+
+    case converted
+         |> Enum.all?(fn {tile, _} -> tile in tiles.in_played && tile not in tiles.played end) do
+      true ->
+        Enum.reduce(converted, board, fn {tile, position}, board ->
+          play(board, tile, position)
+        end)
+
+      false ->
+        board
+    end
   end
 
   @spec play(t(), Tile.t(), {pos_integer(), pos_integer()}) :: t()
