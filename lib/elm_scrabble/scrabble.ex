@@ -21,8 +21,7 @@ defmodule Scrabble do
     verify_word(word, multipliers)
   end
 
-  # Going to leave this API in place until the fully
-  # server-driven implementation is ready to go.
+  # This version of score/1 is deprecated
   def score(%{"plays" => plays}) when is_list(plays) do
     results = for play <- plays, do: score(play)
 
