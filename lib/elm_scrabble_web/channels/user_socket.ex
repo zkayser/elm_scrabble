@@ -2,10 +2,10 @@ defmodule ElmScrabbleWeb.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  channel "scrabble:lobby", ElmScrabbleWeb.ScrabbleChannel
+  channel("scrabble:lobby", ElmScrabbleWeb.ScrabbleChannel)
 
   ## Transports
-  transport :websocket, Phoenix.Transports.WebSocket
+  transport(:websocket, Phoenix.Transports.WebSocket)
   # transport :longpoll, Phoenix.Transports.LongPoll
 
   # Socket params are passed from the client and can
