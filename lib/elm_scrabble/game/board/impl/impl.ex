@@ -62,8 +62,8 @@ defmodule Scrabble.Board.Impl do
     if Grid.is_center_played?(grid) do
       with {dimension, number} <- Moves.validate(moves) do
         case Validator.validate(board, dimension, number) do
-          %{invalidated?: true} ->
-            %__MODULE__{board | validity: :invalid}
+          %{invalidated?: true, message: message} ->
+            %__MODULE__{board | validity: {:invalid, message}}
 
           %{selection: selection, word: word} ->
             %__MODULE__{
@@ -77,7 +77,7 @@ defmodule Scrabble.Board.Impl do
           %__MODULE__{board | validity: :invalid}
       end
     else
-      %__MODULE__{board | validity: :invalid}
+      %__MODULE__{board | validity: {:invalid, "You must play a tile on the center piece."}}
     end
   end
 

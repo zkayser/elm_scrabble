@@ -157,7 +157,25 @@ defmodule BoardTest do
         |> Map.put(:tile_state, played: tiles)
         |> Map.put(:grid, grid)
 
-      assert :invalid = Board.validate(board).validity
+      assert {:invalid, "Invalid move."} = Board.validate(board).validity
+    end
+
+    test "does not validate if the center piece has not been played" do
+      moves = [Position.make(1, 1), Position.make(1, 2)]
+      positions = [{1, 1}, {1, 2}]
+
+      tiles = [@tile, @tile2]
+      tiles_with_position = Enum.zip(tiles, positions)
+      {:ok, grid} = Grid.setup() |> Grid.place_tiles(tiles_with_position)
+
+      board =
+        Board.new()
+        |> Map.put(:moves, moves)
+        |> Map.put(:tile_state, played: tiles)
+        |> Map.put(:grid, grid)
+
+      assert {:invalid, "You must play a tile on the center piece."} =
+               Board.validate(board).validity
     end
   end
 end
