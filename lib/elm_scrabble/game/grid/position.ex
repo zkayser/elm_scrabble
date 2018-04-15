@@ -3,6 +3,7 @@ defmodule Scrabble.Position do
           row: pos_integer(),
           col: pos_integer()
         }
+  @typep dimension :: :row | :col
 
   defstruct row: 1,
             col: 1
@@ -21,6 +22,10 @@ defmodule Scrabble.Position do
   def make(_, _) do
     raise ArgumentError, message: "Positions must have positive, integer values for row and col"
   end
+
+  @spec opposite_of(dimension()) :: dimension()
+  def opposite_of(:row), do: :col
+  def opposite_of(:col), do: :row
 
   # Access callbacks
   def fetch(term, :col) do

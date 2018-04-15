@@ -1,9 +1,10 @@
 defmodule BoardTest do
   use ExUnit.Case
   alias Scrabble.Board.Impl, as: Board
-  alias Scrabble.{Position, Grid}
+  alias Scrabble.{Grid, Position}
   @default_grid_cells 225
   @tile %Scrabble.Tile{letter: "A", id: 1, value: 1, multiplier: :no_multiplier}
+  @tile2 %Scrabble.Tile{letter: "B", id: 2, value: 1, multiplier: :no_multiplier}
 
   describe "new/0" do
     test "Generates a new board setup and board is initially invalid" do
@@ -47,95 +48,98 @@ defmodule BoardTest do
 
   describe "validate/1" do
     test "sets board state to valid + validated word when moves are validated across a row" do
-      valid_moves_row = Enum.map(3..8, &Position.make(8, &1))
-      positions = for x <- 3..8, do: {8, x}
+      valid_moves_row = Enum.map(4..8, &Position.make(8, &1))
+      positions = for x <- 4..8, do: {8, x}
 
       tiles_played =
         String.codepoints("facet")
         |> Enum.map(&%Scrabble.Tile{letter: &1})
 
       tiles_with_position = Enum.zip(tiles_played, positions)
-      {:ok, grid} = Grid.place_tiles(Grid.setup(), tiles_with_position)
+      {:ok, grid} = Grid.setup() |> Grid.place_tiles(tiles_with_position)
 
       board =
         Board.new()
-        |> Map.put(:grid, grid)
         |> Map.put(:moves, valid_moves_row)
         |> Map.put(:tile_state, played: tiles_played)
+        |> Map.put(:grid, grid)
 
       assert {:valid, "facet"} = Board.validate(board).validity
     end
 
     test "sets board state to valid + validated word when moves are validated across a col" do
-      valid_moves_col = Enum.map(3..8, &Position.make(&1, 8))
-      positions = for x <- 3..8, do: {x, 8}
+      valid_moves_col = Enum.map(4..8, &Position.make(&1, 8))
+      positions = for x <- 4..8, do: {x, 8}
 
       tiles_played =
         String.codepoints("facet")
         |> Enum.map(&%Scrabble.Tile{letter: &1})
 
       tiles_with_position = Enum.zip(tiles_played, positions)
-      {:ok, grid} = Grid.place_tiles(Grid.setup(), tiles_with_position)
+      {:ok, grid} = Grid.setup() |> Grid.place_tiles(tiles_with_position)
 
       board =
         Board.new()
-        |> Map.put(:grid, grid)
         |> Map.put(:moves, valid_moves_col)
         |> Map.put(:tile_state, played: tiles_played)
+        |> Map.put(:grid, grid)
 
       assert {:valid, "facet"} = Board.validate(board).validity
     end
 
     test "captures words that are span longer than current moves made" do
-      moves = Enum.map(3..8, &Position.make(1, &1))
-      positions = for x <- 3..9, do: {8, x}
+      valid_moves_row = Enum.map(4..8, &Position.make(8, &1))
+      positions = for x <- 4..9, do: {8, x}
 
-      tiles_played =
+      tiles =
         String.codepoints("facets")
         |> Enum.map(&%Scrabble.Tile{letter: &1})
 
-      tiles_with_position = Enum.zip(tiles_played, positions)
-      {:ok, grid} = Grid.place_tiles(Grid.setup(), tiles_with_position)
+      tiles_with_position = Enum.zip(tiles, positions)
+      {:ok, grid} = Grid.setup() |> Grid.place_tiles(tiles_with_position)
 
       board =
         Board.new()
+        |> Map.put(:moves, valid_moves_row)
+        |> Map.put(:tile_state, played: tiles)
         |> Map.put(:grid, grid)
-        |> Map.put(:moves, moves)
-        |> Map.put(:tile_state, played: tiles_played)
 
       assert {:valid, "facets"} = Board.validate(board).validity
     end
 
-    test "captures words that are composed of tiles between current moves made" do
-      moves = [Position.make(8, 7), Position.make(8, 9)]
-      positions = for x <- 7..9, do: {8, x}
+    test "captures words that start before the current moves made" do
+      valid_moves_row = Enum.map(4..8, &Position.make(8, &1))
+      positions = for x <- 3..8, do: {8, x}
 
-      tiles_played = String.codepoints("cat") |> Enum.map(&%Scrabble.Tile{letter: &1})
-      tiles_with_position = Enum.zip(tiles_played, positions)
-      {:ok, grid} = Grid.place_tiles(Grid.setup(), tiles_with_position)
+      tiles =
+        String.codepoints("facets")
+        |> Enum.map(&%Scrabble.Tile{letter: &1})
+
+      tiles_with_position = Enum.zip(tiles, positions)
+      {:ok, grid} = Grid.setup() |> Grid.place_tiles(tiles_with_position)
 
       board =
         Board.new()
+        |> Map.put(:moves, valid_moves_row)
+        |> Map.put(:tile_state, played: tiles)
         |> Map.put(:grid, grid)
-        |> Map.put(:moves, moves)
-        |> Map.put(:tile_state, played: tiles_played)
 
-      assert {:valid, "cat"} = Board.validate(board).validity
+      assert {:valid, "facets"} = Board.validate(board).validity
     end
 
-    test "does not validate when current moves made are not connected by tiles" do
-      moves = [Position.make(1, 1), Position.make(1, 3)]
-      positions = [{1, 1}, {1, 3}]
+    test "does not validate if there a gaps between the current moves made" do
+      moves = [Position.make(8, 8), Position.make(8, 10)]
+      positions = [{8, 8}, {8, 10}]
 
-      tiles_played = String.codepoints("as") |> Enum.map(&%Scrabble.Tile{letter: &1})
-      tiles_with_position = Enum.zip(tiles_played, positions)
-      {:ok, grid} = Grid.place_tiles(Grid.setup(), tiles_with_position)
+      tiles = [@tile, @tile2]
+      tiles_with_position = Enum.zip(tiles, positions)
+      {:ok, grid} = Grid.setup() |> Grid.place_tiles(tiles_with_position)
 
       board =
         Board.new()
-        |> Map.put(:grid, grid)
         |> Map.put(:moves, moves)
-        |> Map.put(:tile_state, played: tiles_played)
+        |> Map.put(:tile_state, played: tiles)
+        |> Map.put(:grid, grid)
 
       assert :invalid = Board.validate(board).validity
     end

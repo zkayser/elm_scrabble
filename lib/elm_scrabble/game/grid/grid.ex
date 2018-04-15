@@ -1,7 +1,5 @@
 defmodule Scrabble.Grid do
-  alias Scrabble.Cell
-  alias Scrabble.Multiplier
-  alias Scrabble.Position
+  alias Scrabble.{Cell, Multiplier, Position}
   @type t :: %{required(Position.t()) => Cell.t()}
   @typep result :: {:ok | :error, t()}
   @typep position :: {pos_integer(), pos_integer()}
@@ -30,6 +28,7 @@ defmodule Scrabble.Grid do
     length(Map.keys(grid))
   end
 
+  @spec place_tiles(t(), [{Scrabble.Tile.t(), position}]) :: result()
   def place_tiles(grid, tiles) do
     case Enum.reduce(tiles, grid, fn {tile, pos}, new_grid -> place_tile(new_grid, tile, pos) end) do
       {:ok, grid} -> {:ok, grid}
@@ -73,7 +72,7 @@ defmodule Scrabble.Grid do
       when is_valid(first, last) do
     subgrid
     |> Enum.filter(fn {pos, _} ->
-      pos[opposite_of(dim)] >= first && pos[opposite_of(dim)] <= last
+      pos[Position.opposite_of(dim)] >= first && pos[Position.opposite_of(dim)] <= last
     end)
     |> Enum.filter(fn {_, %Cell{tile: tile}} -> tile != :empty end)
     |> Enum.map(fn {_, %Cell{tile: tile}} -> tile end)
@@ -82,7 +81,7 @@ defmodule Scrabble.Grid do
 
   def get_tiles_from_range(_, _, _), do: []
 
-  @spec update_subgrid(t(), t()) :: t()
+  @spec update_subgrid(t(), [{Position.t(), Cell.t()}]) :: t()
   def update_subgrid(grid, subgrid) do
     Enum.reduce(subgrid, grid, fn {pos, cell}, new_grid -> Map.put(new_grid, pos, cell) end)
   end
@@ -98,9 +97,6 @@ defmodule Scrabble.Grid do
   defp build_grid(key_value, acc) do
     Enum.into(key_value, acc)
   end
-
-  defp opposite_of(:col), do: :row
-  defp opposite_of(:row), do: :col
 
   defp maybe_reverse(list, :row), do: list
   defp maybe_reverse(list, :col), do: Enum.reverse(list)

@@ -22,11 +22,11 @@ defmodule Scrabble.Board.Validator do
             word: :empty
 
   @spec validate(Board.t(), dimension, pos_integer()) :: t()
-  def validate(%{moves: moves, tile_state: tiles, grid: grid} = board, dimension, number) do
+  def validate(%{moves: moves, grid: grid}, dimension, number) do
     Grid.get(grid, {dimension, number})
     |> set_subgrid(dimension)
     |> set_lower_bound(moves)
-    |> set_upper_bound(moves)
+    |> set_upper_bound(Enum.reverse(moves))
     |> set_selection()
     |> invalidated?()
     |> set_word()
@@ -40,6 +40,8 @@ defmodule Scrabble.Board.Validator do
   defp set_lower_bound(%__MODULE__{subgrid: subgrid, dimension: dimension} = validator, [
          position | _
        ]) do
+    dimension = Position.opposite_of(dimension)
+
     lower_bound =
       subgrid
       |> Enum.filter(fn {_, cell} ->
@@ -56,10 +58,12 @@ defmodule Scrabble.Board.Validator do
   defp set_upper_bound(%__MODULE__{subgrid: subgrid, dimension: dimension} = validator, [
          position | _
        ]) do
+    dimension = Position.opposite_of(dimension)
+
     upper_bound =
       subgrid
       |> Enum.filter(fn {_, cell} ->
-        cell.position[dimension] < position[dimension] && cell.tile != :empty
+        cell.position[dimension] > position[dimension] && cell.tile != :empty
       end)
       |> Enum.sort(fn {position1, _}, {position2, _} ->
         position1[dimension] > position2[dimension]
@@ -73,7 +77,8 @@ defmodule Scrabble.Board.Validator do
     selection =
       subgrid
       |> Enum.filter(fn {pos, _} ->
-        pos[dimension] >= validator.lower_bound && pos[dimension] <= validator.upper_bound
+        dim = Position.opposite_of(dimension)
+        pos[dim] >= validator.lower_bound[dim] && pos[dim] <= validator.upper_bound[dim]
       end)
 
     %__MODULE__{validator | selection: selection}
@@ -89,14 +94,15 @@ defmodule Scrabble.Board.Validator do
   defp set_word(%__MODULE__{invalidated?: true} = validator), do: validator
 
   defp set_word(%__MODULE__{selection: selection} = validator) do
-    word =
+    letters =
       selection
       |> Enum.sort(fn {pos1, _}, {pos2, _} ->
         pos1[validator.dimension] < pos2[validator.dimension]
       end)
       |> Enum.map(fn {_, %Cell{tile: tile}} -> tile.letter end)
+      |> Enum.reverse()
 
-    %__MODULE__{validator | word: word}
+    %__MODULE__{validator | word: Enum.join(letters)}
   end
 
   defp update_tiles(%__MODULE__{invalidated?: true} = validator), do: validator
@@ -104,8 +110,9 @@ defmodule Scrabble.Board.Validator do
   defp update_tiles(%__MODULE__{subgrid: subgrid} = validator) do
     updated_subgrid =
       for {key, %Cell{tile: tile} = cell} <- subgrid, into: %{} do
-        unless cell.tile.multiplier != :empty && cell.tile.multiplier != :wildcard do
-          {key, %Cell{cell | tile: %Tile{tile | multiplier: cell.multiplier}}}
+        unless tile == :empty do
+          multiplier = if tile.multiplier == :wildcard, do: :wilcard, else: cell.multiplier
+          {key, %Cell{cell | tile: %Tile{tile | multiplier: multiplier}}}
         else
           {key, cell}
         end
@@ -115,5 +122,5 @@ defmodule Scrabble.Board.Validator do
   end
 
   defp take_dimension_with_default([], position), do: position
-  defp take_dimension_with_default([position | _], _), do: position
+  defp take_dimension_with_default([{position, _} | _], _), do: position
 end

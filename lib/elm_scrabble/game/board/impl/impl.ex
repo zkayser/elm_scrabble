@@ -43,11 +43,23 @@ defmodule Scrabble.Board.Impl do
   def validate(%__MODULE__{moves: moves, grid: grid} = board) do
     if Grid.is_center_played?(grid) do
       with {dimension, number} <- Moves.validate(moves) do
-        Validator.validate(board, dimension, number)
+        case Validator.validate(board, dimension, number) do
+          %{invalidated?: true} ->
+            %__MODULE__{board | validity: :invalid}
+
+          %{selection: selection, word: word} ->
+            %__MODULE__{
+              board
+              | grid: Grid.update_subgrid(board.grid, selection),
+                validity: {:valid, word}
+            }
+        end
       else
         _ ->
           %__MODULE__{board | validity: :invalid}
       end
+    else
+      %__MODULE__{board | validity: :invalid}
     end
   end
 
