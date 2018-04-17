@@ -52,20 +52,15 @@ defmodule Scrabble.Board.Validator do
   defp handle_secondary(dimension, move, grid) do
     subgrid = Grid.get(grid, {dimension, move[dimension]})
     perpendicular = Position.opposite_of(dimension)
-    # Enum.drop(1) calls remove the current element from the list.
-    # Secondary moves are not valid if they are not connected to
-    # adjacent tiles, so removing the current move from both
-    # lower and higher lists allows you to look at size to
-    # see if there are any adjacent tiles in either direction.
 
     lower =
-      Enum.filter(subgrid, &filter_func(&1).(move, perpendicular, :lower))
-      |> Enum.sort(&sort_func(&1, &2).(dimension, :greater))
+      Enum.filter(subgrid, &filter_func(&1).(move, perpendicular, :<))
+      |> Enum.sort(&sort_func(&1, &2).(dimension, :>))
       |> Enum.take_while(fn {_, cell} -> cell.tile != :empty end)
 
     higher =
-      Enum.filter(subgrid, &filter_func(&1).(move, perpendicular, :upper))
-      |> Enum.sort(&sort_func(&1, &2).(dimension, :less_than))
+      Enum.filter(subgrid, &filter_func(&1).(move, perpendicular, :>))
+      |> Enum.sort(&sort_func(&1, &2).(dimension, :<))
       |> Enum.take_while(fn {_, cell} -> cell.tile != :empty end)
 
     case {length(lower) > 0, length(higher) > 0} do
@@ -191,20 +186,14 @@ defmodule Scrabble.Board.Validator do
   defp take_dimension_with_default([{position, _} | _], _), do: position
 
   defp filter_func({_, cell}) do
-    fn position, dimension, bound ->
-      case bound do
-        :lower -> cell.position[dimension] < position[dimension]
-        :upper -> cell.position[dimension] > position[dimension]
-      end
+    fn position, dimension, operator ->
+      apply(Kernel, operator, [cell.position[dimension], position[dimension]])
     end
   end
 
   defp sort_func({position1, _}, {position2, _}) do
-    fn dimension, bound ->
-      case bound do
-        :less_than -> position1[dimension] < position2[dimension]
-        :greater -> position1[dimension] > position2[dimension]
-      end
+    fn dimension, operator ->
+      apply(Kernel, operator, [position1[dimension], position2[dimension]])
     end
   end
 end
