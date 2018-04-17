@@ -27,39 +27,29 @@ defmodule Scrabble.Board.Impl do
 
   @spec play(t(), [Params.t()]) :: t()
   def play(%__MODULE__{tile_state: tiles} = board, api_params) do
-    converted = Enum.map(api_params, &Params.convert/1)
-
-    case converted
-         |> Enum.all?(fn {tile, _} -> tile in tiles.in_play && tile not in tiles.played end) do
-      true ->
-        Enum.reduce(converted, board, fn {tile, position}, board ->
-          play(board, tile, position)
-        end)
-
-      false ->
-        board
-    end
-  end
-
-  @spec play(t(), Tile.t(), {pos_integer(), pos_integer()}) :: t()
-  def play(%__MODULE__{tile_state: tiles} = board, tile, position) do
-    with true <- tile in tiles.in_play && tile not in tiles.played do
-      case Grid.place_tile(board.grid, tile, position) do
-        {:ok, new_grid} ->
-          update_state(
-            {board, [{:update_grid, new_grid}, {:tile_played, tile}, {:add_move, position}]}
-          )
-
-        {:error, _} ->
-          board
-      end
+    with converted <- Enum.map(api_params, &Params.convert/1),
+         true <- Enum.all?(converted, &playable_tile?(&1).(tiles)) do
+      Enum.reduce(converted, board, fn {tile, position}, board ->
+        play(board, tile, position)
+      end)
     else
       _ -> board
     end
   end
 
-  def play(board, _, _), do: board
+  @spec play(t(), Tile.t(), {pos_integer(), pos_integer()}) :: t()
+  def play(%__MODULE__{tile_state: tiles} = board, tile, position) do
+    with true <- tile in tiles.in_play && tile not in tiles.played,
+         {:ok, new_grid} <- Grid.place_tile(board.grid, tile, position) do
+      update_state(
+        {board, [{:update_grid, new_grid}, {:tile_played, tile}, {:add_move, position}]}
+      )
+    else
+      _ -> board
+    end
+  end
 
+  # Move this into its own module
   @spec validate(t()) :: t()
   def validate(%__MODULE__{moves: moves, grid: grid} = board) do
     with true <- Grid.is_center_played?(grid),
@@ -106,5 +96,11 @@ defmodule Scrabble.Board.Impl do
 
   defp handle_update({:add_move, {row, col}}, board) do
     %__MODULE__{board | moves: [Scrabble.Position.make(row, col) | board.moves]}
+  end
+
+  defp playable_tile?({tile, _}) do
+    fn tiles ->
+      tile in tiles.in_play && tile not in tiles.played
+    end
   end
 end
