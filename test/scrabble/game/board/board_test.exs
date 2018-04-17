@@ -72,7 +72,7 @@ defmodule BoardTest do
         |> Map.put(:moves, TestData.positions(moves))
         |> Map.put(:grid, grid)
 
-      assert {:valid, {:row, 8, 4..8}} = Board.validate(board).validity
+      assert {:valid, [{:row, 8, 4..8}]} = Board.validate(board).validity
     end
 
     test "sets board state to valid + validated word when moves are validated across a col" do
@@ -84,7 +84,7 @@ defmodule BoardTest do
         |> Map.put(:moves, TestData.positions(moves))
         |> Map.put(:grid, grid)
 
-      assert {:valid, {:col, 8, 4..8}} = Board.validate(board).validity
+      assert {:valid, [{:col, 8, 4..8}]} = Board.validate(board).validity
     end
 
     test "captures words that are span longer than current moves made" do
@@ -97,7 +97,7 @@ defmodule BoardTest do
         |> Map.put(:moves, TestData.positions(moves))
         |> Map.put(:grid, grid)
 
-      assert {:valid, {:row, 8, 4..9}} = Board.validate(board).validity
+      assert {:valid, [{:row, 8, 4..9}]} = Board.validate(board).validity
     end
 
     test "captures words that start before the current moves made" do
@@ -111,7 +111,7 @@ defmodule BoardTest do
         |> Map.put(:moves, TestData.positions(moves))
         |> Map.put(:grid, grid)
 
-      assert {:valid, {:row, 8, 3..8}} = Board.validate(board).validity
+      assert {:valid, [{:row, 8, 3..8}]} = Board.validate(board).validity
     end
 
     test "does not validate if there a gaps between the current moves made" do

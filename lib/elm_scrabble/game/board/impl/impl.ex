@@ -67,11 +67,11 @@ defmodule Scrabble.Board.Impl do
           %{invalidated?: true, message: message, invalid_at: invalid} ->
             %__MODULE__{board | validity: {:invalid, message}, invalid_at: invalid}
 
-          %{selection: selection, validated_play: play} ->
+          %{selection: selection, validated_plays: plays} ->
             %__MODULE__{
               board
               | grid: Grid.update_subgrid(board.grid, selection),
-                validity: {:valid, play}
+                validity: {:valid, plays}
             }
         end
       else

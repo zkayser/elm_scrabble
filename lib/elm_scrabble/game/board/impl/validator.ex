@@ -10,7 +10,7 @@ defmodule Scrabble.Board.Validator do
           selection: [{Position.t(), Cell.t()}],
           lower_bound: Position.t() | :undetermined,
           upper_bound: Position.t() | :undetermined,
-          validated_play: validated_play() | :none,
+          validated_plays: [validated_play()],
           message: String.t(),
           invalid_at: [Position.t()]
         }
@@ -24,7 +24,7 @@ defmodule Scrabble.Board.Validator do
             selection: [],
             lower_bound: :undetermined,
             upper_bound: :undetermined,
-            validated_play: :none,
+            validated_plays: [],
             word: :none,
             message: "",
             invalid_at: []
@@ -120,7 +120,7 @@ defmodule Scrabble.Board.Validator do
   defp set_validated_play(%__MODULE__{} = validator) do
     %{dimension: dim, dimension_number: number, lower_bound: lb, upper_bound: ub} = validator
     range = lb[Position.opposite_of(dim)]..ub[Position.opposite_of(dim)]
-    %__MODULE__{validator | validated_play: {dim, number, range}}
+    %__MODULE__{validator | validated_plays: [{dim, number, range} | validator.validated_plays]}
   end
 
   # update_selection/1 transfers cell multipliers to tile structs unless the
