@@ -6,22 +6,26 @@ defmodule Scrabble.Board.Validator do
           invalidated?: boolean(),
           subgrid: %{},
           dimension: :row | :col,
+          dimension_number: pos_integer(),
           selection: [{Position.t(), Cell.t()}],
           lower_bound: Position.t() | :undetermined,
           upper_bound: Position.t() | :undetermined,
-          word: String.t() | :empty,
+          validated_play: validated_play() | :none,
           message: String.t(),
           invalid_at: [Position.t()]
         }
   @typep dimension :: :row | :col
+  @typep validated_play :: {dimension, pos_integer(), Range.t()}
 
   defstruct invalidated?: false,
             subgrid: %{},
             dimension: :row,
+            dimension_number: 0,
             selection: [],
             lower_bound: :undetermined,
             upper_bound: :undetermined,
-            word: :empty,
+            validated_play: :none,
+            word: :none,
             message: "",
             invalid_at: []
 
@@ -29,17 +33,21 @@ defmodule Scrabble.Board.Validator do
   def validate(%{moves: moves, grid: grid}, dimension, number) do
     Grid.get(grid, {dimension, number})
     |> set_subgrid(dimension)
+    |> set_dimension_number(number)
     |> set_lower_bound(moves)
     |> set_upper_bound(Enum.reverse(moves))
     |> set_selection()
     |> invalidated?()
-    |> set_word()
-    |> update_tiles()
+    |> set_validated_play()
+    |> update_selection()
   end
 
   defp set_subgrid(subgrid, dimension) do
     %__MODULE__{subgrid: subgrid, dimension: dimension}
   end
+
+  defp set_dimension_number(validator, number),
+    do: %__MODULE__{validator | dimension_number: number}
 
   defp set_lower_bound(%__MODULE__{subgrid: subgrid, dimension: dimension} = validator, [
          position | _
@@ -107,25 +115,21 @@ defmodule Scrabble.Board.Validator do
     end
   end
 
-  defp set_word(%__MODULE__{invalidated?: true} = validator), do: validator
+  defp set_validated_play(%__MODULE__{invalidated?: true} = validator), do: validator
 
-  defp set_word(%__MODULE__{selection: selection} = validator) do
-    letters =
-      selection
-      |> Enum.sort(fn {pos1, _}, {pos2, _} ->
-        pos1[validator.dimension] < pos2[validator.dimension]
-      end)
-      |> Enum.map(fn {_, %Cell{tile: tile}} -> tile.letter end)
-      |> Enum.reverse()
-
-    %__MODULE__{validator | word: Enum.join(letters)}
+  defp set_validated_play(%__MODULE__{} = validator) do
+    %{dimension: dim, dimension_number: number, lower_bound: lb, upper_bound: ub} = validator
+    range = lb[Position.opposite_of(dim)]..ub[Position.opposite_of(dim)]
+    %__MODULE__{validator | validated_play: {dim, number, range}}
   end
 
-  defp update_tiles(%__MODULE__{invalidated?: true} = validator), do: validator
+  # update_selection/1 transfers cell multipliers to tile structs unless the
+  # tile struct already has a :wildcard multiplier value
+  defp update_selection(%__MODULE__{invalidated?: true} = validator), do: validator
 
-  defp update_tiles(%__MODULE__{subgrid: subgrid} = validator) do
-    updated_subgrid =
-      for {key, %Cell{tile: tile} = cell} <- subgrid, into: %{} do
+  defp update_selection(%__MODULE__{selection: selection} = validator) do
+    updated_selection =
+      for {key, %Cell{tile: tile} = cell} <- selection, into: %{} do
         unless tile == :empty do
           multiplier = if tile.multiplier == :wildcard, do: :wilcard, else: cell.multiplier
           {key, %Cell{cell | tile: %Tile{tile | multiplier: multiplier}}}
@@ -134,7 +138,7 @@ defmodule Scrabble.Board.Validator do
         end
       end
 
-    %__MODULE__{validator | subgrid: updated_subgrid}
+    %__MODULE__{validator | selection: updated_selection}
   end
 
   defp take_dimension_with_default([], position), do: position

@@ -3,7 +3,7 @@ defmodule Scrabble.Position do
           row: pos_integer(),
           col: pos_integer()
         }
-  @typep dimension :: :row | :col
+  @type dimension :: :row | :col
 
   defstruct row: 1,
             col: 1
