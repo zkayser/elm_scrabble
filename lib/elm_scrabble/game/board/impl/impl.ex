@@ -64,12 +64,14 @@ defmodule Scrabble.Board.Impl do
   def validate(%__MODULE__{moves: moves, grid: grid} = board) do
     with true <- Grid.is_center_played?(grid),
          {dimension, number} <- Moves.validate(moves),
-         %{invalidated?: false, selection: selection, validated_plays: play} <-
-           Validator.validate(board, dimension, number) do
+         %{invalidated?: false, selection: selection, validated_play: play} <-
+           Validator.validate(board, dimension, number),
+         secondary_plays when is_list(secondary_plays) <-
+           Validator.validate_secondary(Position.opposite_of(dimension), moves, grid) do
       %__MODULE__{
         board
         | grid: Grid.update_subgrid(board.grid, selection),
-          validity: {:valid, play}
+          validity: {:valid, [play | secondary_plays]}
       }
     else
       false ->
@@ -78,6 +80,9 @@ defmodule Scrabble.Board.Impl do
           | validity: {:invalid, "You must play a tile on the center piece."},
             invalid_at: [Position.make(8, 8)]
         }
+
+      :invalid ->
+        %Board{board | validity: {:invalid, "You must play along a single row or column."}}
 
       %{invalidated?: true, message: message, invalid_at: invalid} ->
         %__MODULE__{board | validity: {:invalid, message}, invalid_at: invalid}

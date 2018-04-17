@@ -164,7 +164,7 @@ defmodule BoardTest do
         |> Map.put(:grid, TestData.setup_grid_with([play, play2]))
 
       %{validity: validity} = Board.validate(board)
-      assert {:valid, [{:col, 7, 8..10}, {:row, 8, 7..8}, {:row, 9, 7..8}]} = validity
+      assert {:valid, [{:col, 8, 7..9}, {:row, 8, 7..8}, {:row, 9, 7..8}]} = validity
     end
   end
 end

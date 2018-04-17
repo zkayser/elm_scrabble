@@ -10,7 +10,7 @@ defmodule Scrabble.Board.Validator do
           selection: [{Position.t(), Cell.t()}],
           lower_bound: Position.t() | :undetermined,
           upper_bound: Position.t() | :undetermined,
-          validated_plays: [validated_play()],
+          validated_play: [validated_play()] | :none,
           message: String.t(),
           invalid_at: [Position.t()]
         }
@@ -24,8 +24,7 @@ defmodule Scrabble.Board.Validator do
             selection: [],
             lower_bound: :undetermined,
             upper_bound: :undetermined,
-            validated_plays: [],
-            word: :none,
+            validated_play: :none,
             message: "",
             invalid_at: []
 
@@ -40,6 +39,53 @@ defmodule Scrabble.Board.Validator do
     |> invalidated?()
     |> set_validated_play()
     |> update_selection()
+  end
+
+  @spec validate_secondary(dimension, [Position.t()], Grid.t()) :: [validated_play]
+  def validate_secondary(_, [], _), do: []
+
+  def validate_secondary(dimension, moves, grid) do
+    Enum.reduce(moves, [], fn move, acc -> [handle_secondary(dimension, move, grid) | acc] end)
+    |> List.flatten()
+  end
+
+  defp handle_secondary(dimension, move, grid) do
+    subgrid = Grid.get(grid, {dimension, move[dimension]})
+    perpendicular = Position.opposite_of(dimension)
+    # Enum.drop(1) calls remove the current element from the list.
+    # Secondary moves are not valid if they are not connected to
+    # adjacent tiles, so removing the current move from both
+    # lower and higher lists allows you to look at size to
+    # see if there are any adjacent tiles in either direction.
+
+    lower =
+      Enum.filter(subgrid, &filter_func(&1).(move, perpendicular, :lower))
+      |> Enum.sort(&sort_func(&1, &2).(dimension, :greater))
+      |> Enum.take_while(fn {_, cell} -> cell.tile != :empty end)
+
+    higher =
+      Enum.filter(subgrid, &filter_func(&1).(move, perpendicular, :upper))
+      |> Enum.sort(&sort_func(&1, &2).(dimension, :less_than))
+      |> Enum.take_while(fn {_, cell} -> cell.tile != :empty end)
+
+    case {length(lower) > 0, length(higher) > 0} do
+      {true, true} ->
+        {lower_position, _} = List.last(lower)
+        {upper_position, _} = List.last(higher)
+
+        {dimension, move[dimension], lower_position[perpendicular]..upper_position[perpendicular]}
+
+      {true, false} ->
+        {lower_position, _} = List.last(lower)
+        {dimension, move[dimension], lower_position[perpendicular]..move[perpendicular]}
+
+      {false, true} ->
+        {upper_position, _} = List.last(higher)
+        {dimension, move[dimension], move[perpendicular]..upper_position[perpendicular]}
+
+      _ ->
+        []
+    end
   end
 
   defp set_subgrid(subgrid, dimension) do
@@ -120,7 +166,7 @@ defmodule Scrabble.Board.Validator do
   defp set_validated_play(%__MODULE__{} = validator) do
     %{dimension: dim, dimension_number: number, lower_bound: lb, upper_bound: ub} = validator
     range = lb[Position.opposite_of(dim)]..ub[Position.opposite_of(dim)]
-    %__MODULE__{validator | validated_plays: [{dim, number, range} | validator.validated_plays]}
+    %__MODULE__{validator | validated_play: {dim, number, range}}
   end
 
   # update_selection/1 transfers cell multipliers to tile structs unless the
@@ -143,4 +189,22 @@ defmodule Scrabble.Board.Validator do
 
   defp take_dimension_with_default([], position), do: position
   defp take_dimension_with_default([{position, _} | _], _), do: position
+
+  defp filter_func({_, cell}) do
+    fn position, dimension, bound ->
+      case bound do
+        :lower -> cell.position[dimension] < position[dimension]
+        :upper -> cell.position[dimension] > position[dimension]
+      end
+    end
+  end
+
+  defp sort_func({position1, _}, {position2, _}) do
+    fn dimension, bound ->
+      case bound do
+        :less_than -> position1[dimension] < position2[dimension]
+        :greater -> position1[dimension] > position2[dimension]
+      end
+    end
+  end
 end
