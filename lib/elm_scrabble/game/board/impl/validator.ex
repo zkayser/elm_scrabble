@@ -1,13 +1,16 @@
 defmodule Scrabble.Board.Validator do
   alias Scrabble.Board.Impl, as: Board
-  alias Scrabble.{Grid, Tile, Cell, Position}
+  alias Scrabble.{Grid, Tile, Cell, Position, Moves}
+  @no_center_tile "You must play a tile on the center piece."
+  @invalid_dimension "You must play along a single row or column."
+  @gaps "It looks like you have a gap between your tiles."
 
   @type t() :: %__MODULE__{
           invalidated?: boolean(),
           subgrid: %{},
           dimension: :row | :col,
           dimension_number: pos_integer(),
-          selection: [{Position.t(), Cell.t()}],
+          selection: [Position.t()],
           lower_bound: Position.t() | :undetermined,
           upper_bound: Position.t() | :undetermined,
           validated_play: [validated_play()] | :none,
@@ -28,6 +31,25 @@ defmodule Scrabble.Board.Validator do
             message: "",
             invalid_at: []
 
+  @spec validate(Board.t()) :: Board.t()
+  def validate(%Board{grid: grid, moves: moves} = board) do
+    with true <- Grid.is_center_played?(grid),
+         {dimension, number} <- Moves.validate(moves),
+         %{invalidated?: false, selection: selection, validated_play: play} <-
+           validate(board, dimension, number),
+         secondary_plays when is_list(secondary_plays) <-
+           validate_secondary(Position.opposite_of(dimension), moves, grid) do
+      %Board{
+        board
+        | grid: Grid.update_subgrid(board.grid, selection),
+          validity: {:valid, [play | secondary_plays]}
+      }
+    else
+      failure ->
+        invalidate_with_message(board, failure)
+    end
+  end
+
   @spec validate(Board.t(), dimension, pos_integer()) :: t()
   def validate(%{moves: moves, grid: grid}, dimension, number) do
     Grid.get(grid, {dimension, number})
@@ -36,7 +58,7 @@ defmodule Scrabble.Board.Validator do
     |> set_lower_bound(moves)
     |> set_upper_bound(Enum.reverse(moves))
     |> set_selection()
-    |> invalidated?()
+    |> is_selection_valid?(moves)
     |> set_validated_play()
     |> update_selection()
   end
@@ -56,12 +78,12 @@ defmodule Scrabble.Board.Validator do
     lower =
       Enum.filter(subgrid, &filter_func(&1).(move, perpendicular, :<))
       |> Enum.sort(&sort_func(&1, &2).(dimension, :>))
-      |> Enum.take_while(fn {_, cell} -> cell.tile != :empty end)
+      |> Enum.take_while(&cell_not_empty(&1))
 
     higher =
       Enum.filter(subgrid, &filter_func(&1).(move, perpendicular, :>))
       |> Enum.sort(&sort_func(&1, &2).(dimension, :<))
-      |> Enum.take_while(fn {_, cell} -> cell.tile != :empty end)
+      |> Enum.take_while(&cell_not_empty(&1))
 
     case {length(lower) > 0, length(higher) > 0} do
       {true, true} ->
@@ -90,78 +112,81 @@ defmodule Scrabble.Board.Validator do
   defp set_dimension_number(validator, number),
     do: %__MODULE__{validator | dimension_number: number}
 
-  defp set_lower_bound(%__MODULE__{subgrid: subgrid, dimension: dimension} = validator, [
-         position | _
-       ]) do
-    dimension = Position.opposite_of(dimension)
+  # This has some mistaken assumptions and can probably be removed
+  defp set_lower_bound(validator, []), do: %__MODULE__{validator | invalidated?: true}
 
-    lower_bound =
-      subgrid
-      |> Enum.filter(fn {_, cell} ->
-        cell.position[dimension] < position[dimension] && cell.tile != :empty
-      end)
-      |> Enum.sort(fn {position1, _}, {position2, _} ->
-        position1[dimension] < position2[dimension]
-      end)
-      |> take_dimension_with_default(position)
+  defp set_lower_bound(%__MODULE__{subgrid: subgrid, dimension: dimension} = validator, moves) do
+    perpendicular = Position.opposite_of(dimension)
+    lowest_move = Enum.min_by(moves, fn move -> move[perpendicular] end)
 
-    %__MODULE__{validator | lower_bound: lower_bound}
+    lower =
+      Enum.filter(subgrid, &filter_func(&1).(lowest_move, perpendicular, :<))
+      |> Enum.sort(&sort_func(&1, &2).(perpendicular, :>))
+      |> Enum.take_while(&cell_not_empty(&1))
+      |> case do
+        [] ->
+          lowest_move[perpendicular]
+
+        lower_adjacents ->
+          {position, _} = List.last(lower_adjacents)
+          position[perpendicular]
+      end
+
+    %__MODULE__{validator | lower_bound: lower}
   end
 
-  defp set_upper_bound(%__MODULE__{subgrid: subgrid, dimension: dimension} = validator, [
-         position | _
-       ]) do
-    dimension = Position.opposite_of(dimension)
+  # This has some mistaken assumptions and can probably be removed
+  defp set_upper_bound(validator, []), do: %__MODULE__{validator | invalidated?: true}
 
-    upper_bound =
-      subgrid
-      |> Enum.filter(fn {_, cell} ->
-        cell.position[dimension] > position[dimension] && cell.tile != :empty
-      end)
-      |> Enum.sort(fn {position1, _}, {position2, _} ->
-        position1[dimension] > position2[dimension]
-      end)
-      |> take_dimension_with_default(position)
+  defp set_upper_bound(%__MODULE__{subgrid: subgrid, dimension: dimension} = validator, moves) do
+    perpendicular = Position.opposite_of(dimension)
+    highest_move = Enum.max_by(moves, fn move -> move[perpendicular] end)
 
-    %__MODULE__{validator | upper_bound: upper_bound}
+    upper =
+      Enum.filter(subgrid, &filter_func(&1).(highest_move, perpendicular, :>))
+      |> Enum.sort(&sort_func(&1, &2).(perpendicular, :<))
+      |> Enum.take_while(&cell_not_empty(&1))
+      |> case do
+        [] ->
+          highest_move[perpendicular]
+
+        higher_adjacents ->
+          {position, _} = List.last(higher_adjacents)
+          position[perpendicular]
+      end
+
+    %__MODULE__{validator | upper_bound: upper}
   end
 
-  defp set_selection(%__MODULE__{subgrid: subgrid, dimension: dimension} = validator) do
+  defp is_selection_valid?(%__MODULE__{invalidated?: true} = validator, _), do: validator
+
+  defp is_selection_valid?(%__MODULE__{selection: selection} = validator, moves) do
+    case Enum.all?(moves, &(&1 in selection)) &&
+           Enum.all?(selection, fn pos -> validator.subgrid[pos].tile != :empty end) do
+      true -> validator
+      false -> %__MODULE__{invalidated?: true, message: @gaps}
+    end
+  end
+
+  defp set_selection(%__MODULE__{invalidated?: true} = validator), do: validator
+
+  defp set_selection(%__MODULE__{} = validator) do
     selection =
-      subgrid
-      |> Enum.filter(fn {pos, _} ->
-        dim = Position.opposite_of(dimension)
-        pos[dim] >= validator.lower_bound[dim] && pos[dim] <= validator.upper_bound[dim]
-      end)
+      for x <- validator.lower_bound..validator.upper_bound do
+        case validator.dimension do
+          :row -> Position.make(validator.dimension_number, x)
+          :col -> Position.make(x, validator.dimension_number)
+        end
+      end
 
     %__MODULE__{validator | selection: selection}
-  end
-
-  defp invalidated?(%__MODULE__{selection: selection} = validator) do
-    case Enum.all?(selection, fn {_, cell} -> cell.tile != :empty end) do
-      true ->
-        %__MODULE__{validator | invalidated?: false}
-
-      false ->
-        invalid_positions =
-          Enum.filter(selection, fn {_, cell} -> cell.tile == :empty end)
-          |> Enum.map(fn {pos, _} -> pos end)
-
-        %__MODULE__{
-          validator
-          | invalidated?: true,
-            message: "Invalid move.",
-            invalid_at: invalid_positions
-        }
-    end
   end
 
   defp set_validated_play(%__MODULE__{invalidated?: true} = validator), do: validator
 
   defp set_validated_play(%__MODULE__{} = validator) do
     %{dimension: dim, dimension_number: number, lower_bound: lb, upper_bound: ub} = validator
-    range = lb[Position.opposite_of(dim)]..ub[Position.opposite_of(dim)]
-    %__MODULE__{validator | validated_play: {dim, number, range}}
+    %__MODULE__{validator | validated_play: {dim, number, lb..ub}}
   end
 
   # update_selection/1 transfers cell multipliers to tile structs unless the
@@ -182,9 +207,6 @@ defmodule Scrabble.Board.Validator do
     %__MODULE__{validator | selection: updated_selection}
   end
 
-  defp take_dimension_with_default([], position), do: position
-  defp take_dimension_with_default([{position, _} | _], _), do: position
-
   defp filter_func({_, cell}) do
     fn position, dimension, operator ->
       apply(Kernel, operator, [cell.position[dimension], position[dimension]])
@@ -195,5 +217,19 @@ defmodule Scrabble.Board.Validator do
     fn dimension, operator ->
       apply(Kernel, operator, [position1[dimension], position2[dimension]])
     end
+  end
+
+  defp cell_not_empty({_, cell}), do: cell.tile != :empty
+
+  defp invalidate_with_message(board, false) do
+    %Board{board | validity: {:invalid, @no_center_tile}, invalid_at: [Position.make(8, 8)]}
+  end
+
+  defp invalidate_with_message(board, :invalid) do
+    %Board{board | validity: {:invalid, @invalid_dimension}}
+  end
+
+  defp invalidate_with_message(board, %{invalidated?: true, message: message, invalid_at: invalid}) do
+    %Board{board | validity: {:invalid, message}, invalid_at: invalid}
   end
 end
