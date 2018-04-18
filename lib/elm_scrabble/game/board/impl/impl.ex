@@ -4,7 +4,7 @@ defmodule Scrabble.Board.Impl do
   alias Scrabble.Board.Validator
   alias Scrabble.Board.ApiParams, as: Params
 
-  @type t :: %__MODULE__{
+  @type t :: %Board{
           grid: Grid.t(),
           tile_state: TileManager.t(),
           moves: Moves.t(),
@@ -22,11 +22,11 @@ defmodule Scrabble.Board.Impl do
 
   @spec new() :: t()
   def new do
-    %__MODULE__{tile_state: TileManager.new()}
+    %Board{tile_state: TileManager.new()}
   end
 
   @spec play(t(), [Params.t()]) :: t()
-  def play(%__MODULE__{tile_state: tiles} = board, api_params) do
+  def play(%Board{tile_state: tiles} = board, api_params) do
     with converted <- Enum.map(api_params, &Params.convert/1),
          true <- Enum.all?(converted, &playable_tile?(&1).(tiles)) do
       Enum.reduce(converted, board, fn {tile, position}, board ->
@@ -38,7 +38,7 @@ defmodule Scrabble.Board.Impl do
   end
 
   @spec play(t(), Tile.t(), {pos_integer(), pos_integer()}) :: t()
-  def play(%__MODULE__{tile_state: tiles} = board, tile, position) do
+  def play(%Board{tile_state: tiles} = board, tile, position) do
     with true <- tile in tiles.in_play && tile not in tiles.played,
          {:ok, new_grid} <- Grid.place_tile(board.grid, tile, position) do
       update_state(
@@ -49,9 +49,8 @@ defmodule Scrabble.Board.Impl do
     end
   end
 
-  # Move this into its own module
   @spec validate(t()) :: t()
-  def validate(%__MODULE__{} = board) do
+  def validate(%Board{} = board) do
     Validator.validate(board)
   end
 
@@ -60,15 +59,15 @@ defmodule Scrabble.Board.Impl do
   end
 
   defp handle_update({:update_grid, new_grid}, board) do
-    %__MODULE__{board | grid: new_grid}
+    %Board{board | grid: new_grid}
   end
 
   defp handle_update({:tile_played, tile}, board) do
-    %__MODULE__{board | tile_state: TileManager.handle_played(board.tile_state, tile)}
+    %Board{board | tile_state: TileManager.handle_played(board.tile_state, tile)}
   end
 
   defp handle_update({:add_move, {row, col}}, board) do
-    %__MODULE__{board | moves: [Scrabble.Position.make(row, col) | board.moves]}
+    %Board{board | moves: [Scrabble.Position.make(row, col) | board.moves]}
   end
 
   defp playable_tile?({tile, _}) do
