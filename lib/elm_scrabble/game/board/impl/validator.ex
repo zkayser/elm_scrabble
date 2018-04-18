@@ -75,15 +75,9 @@ defmodule Scrabble.Board.Validator do
     subgrid = Grid.get(grid, {dimension, move[dimension]})
     perpendicular = Position.opposite_of(dimension)
 
-    lower =
-      Enum.filter(subgrid, &filter_func(&1).(move, perpendicular, :<))
-      |> Enum.sort(&sort_func(&1, &2).(dimension, :>))
-      |> Enum.take_while(&cell_not_empty(&1))
+    lower = get_adjacent_tiles(subgrid, move, perpendicular, dimension, :lower)
 
-    higher =
-      Enum.filter(subgrid, &filter_func(&1).(move, perpendicular, :>))
-      |> Enum.sort(&sort_func(&1, &2).(dimension, :<))
-      |> Enum.take_while(&cell_not_empty(&1))
+    higher = get_adjacent_tiles(subgrid, move, perpendicular, dimension, :upper)
 
     case {length(lower) > 0, length(higher) > 0} do
       {true, true} ->
@@ -120,9 +114,7 @@ defmodule Scrabble.Board.Validator do
     lowest_move = Enum.min_by(moves, fn move -> move[perpendicular] end)
 
     lower =
-      Enum.filter(subgrid, &filter_func(&1).(lowest_move, perpendicular, :<))
-      |> Enum.sort(&sort_func(&1, &2).(perpendicular, :>))
-      |> Enum.take_while(&cell_not_empty(&1))
+      get_adjacent_tiles(subgrid, lowest_move, perpendicular, perpendicular, :lower)
       |> case do
         [] ->
           lowest_move[perpendicular]
@@ -143,9 +135,7 @@ defmodule Scrabble.Board.Validator do
     highest_move = Enum.max_by(moves, fn move -> move[perpendicular] end)
 
     upper =
-      Enum.filter(subgrid, &filter_func(&1).(highest_move, perpendicular, :>))
-      |> Enum.sort(&sort_func(&1, &2).(perpendicular, :<))
-      |> Enum.take_while(&cell_not_empty(&1))
+      get_adjacent_tiles(subgrid, highest_move, perpendicular, perpendicular, :upper)
       |> case do
         [] ->
           highest_move[perpendicular]
@@ -205,6 +195,17 @@ defmodule Scrabble.Board.Validator do
       end
 
     %__MODULE__{validator | selection: updated_selection}
+  end
+
+  # I'm probable trying to get too clever for my own good here.
+  # This sets the operators to used in sorting and filtering (should be opposites)
+  # based on the upper_or_lower param, which can be only :upper or :lower
+  defp get_adjacent_tiles(subgrid, move, filter_dim, sort_dim, upper_or_lower) do
+    {filter_op, sort_op} = if upper_or_lower == :upper, do: {:>, :<}, else: {:<, :>}
+
+    Enum.filter(subgrid, &filter_func(&1).(move, filter_dim, filter_op))
+    |> Enum.sort(&sort_func(&1, &2).(sort_dim, sort_op))
+    |> Enum.take_while(&cell_not_empty(&1))
   end
 
   defp filter_func({_, cell}) do

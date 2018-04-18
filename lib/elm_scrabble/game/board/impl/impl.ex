@@ -51,7 +51,7 @@ defmodule Scrabble.Board.Impl do
 
   # Move this into its own module
   @spec validate(t()) :: t()
-  def validate(%__MODULE__{moves: moves, grid: grid} = board) do
+  def validate(%__MODULE__{} = board) do
     Validator.validate(board)
   end
 
