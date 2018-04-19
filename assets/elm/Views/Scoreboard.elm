@@ -31,13 +31,11 @@ view submitMsg model =
                 , Events.onClick submitMsg
                 ]
                 [ text "Get Score" ]
-            ]
-        , div [ Attributes.class "submit-row" ]
-            [ a
+            , a
                 [ Attributes.class "btn discard-btn"
                 , Events.onClick model.discardTilesMsg
                 ]
-                [ text "Discard Tiles" ]
+                [ text "Discard Tiles"]
             ]
         , div [ Attributes.class "submit-row" ]
             [ a
