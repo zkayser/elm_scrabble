@@ -4,7 +4,7 @@ import Data.GameContext exposing (Context)
 import Data.Grid as Grid exposing (Multiplier(..), Tile)
 import Logic.ContextManager as ContextManager
 import Random
-import Time exposing (Time)
+import Time exposing (Posix)
 
 
 type alias Model r =
@@ -32,15 +32,15 @@ handleDrop model =
 -- Randomize and sort the generated list of letters
 
 
-shuffleTileBag : List Tile -> Time -> List Tile
+shuffleTileBag : List Tile -> Posix -> List Tile
 shuffleTileBag tiles time =
     let
         timeInMillis =
-            Time.inMilliseconds time |> truncate
+            Time.posixToMillis time
     in
     Random.step (Random.list (List.length tiles) (Random.int 0 2000)) (Random.initialSeed timeInMillis)
         |> Tuple.first
-        |> List.map2 (,) tiles
+        |> List.map2 (\number tile -> ( number, tile )) tiles
         |> List.sortBy Tuple.second
         |> List.map Tuple.first
 
@@ -83,18 +83,25 @@ valueFor : String -> Int
 valueFor letter =
     if List.member letter [ "" ] then
         0
+
     else if List.member letter [ "A", "E", "I", "L", "N", "O", "R", "S", "T", "U" ] then
         1
+
     else if List.member letter [ "D", "G" ] then
         2
+
     else if List.member letter [ "B", "C", "M", "P" ] then
         3
+
     else if List.member letter [ "F", "H", "V", "W", "Y" ] then
         4
+
     else if List.member letter [ "K" ] then
         5
+
     else if List.member letter [ "J", "X" ] then
         8
+
     else
         10
 
@@ -103,5 +110,6 @@ multiplierFor : String -> Multiplier
 multiplierFor letter =
     if letter == "" then
         Wildcard
+
     else
         NoMultiplier

@@ -9,6 +9,9 @@ use Mix.Config
 config :elm_scrabble,
   ecto_repos: [ElmScrabble.Repo]
 
+# Use Jason for JSON parsing in Phoenix
+config :phoenix, :json_library, Jason
+
 # Configures the endpoint
 config :elm_scrabble, ElmScrabbleWeb.Endpoint,
   url: [host: "localhost"],

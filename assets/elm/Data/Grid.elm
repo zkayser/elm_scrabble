@@ -1,4 +1,4 @@
-module Data.Grid exposing (..)
+module Data.Grid exposing (Cell, Dimension(..), Grid, Multiplier(..), Position, Tile, cellToHtml, center, disableDragOnTile, doubleLetterPositions, doubleWordPositions, get, init, initialCellForPosition, isMultipleOf15, multiplierFor, positionFor, positionList, tileToHtml, tripleLetterPositions, tripleWordPositions)
 
 import Html exposing (..)
 import Html.Attributes exposing (class, src)
@@ -72,33 +72,39 @@ positionFor number =
         row =
             if isMultipleOf15 number then
                 number // 15
+
             else
                 ceiling <| toFloat number / 15
 
         column =
             if isMultipleOf15 number then
                 15
+
             else
-                rem number 15
+                remainderBy 15 number
     in
     ( row, column )
 
 
 isMultipleOf15 : Int -> Bool
 isMultipleOf15 number =
-    rem number 15 == 0
+    remainderBy 15 number == 0
 
 
 multiplierFor : Position -> Multiplier
 multiplierFor position =
     if List.member position tripleWordPositions then
         TripleWord
+
     else if List.member position doubleWordPositions then
         DoubleWord
+
     else if List.member position tripleLetterPositions then
         TripleLetter
+
     else if List.member position doubleLetterPositions then
         DoubleLetter
+
     else
         NoMultiplier
 
@@ -203,6 +209,7 @@ cellToHtml config cell retiredTiles =
                         div ([ class "cell double-word center-tile" ] ++ dropConfig)
                             [ img [ class "center-logo", src "images/glogo.png" ] []
                             ]
+
                     else
                         div ([ class "cell double-word" ] ++ dropConfig) [ text "2x W" ]
 
@@ -227,7 +234,7 @@ tileToHtml config tile =
     in
     div ([ class "cell tile" ] ++ dragConfig)
         [ span [ class "letter" ] [ text tile.letter ]
-        , span [ class "value" ] [ text <| toString tile.value ]
+        , span [ class "value" ] [ text <| String.fromInt tile.value ]
         ]
 
 
@@ -235,7 +242,7 @@ disableDragOnTile : Tile -> Html msg
 disableDragOnTile tile =
     div [ class "cell tile" ]
         [ span [ class "letter" ] [ text tile.letter ]
-        , span [ class "value" ] [ text <| toString tile.value ]
+        , span [ class "value" ] [ text <| String.fromInt tile.value ]
         ]
 
 

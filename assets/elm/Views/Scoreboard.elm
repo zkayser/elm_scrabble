@@ -24,7 +24,7 @@ view submitMsg model =
             (viewErrorMessages model.messages)
         , h1 [ Attributes.class "scoreboard-header" ] [ text "Scoreboard" ]
         , div [ Attributes.class "score-display" ]
-            [ h1 [ Attributes.class "score" ] [ text <| toString model.score ] ]
+            [ h1 [ Attributes.class "score" ] [ text <| String.fromInt model.score ] ]
         , div [ Attributes.class "submit-row" ]
             [ a
                 [ Attributes.class "btn submit-btn"
@@ -35,7 +35,7 @@ view submitMsg model =
                 [ Attributes.class "btn discard-btn"
                 , Events.onClick model.discardTilesMsg
                 ]
-                [ text "Discard Tiles"]
+                [ text "Discard Tiles" ]
             ]
         , div [ Attributes.class "submit-row" ]
             [ a
@@ -70,7 +70,7 @@ viewLeaderboard model =
             model.leaderboard
                 |> List.sortBy .score
                 |> List.reverse
-                |> List.indexedMap (,)
+                |> List.indexedMap (\index score -> ( index, score ))
     in
     div [ Attributes.class "leaderboard" ]
         [ div [ Attributes.class "leaderboard-header", Attributes.classList [ ( "hidden", List.length leaderboard == 0 ) ] ]
@@ -87,9 +87,9 @@ viewEntry : ( Int, Entry ) -> Html msg
 viewEntry ( rank, entry ) =
     div [ Attributes.class "leaderboard-entry" ]
         [ span [ Attributes.class "rank" ]
-            [ text <| toString (rank + 1) ]
+            [ text <| String.fromInt (rank + 1) ]
         , span [ Attributes.class "user" ]
             [ text entry.user ]
         , span [ Attributes.class "score-entry" ]
-            [ text <| toString entry.score ]
+            [ text <| String.fromInt entry.score ]
         ]

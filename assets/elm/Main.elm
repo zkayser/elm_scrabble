@@ -1,5 +1,9 @@
-module Main exposing (..)
+module Main exposing (Model, Msg(..), dragAndDropConfig, init, main, showModal, subscriptions, update, view)
 
+--import Phoenix
+--import Phoenix.Channel exposing (Channel)
+
+import Browser
 import Channels.LeaderboardChannel as LeaderboardChannel
 import Data.GameContext as GameContext exposing (Context, Turn)
 import Data.Grid as Grid exposing (Cell, Grid, Tile)
@@ -13,12 +17,10 @@ import Json.Decode as Json
 import Logic.ContextManager as ContextManager
 import Logic.SubmissionValidator as SubmissionValidator
 import Logic.TileManager as TileManager exposing (generateTileBag, shuffleTileBag)
-import Phoenix
-import Phoenix.Channel exposing (Channel)
 import Requests.ScrabbleApi as ScrabbleApi
 import Responses.Scrabble as ScrabbleResponse exposing (ScrabbleResponse)
 import Task
-import Time exposing (Time)
+import Time exposing (Posix)
 import Types.Messages as Message exposing (Message)
 import Views.Board as Board
 import Views.Scoreboard as Scoreboard
@@ -32,7 +34,8 @@ type alias Model =
     , dragAndDropConfig : DragAndDrop.Config Msg Tile Cell
     , dragging : Maybe Tile
     , leaderboard : Leaderboard
-    , channels : List (Channel Msg)
+
+    --, channels : List (Channel Msg)
     , turn : Turn
     , context : Context
     , score : Int
@@ -46,8 +49,8 @@ type alias Model =
 
 
 type Msg
-    = CurrentTime Time
-    | ClearMessages Time
+    = CurrentTime Posix
+    | ClearMessages Posix
     | DiscardTiles
     | DragStarted Tile
     | DragEnd
@@ -66,13 +69,14 @@ type Msg
     | SocketConnect
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Json.Value -> ( Model, Cmd Msg )
+init flags =
     ( { tileBag = generateTileBag
       , dragAndDropConfig = dragAndDropConfig
       , dragging = Nothing
       , leaderboard = []
-      , channels = []
+
+      --, channels = []
       , context = GameContext.init Grid.init []
       , turn = GameContext.Active
       , score = 0
@@ -184,16 +188,16 @@ update msg model =
                     ( { model | messages = [ ( Message.Error, message ) ] }, Cmd.none )
 
         SubmitForm ->
-            let
-                channels =
-                    case model.channels of
-                        [] ->
-                            [ LeaderboardChannel.channel model socketConfig ]
-
-                        _ ->
-                            model.channels
-            in
-            ( { model | modal = Modal.None, channels = channels }, Cmd.none )
+            --let
+            --channels =
+            --    case model.channels of
+            --        [] ->
+            --            [ LeaderboardChannel.channel model socketConfig ]
+            --        _ ->
+            --            model.channels
+            -- in  model: update channels ----> { ... channels = channels }
+            --in
+            ( { model | modal = Modal.None }, Cmd.none )
 
         SetUsername string ->
             ( { model | username = string }, Cmd.none )
@@ -232,31 +236,36 @@ update msg model =
             ( model, Cmd.none )
 
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
-    div [ Attributes.class "scrabble" ]
-        [ div [ Attributes.class "container" ]
-            [ Board.view model
-            , TileHolder.view TileHolderDrop TileHolderDragover model
-            ]
-        , div [ Attributes.class "scoreboard-container" ]
-            [ Scoreboard.view SubmitScore model ]
-        , div
-            [ Attributes.classList
-                [ ( "modal-container", showModal model )
-                , ( "hidden", not (showModal model) )
+    { title = "Elm Scrabble"
+    , body =
+        [ div [ Attributes.class "scrabble" ]
+            [ div [ Attributes.class "container" ]
+                [ Board.view model
+                , TileHolder.view TileHolderDrop TileHolderDragover model
                 ]
+            , div [ Attributes.class "scoreboard-container" ]
+                [ Scoreboard.view SubmitScore model ]
+            , div
+                [ Attributes.classList
+                    [ ( "modal-container", showModal model )
+                    , ( "hidden", not (showModal model) )
+                    ]
+                ]
+                [ Modal.view model.modal ]
             ]
-            [ Modal.view model.modal ]
         ]
+    }
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
         channelSubscriptions =
-            [ Phoenix.connect (LeaderboardChannel.socket socketConfig) model.channels ]
+            []
 
+        --[ Phoenix.connect (LeaderboardChannel.socket socketConfig) model.channels ]
         clearMessages =
             case model.messages of
                 [] ->
@@ -268,13 +277,14 @@ subscriptions model =
     Sub.batch <| clearMessages :: channelSubscriptions
 
 
-socketConfig : LeaderboardChannel.Config Msg
-socketConfig =
-    { onOpen = SocketConnect
-    , onJoin = JoinedChannel
-    , onUpdate = UpdateLeaderboard
-    , onScoreUpdate = UpdateScore
-    }
+
+--socketConfig : LeaderboardChannel.Config Msg
+--socketConfig =
+--    { onOpen = SocketConnect
+--    , onJoin = JoinedChannel
+--    , onUpdate = UpdateLeaderboard
+--    , onScoreUpdate = UpdateScore
+--    }
 
 
 dragAndDropConfig : DragAndDrop.Config Msg Tile Cell
@@ -296,8 +306,9 @@ showModal model =
             True
 
 
+main : Program Json.Value Model Msg
 main =
-    Html.program
+    Browser.document
         { init = init
         , update = update
         , subscriptions = subscriptions

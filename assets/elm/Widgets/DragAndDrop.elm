@@ -1,8 +1,8 @@
-module Widgets.DragAndDrop exposing (..)
+module Widgets.DragAndDrop exposing (Config, draggable, droppable)
 
 import Html exposing (..)
 import Html.Attributes exposing (attribute)
-import Html.Events exposing (on, onWithOptions)
+import Html.Events exposing (custom, on)
 import Json.Decode as Json
 
 
@@ -25,6 +25,6 @@ draggable dragStartMsg dragEndMsg =
 droppable : msg -> msg -> List (Attribute msg)
 droppable dropMsg dragOverMsg =
     [ attribute "droppable" "true"
-    , onWithOptions "drop" { preventDefault = True, stopPropagation = True } <| Json.succeed <| dropMsg
-    , onWithOptions "dragover" { preventDefault = True, stopPropagation = True } <| Json.succeed <| dragOverMsg
+    , custom "drop" <| Json.succeed { message = dropMsg, preventDefault = True, stopPropagation = True }
+    , custom "dragover" <| Json.succeed { message = dragOverMsg, preventDefault = True, stopPropagation = True }
     ]

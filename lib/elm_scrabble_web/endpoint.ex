@@ -1,7 +1,7 @@
 defmodule ElmScrabbleWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :elm_scrabble
 
-  socket "/socket", ElmScrabbleWeb.UserSocket
+  socket "/socket", ElmScrabbleWeb.UserSocket, websocket: true
 
   # Serve at "/" the static files from "priv/static" directory.
   #
@@ -25,7 +25,7 @@ defmodule ElmScrabbleWeb.Endpoint do
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
-    json_decoder: Poison
+    json_decoder: Jason
 
   plug Plug.MethodOverride
   plug Plug.Head

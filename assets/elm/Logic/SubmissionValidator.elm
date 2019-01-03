@@ -15,7 +15,7 @@ type ContextError
 
 
 {-| This function can fail if an invalid play is attempted.
-To account for this, a `Result String (Context, Cmd msg, List Tile )`
+To account for this, a `Result String (Cmd msg)`
 type is returned so that the caller of the function can react
 accordingly.
 -}
@@ -55,7 +55,7 @@ isCenterPlayed : Context -> Bool
 isCenterPlayed context =
     let
         list =
-            List.filter (\cell -> cell.isCenter) context.grid
+            List.filter .isCenter context.grid
     in
     case list of
         center :: tail ->
@@ -80,11 +80,11 @@ isFloatingTile context =
 
 hasNeighbor : Grid.Position -> Grid.Grid -> Bool
 hasNeighbor position grid =
-    (List.length <| List.filterMap (hasNeighboringTile position) grid) > 0
+    (List.length <| List.filterMap (neighboringTiles position) grid) > 0
 
 
-hasNeighboringTile : Grid.Position -> Grid.Cell -> Maybe Grid.Position
-hasNeighboringTile ( row, col ) cell =
+neighboringTiles : Grid.Position -> Grid.Cell -> Maybe Grid.Position
+neighboringTiles ( row, col ) cell =
     if List.member cell.position [ ( row + 1, col ), ( row - 1, col ), ( row, col + 1 ), ( row, col - 1 ) ] then
         case cell.tile of
             Just tile ->
