@@ -17,6 +17,7 @@ import Json.Decode as Json
 import Logic.ContextManager as ContextManager
 import Logic.SubmissionValidator as SubmissionValidator
 import Logic.TileManager as TileManager exposing (generateTileBag, shuffleTileBag)
+import Phoenix.Socket as Phoenix
 import Requests.ScrabbleApi as ScrabbleApi
 import Responses.Scrabble as ScrabbleResponse exposing (ScrabbleResponse)
 import Task
@@ -60,6 +61,7 @@ type Msg
     | TileHolderDrop
     | TileHolderDragover
     | JoinedChannel Json.Value
+    | SocketCreated Json.Value
     | UpdateLeaderboard Json.Value
     | UpdateScore Json.Value
     | SubmitScore
@@ -197,7 +199,12 @@ update msg model =
             --            model.channels
             -- in  model: update channels ----> { ... channels = channels }
             --in
-            ( { model | modal = Modal.None }, Cmd.none )
+            let
+                encodedSocket =
+                    LeaderboardChannel.buildSocket (\_ -> SocketCreated)
+                        |> Phoenix.encode
+            in
+            ( { model | modal = Modal.None }, Phoenix.createSocket encodedSocket )
 
         SetUsername string ->
             ( { model | username = string }, Cmd.none )
@@ -232,6 +239,9 @@ update msg model =
         SocketConnect ->
             ( model, Cmd.none )
 
+        SocketCreated value ->
+            ( model, Cmd.none )
+
         JoinedChannel _ ->
             ( model, Cmd.none )
 
@@ -263,7 +273,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     let
         channelSubscriptions =
-            []
+            Sub.map SocketCreated (Phoenix.socketCreated identity)
 
         --[ Phoenix.connect (LeaderboardChannel.socket socketConfig) model.channels ]
         clearMessages =
@@ -274,7 +284,7 @@ subscriptions model =
                 _ ->
                     Time.every 3000 ClearMessages
     in
-    Sub.batch <| clearMessages :: channelSubscriptions
+    Sub.batch <| [ clearMessages, channelSubscriptions ]
 
 
 

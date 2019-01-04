@@ -1,7 +1,8 @@
-module Channels.LeaderboardChannel exposing (Config, submitPlay)
+module Channels.LeaderboardChannel exposing (Config, buildSocket, submitPlay)
 
 import Data.ScrabblePlay as Play exposing (Play)
-import Json.Encode as Encode
+import Json.Encode as Encode exposing (Value)
+import Phoenix.Socket as Socket exposing (Socket)
 
 
 
@@ -12,11 +13,17 @@ import Json.Encode as Encode
 
 
 type alias Config msg =
-    { onOpen : msg
+    { onOpen : Encode.Value -> msg
     , onJoin : Encode.Value -> msg
     , onUpdate : Encode.Value -> msg
     , onScoreUpdate : Encode.Value -> msg
     }
+
+
+buildSocket : (Value -> msg) -> Socket msg
+buildSocket onJoinFn =
+    Socket.init "/socket"
+        |> Socket.withOnOpen onJoinFn
 
 
 submitPlay : List Play -> Cmd msg

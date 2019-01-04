@@ -16,6 +16,7 @@ npm-debug.log
 /assets/package-lock.json
 /assets/elm-stuff
 /assets/js/main.js
+/assets/elm/elm-stuff
 
 # Since we are building assets from assets/,
 # we ignore priv/static. You may want to comment

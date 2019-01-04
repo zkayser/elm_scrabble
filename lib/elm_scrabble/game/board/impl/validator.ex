@@ -197,7 +197,7 @@ defmodule Scrabble.Board.Validator do
     %__MODULE__{validator | selection: updated_selection}
   end
 
-  # I'm probable trying to get too clever for my own good here.
+  # I'm probably trying to get too clever for my own good here.
   # This sets the operators to used in sorting and filtering (should be opposites)
   # based on the upper_or_lower param, which can be only :upper or :lower
   defp get_adjacent_tiles(subgrid, move, filter_dim, sort_dim, upper_or_lower) do
