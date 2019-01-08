@@ -14,10 +14,12 @@ import Html.Attributes as Attributes
 import Html.Events as Events
 import Http
 import Json.Decode as Json
+import Json.Encode as Encode
 import Logic.ContextManager as ContextManager
 import Logic.SubmissionValidator as SubmissionValidator
 import Logic.TileManager as TileManager exposing (generateTileBag, shuffleTileBag)
-import Phoenix.Socket as Phoenix
+import Phoenix.Channel as Channel exposing (Channel)
+import Phoenix.Socket as Socket exposing (Socket)
 import Requests.ScrabbleApi as ScrabbleApi
 import Responses.Scrabble as ScrabbleResponse exposing (ScrabbleResponse)
 import Task
@@ -46,6 +48,7 @@ type alias Model =
     , modal : Modal Msg
     , discardTilesMsg : Msg
     , finishedTurnMsg : Msg
+    , socket : Socket Msg
     }
 
 
@@ -62,6 +65,7 @@ type Msg
     | TileHolderDragover
     | JoinedChannel Json.Value
     | SocketCreated Json.Value
+    | SocketOpened Json.Value
     | UpdateLeaderboard Json.Value
     | UpdateScore Json.Value
     | SubmitScore
@@ -88,6 +92,7 @@ init flags =
       , modal = Modal.UserPrompt SubmitForm SetUsername
       , finishedTurnMsg = FinishTurn
       , discardTilesMsg = DiscardTiles
+      , socket = Socket.init "/socket" |> Socket.withOnOpen SocketOpened |> Socket.named "scrabbleSocket"
       }
     , Task.perform CurrentTime Time.now
     )
@@ -190,21 +195,11 @@ update msg model =
                     ( { model | messages = [ ( Message.Error, message ) ] }, Cmd.none )
 
         SubmitForm ->
-            --let
-            --channels =
-            --    case model.channels of
-            --        [] ->
-            --            [ LeaderboardChannel.channel model socketConfig ]
-            --        _ ->
-            --            model.channels
-            -- in  model: update channels ----> { ... channels = channels }
-            --in
             let
                 encodedSocket =
-                    LeaderboardChannel.buildSocket (\_ -> SocketCreated)
-                        |> Phoenix.encode
+                    Socket.encode model.socket
             in
-            ( { model | modal = Modal.None }, Phoenix.createSocket encodedSocket )
+            ( { model | modal = Modal.None }, Socket.createSocket encodedSocket )
 
         SetUsername string ->
             ( { model | username = string }, Cmd.none )
@@ -235,6 +230,16 @@ update msg model =
 
                 Err _ ->
                     ( { model | messages = ( Message.Error, "Something went wrong" ) :: model.messages }, Cmd.none )
+
+        SocketOpened value ->
+            let
+                channel =
+                    Channel.init model.socket "scrabble:lobby"
+                        |> Channel.withPayload (Encode.object [ ( "user", Encode.string model.username ) ])
+                        |> Channel.on "update" UpdateLeaderboard
+                        |> Channel.on "score_update" UpdateScore
+            in
+            ( model, Channel.createChannel <| Channel.encode channel )
 
         SocketConnect ->
             ( model, Cmd.none )
@@ -272,9 +277,8 @@ view model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
-        channelSubscriptions =
-            Sub.map SocketCreated (Phoenix.socketCreated identity)
-
+        --channelSubscriptions =
+        --    Sub.map SocketCreated (Socket.socketCreated identity)
         --[ Phoenix.connect (LeaderboardChannel.socket socketConfig) model.channels ]
         clearMessages =
             case model.messages of
@@ -284,7 +288,7 @@ subscriptions model =
                 _ ->
                     Time.every 3000 ClearMessages
     in
-    Sub.batch <| [ clearMessages, channelSubscriptions ]
+    Sub.batch <| [ clearMessages, Socket.subscriptions model.socket ]
 
 
 

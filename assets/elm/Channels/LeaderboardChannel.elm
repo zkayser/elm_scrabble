@@ -1,4 +1,4 @@
-module Channels.LeaderboardChannel exposing (Config, buildSocket, submitPlay)
+port module Channels.LeaderboardChannel exposing (Config, submitPlay)
 
 import Data.ScrabblePlay as Play exposing (Play)
 import Json.Encode as Encode exposing (Value)
@@ -20,18 +20,13 @@ type alias Config msg =
     }
 
 
-buildSocket : (Value -> msg) -> Socket msg
-buildSocket onJoinFn =
-    Socket.init "/socket"
-        |> Socket.withOnOpen onJoinFn
-
-
 submitPlay : List Play -> Cmd msg
 submitPlay plays =
     Cmd.none
 
 
 
+-- @param String --> username
 --socketUrl : String
 --socketUrl =
 --    "ws://localhost:4000/socket/websocket"
