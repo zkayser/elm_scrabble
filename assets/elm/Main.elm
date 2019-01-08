@@ -1,8 +1,5 @@
 module Main exposing (Model, Msg(..), dragAndDropConfig, init, main, showModal, subscriptions, update, view)
 
---import Phoenix
---import Phoenix.Channel exposing (Channel)
-
 import Browser
 import Channels.LeaderboardChannel as LeaderboardChannel
 import Data.GameContext as GameContext exposing (Context, Turn)

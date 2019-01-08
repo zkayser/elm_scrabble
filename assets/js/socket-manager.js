@@ -4,6 +4,7 @@ export class SocketManager {
 
   constructor(ports) {
     this.sockets = {};
+    this.channels = {};
     this.ports = ports;
     ports.createSocket.subscribe(({endpoint, params, name}) => {
       params = params ? params : {};
@@ -11,6 +12,9 @@ export class SocketManager {
     });
     ports.createChannel.subscribe(({socketName, topic, payload, messages}) => {
       this.channelInit(socketName, topic, payload, messages)
+    });
+    ports.push.subscribe(({topic, event, payload}) => {
+      this.handlePush(topic, event, payload)
     });
   }
 
@@ -24,12 +28,17 @@ export class SocketManager {
   channelInit(socketName, topic, channelPayload, messages) {
     let socket = this.sockets[socketName];
     let channel = socket.channel(topic, channelPayload);
+    channel.join();
+    this.channels[topic] = channel;
     messages.forEach((message) => {
       channel.on(message, (payload) => {
-        console.log(`Received message: ${message}`);
         this.ports.onMessageReceived.send({message, payload});
       });
     });
   }
 
+  handlePush(topic, event, payload) {
+    let channel = this.channels[topic];
+    channel.push(event, payload);
+  }
 }
