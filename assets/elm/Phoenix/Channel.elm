@@ -1,4 +1,4 @@
-port module Phoenix.Channel exposing (Channel, createChannel, encode, init, on, onMessageReceived, withPayload)
+port module Phoenix.Channel exposing (Channel, createChannel, encode, init, on, onMessageReceived, subscriptions, withPayload)
 
 import Dict exposing (Dict)
 import Json.Encode as Json exposing (Value)
@@ -63,6 +63,16 @@ encode channel =
         , ( "payload", Maybe.withDefault (Json.dict identity identity Dict.empty) channel.payload )
         , ( "messages", Json.list Json.string (Dict.keys channel.on) )
         ]
+
+
+subscriptions : Channel msg -> Sub msg
+subscriptions channel =
+    case Dict.toList channel.on of
+        [] ->
+            Sub.none
+
+        messages ->
+            Sub.batch <| List.map (\( _, fn ) -> onMessageReceived fn) messages
 
 
 

@@ -32,6 +32,7 @@ export class SocketManager {
     this.channels[topic] = channel;
     messages.forEach((message) => {
       channel.on(message, (payload) => {
+        console.log(`Received message ${message} on channel with payload: `, payload);
         this.ports.onMessageReceived.send({message, payload});
       });
     });

@@ -4,7 +4,6 @@ defmodule ElmScrabbleWeb.ScrabbleChannel do
   use Phoenix.Channel
 
   def join("scrabble:lobby", %{"user" => user}, socket) do
-    Logger.debug("Hello! You are about to join the scrabble lobby. message: #{inspect(user)}")
     Leaderboard.put(user)
     socket = assign(socket, :user, user)
     {:ok, socket}

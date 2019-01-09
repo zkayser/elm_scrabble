@@ -34,8 +34,7 @@ type alias Model =
     , dragAndDropConfig : DragAndDrop.Config Msg Tile Cell
     , dragging : Maybe Tile
     , leaderboard : Leaderboard
-
-    --, channels : List (Channel Msg)
+    , channels : List (Channel Msg)
     , turn : Turn
     , context : Context
     , score : Int
@@ -78,8 +77,7 @@ init flags =
       , dragAndDropConfig = dragAndDropConfig
       , dragging = Nothing
       , leaderboard = []
-
-      --, channels = []
+      , channels = []
       , context = GameContext.init Grid.init []
       , turn = GameContext.Active
       , score = 0
@@ -236,7 +234,7 @@ update msg model =
                         |> Channel.on "update" UpdateLeaderboard
                         |> Channel.on "score_update" UpdateScore
             in
-            ( model, Channel.createChannel <| Channel.encode channel )
+            ( { model | channels = [ channel ] }, Channel.createChannel <| Channel.encode channel )
 
         SocketConnect ->
             ( model, Cmd.none )
@@ -274,9 +272,6 @@ view model =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
-        --channelSubscriptions =
-        --    Sub.map SocketCreated (Socket.socketCreated identity)
-        --[ Phoenix.connect (LeaderboardChannel.socket socketConfig) model.channels ]
         clearMessages =
             case model.messages of
                 [] ->
@@ -285,17 +280,11 @@ subscriptions model =
                 _ ->
                     Time.every 3000 ClearMessages
     in
-    Sub.batch <| [ clearMessages, Socket.subscriptions model.socket ]
-
-
-
---socketConfig : LeaderboardChannel.Config Msg
---socketConfig =
---    { onOpen = SocketConnect
---    , onJoin = JoinedChannel
---    , onUpdate = UpdateLeaderboard
---    , onScoreUpdate = UpdateScore
---    }
+    Sub.batch <|
+        [ clearMessages
+        , Socket.subscriptions model.socket
+        , Sub.batch <| List.map Channel.subscriptions model.channels
+        ]
 
 
 dragAndDropConfig : DragAndDrop.Config Msg Tile Cell
