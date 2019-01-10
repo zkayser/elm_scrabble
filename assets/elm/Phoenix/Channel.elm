@@ -1,7 +1,9 @@
-port module Phoenix.Channel exposing (Channel, createChannel, encode, init, on, onMessageReceived, subscriptions, withPayload)
+port module Phoenix.Channel exposing (Channel, command, createChannel, encode, init, on, onMessageReceived, subscriptions, withPayload)
 
 import Dict exposing (Dict)
+import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Json exposing (Value)
+import Task exposing (Task)
 
 
 type alias Channel msg =
@@ -25,6 +27,13 @@ type alias Channel msg =
 
 type alias Socket r =
     { r | name : String }
+
+
+type alias ChannelPayload =
+    { topic : String
+    , message : String
+    , payload : Value
+    }
 
 
 init : Socket r -> String -> Channel msg
@@ -65,14 +74,46 @@ encode channel =
         ]
 
 
-subscriptions : Channel msg -> Sub msg
-subscriptions channel =
+subscriptions : (Value -> msg) -> Channel msg -> Sub msg
+subscriptions phoenixMsg channel =
     case Dict.toList channel.on of
         [] ->
             Sub.none
 
         messages ->
-            Sub.batch <| List.map (\( _, fn ) -> onMessageReceived fn) messages
+            onMessageReceived phoenixMsg
+
+
+command : Value -> List (Channel msg) -> Cmd msg
+command channelPayload channels =
+    case Decode.decodeValue payloadDecoder channelPayload of
+        Ok fromChannel ->
+            channels
+                |> List.map .on
+                |> List.map (Dict.get fromChannel.message)
+                |> List.map (maybeToCmd fromChannel.payload)
+                |> Cmd.batch
+
+        Err _ ->
+            Cmd.none
+
+
+maybeToCmd : Value -> Maybe (Value -> msg) -> Cmd msg
+maybeToCmd payload maybeFn =
+    case maybeFn of
+        Just fn ->
+            Task.perform fn (Task.succeed payload)
+
+        Nothing ->
+            Cmd.none
+
+
+payloadDecoder : Decoder ChannelPayload
+payloadDecoder =
+    Decode.map3 ChannelPayload
+        (Decode.field "topic" Decode.string)
+        (Decode.field "message" Decode.string)
+        (Decode.field "payload" Decode.value)
 
 
 

@@ -51,6 +51,7 @@ type alias Model =
 type Msg
     = CurrentTime Posix
     | ClearMessages Posix
+    | ChannelMsg Json.Value
     | DiscardTiles
     | DragStarted Tile
     | DragEnd
@@ -126,6 +127,9 @@ update msg model =
                             messages
             in
             ( { model | messages = newMessages }, Cmd.none )
+
+        ChannelMsg value ->
+            ( model, Channel.command value model.channels )
 
         DiscardTiles ->
             let
@@ -280,11 +284,7 @@ subscriptions model =
                 _ ->
                     Time.every 3000 ClearMessages
     in
-    Sub.batch <|
-        [ clearMessages
-        , Socket.subscriptions model.socket
-        , Sub.batch <| List.map Channel.subscriptions model.channels
-        ]
+    Sub.batch <| [ clearMessages, Socket.subscriptions model.socket ] ++ List.map (Channel.subscriptions ChannelMsg) model.channels
 
 
 dragAndDropConfig : DragAndDrop.Config Msg Tile Cell
