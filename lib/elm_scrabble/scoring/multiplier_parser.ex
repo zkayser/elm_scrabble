@@ -6,6 +6,10 @@ defmodule MultiplierParser do
 		_parse(multipliers, [])
 	end
 
+	def parse(multiplier) when is_map(multiplier) do
+		_parse([multiplier], [])
+	end
+
 	def parse(_), do: {:error, :malformed_multipliers}
 
 	defp _parse([], acc), do: {:ok, sort(acc)}
