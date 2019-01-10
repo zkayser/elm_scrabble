@@ -1,4 +1,14 @@
-port module Phoenix.Channel exposing (Channel, command, createChannel, encode, init, on, onMessageReceived, subscriptions, withPayload)
+port module Phoenix.Channel exposing
+    ( Channel
+    , command
+    , createChannel
+    , encode
+    , init
+    , on
+    , onMessageReceived
+    , subscriptions
+    , withPayload
+    )
 
 import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder)
@@ -19,9 +29,6 @@ type alias Channel msg =
     , onLeave : Maybe (Value -> msg)
     , onLeaveError : Maybe (Value -> msg)
     , on : Dict String (Value -> msg)
-
-    -- , presence : Maybe (Presence msg) ----- Don't have Presence set up yet
-    , debug : Bool
     }
 
 
@@ -50,7 +57,6 @@ init socket topic =
     , onLeave = Nothing
     , onLeaveError = Nothing
     , on = Dict.empty
-    , debug = False
     }
 
 

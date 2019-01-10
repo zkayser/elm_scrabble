@@ -19,7 +19,9 @@ export class SocketManager {
   }
 
   connect(socketConfig) {
-    let socket = new Socket(socketConfig.endpoint, socketConfig.params);
+    let socket = new Socket(socketConfig.endpoint, {params: socketConfig.params, logger: (kind, msg, data) => {
+      console.log(`${kind}: ${msg}`, data);
+    }});
     socket.connect();
     socket.onOpen((payload) => this.ports.onOpen.send(payload));
     this.sockets[socketConfig.name] = socket;
