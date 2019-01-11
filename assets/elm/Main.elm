@@ -63,15 +63,12 @@ type Msg
     | TileHolderDrop
     | TileHolderDragover
     | JoinedChannel Json.Value
-    | SocketCreated Json.Value
-    | SocketOpened Json.Value
     | UpdateLeaderboard Json.Value
     | UpdateScore Json.Value
     | SubmitScore
     | SubmitForm
     | SetUsername String
     | SetWildcardLetter Tile String
-    | SocketConnect
 
 
 init : Json.Value -> ( Model, Cmd Msg )
@@ -90,7 +87,7 @@ init flags =
       , modal = Modal.UserPrompt SubmitForm SetUsername
       , finishedTurnMsg = FinishTurn
       , discardTilesMsg = DiscardTiles
-      , socket = Socket.init "/socket" |> Socket.withOnOpen SocketOpened |> Socket.withDebug
+      , socket = Socket.init "/socket" |> Socket.withOnOpen (External ExternalData.SocketOpened) |> Socket.withDebug
       }
     , Task.perform CurrentTime Time.now
     )
@@ -243,22 +240,6 @@ update msg model =
 
                 Err _ ->
                     ( { model | messages = ( Message.Error, "Something went wrong" ) :: model.messages }, Cmd.none )
-
-        SocketOpened value ->
-            let
-                channel =
-                    Channel.init "scrabble:lobby"
-                        |> Channel.withPayload (Encode.object [ ( "user", Encode.string model.username ) ])
-                        |> Channel.on "update" UpdateLeaderboard
-                        |> Channel.on "score_update" UpdateScore
-            in
-            ( { model | channels = [ channel ] }, Channel.createChannel <| Channel.encode channel )
-
-        SocketConnect ->
-            ( model, Cmd.none )
-
-        SocketCreated value ->
-            ( model, Cmd.none )
 
         JoinedChannel _ ->
             ( model, Cmd.none )
