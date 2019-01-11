@@ -6,6 +6,7 @@ import Data.GameContext as GameContext exposing (Context, Turn)
 import Data.Grid as Grid exposing (Cell, Grid, Tile)
 import Data.Leaderboard as Leaderboard exposing (Leaderboard)
 import Data.Move as Move
+import ExternalData
 import Html exposing (..)
 import Html.Attributes as Attributes
 import Html.Events as Events
@@ -51,13 +52,14 @@ type alias Model =
 type Msg
     = CurrentTime Posix
     | ClearMessages Posix
-    | ChannelMsg Json.Value
     | DiscardTiles
     | DragStarted Tile
     | DragEnd
     | Dropped Cell
     | DragOver Cell
+    | External ExternalData.IncomingData
     | FinishTurn
+    | OutsideError String
     | TileHolderDrop
     | TileHolderDragover
     | JoinedChannel Json.Value
@@ -88,7 +90,7 @@ init flags =
       , modal = Modal.UserPrompt SubmitForm SetUsername
       , finishedTurnMsg = FinishTurn
       , discardTilesMsg = DiscardTiles
-      , socket = Socket.init "/socket" |> Socket.withOnOpen SocketOpened |> Socket.named "scrabbleSocket"
+      , socket = Socket.init "/socket" |> Socket.withOnOpen SocketOpened |> Socket.withDebug
       }
     , Task.perform CurrentTime Time.now
     )
@@ -128,9 +130,6 @@ update msg model =
             in
             ( { model | messages = newMessages }, Cmd.none )
 
-        ChannelMsg value ->
-            ( model, Channel.command value model.channels )
-
         DiscardTiles ->
             let
                 updates =
@@ -167,6 +166,21 @@ update msg model =
         DragOver cell ->
             ( model, Cmd.none )
 
+        External incoming ->
+            case incoming of
+                ExternalData.SocketOpened ->
+                    let
+                        channel =
+                            Channel.init "scrabble:lobby"
+                                |> Channel.withPayload (Encode.object [ ( "user", Encode.string model.username ) ])
+                                |> Channel.on "update" UpdateLeaderboard
+                                |> Channel.on "score_update" UpdateScore
+                    in
+                    ( { model | channels = [ channel ] }, ExternalData.sendDataOut <| ExternalData.createChannel channel )
+
+                ExternalData.ChannelMessageReceived payload ->
+                    ( model, Channel.command payload model.channels )
+
         FinishTurn ->
             ( { model | turn = GameContext.Inactive }, Cmd.none )
 
@@ -182,6 +196,10 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
+        OutsideError error ->
+            Debug.log error
+                ( model, Cmd.none )
+
         TileHolderDragover ->
             ( model, Cmd.none )
 
@@ -194,11 +212,7 @@ update msg model =
                     ( { model | messages = [ ( Message.Error, message ) ] }, Cmd.none )
 
         SubmitForm ->
-            let
-                encodedSocket =
-                    Socket.encode model.socket
-            in
-            ( { model | modal = Modal.None }, Socket.createSocket encodedSocket )
+            ( { model | modal = Modal.None }, ExternalData.sendDataOut <| ExternalData.createSocket model.socket )
 
         SetUsername string ->
             ( { model | username = string }, Cmd.none )
@@ -233,7 +247,7 @@ update msg model =
         SocketOpened value ->
             let
                 channel =
-                    Channel.init model.socket "scrabble:lobby"
+                    Channel.init "scrabble:lobby"
                         |> Channel.withPayload (Encode.object [ ( "user", Encode.string model.username ) ])
                         |> Channel.on "update" UpdateLeaderboard
                         |> Channel.on "score_update" UpdateScore
@@ -284,7 +298,7 @@ subscriptions model =
                 _ ->
                     Time.every 3000 ClearMessages
     in
-    Sub.batch <| [ clearMessages, Socket.subscriptions model.socket ] ++ List.map (Channel.subscriptions ChannelMsg) model.channels
+    Sub.batch <| [ clearMessages, ExternalData.receiveExternal External OutsideError ]
 
 
 dragAndDropConfig : DragAndDrop.Config Msg Tile Cell

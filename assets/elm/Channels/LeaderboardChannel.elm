@@ -1,6 +1,7 @@
 port module Channels.LeaderboardChannel exposing (submitPlay)
 
 import Data.ScrabblePlay as Play exposing (Play)
+import ExternalData
 import Json.Encode as Encode exposing (Value)
 import Phoenix.Push as Push
 import Phoenix.Socket as Socket exposing (Socket)
@@ -12,6 +13,5 @@ submitPlay plays =
         push =
             Push.init "scrabble:lobby" "submit_play"
                 |> Push.withPayload (Play.encodeList plays)
-                |> Push.encode
     in
-    Push.push push
+    ExternalData.sendDataOut <| ExternalData.createPush push

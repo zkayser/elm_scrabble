@@ -1,11 +1,13 @@
 port module Phoenix.Channel exposing
     ( Channel
+    , Payload
     , command
     , createChannel
     , encode
     , init
     , on
     , onMessageReceived
+    , payloadDecoder
     , subscriptions
     , withPayload
     )
@@ -18,7 +20,6 @@ import Task exposing (Task)
 
 type alias Channel msg =
     { topic : String
-    , socketName : String
     , payload : Maybe Value
     , onRequestJoin : Maybe msg
     , onJoin : Maybe (Value -> msg)
@@ -32,21 +33,16 @@ type alias Channel msg =
     }
 
 
-type alias Socket r =
-    { r | name : String }
-
-
-type alias ChannelPayload =
+type alias Payload =
     { topic : String
     , message : String
     , payload : Value
     }
 
 
-init : Socket r -> String -> Channel msg
-init socket topic =
+init : String -> Channel msg
+init topic =
     { topic = topic
-    , socketName = socket.name
     , payload = Nothing
     , onRequestJoin = Nothing
     , onJoin = Nothing
@@ -73,8 +69,7 @@ on event callback channel =
 encode : Channel msg -> Value
 encode channel =
     Json.object
-        [ ( "socketName", Json.string channel.socketName )
-        , ( "topic", Json.string channel.topic )
+        [ ( "topic", Json.string channel.topic )
         , ( "payload", Maybe.withDefault (Json.dict identity identity Dict.empty) channel.payload )
         , ( "messages", Json.list Json.string (Dict.keys channel.on) )
         ]
@@ -90,18 +85,13 @@ subscriptions phoenixMsg channel =
             onMessageReceived phoenixMsg
 
 
-command : Value -> List (Channel msg) -> Cmd msg
-command channelPayload channels =
-    case Decode.decodeValue payloadDecoder channelPayload of
-        Ok fromChannel ->
-            channels
-                |> List.map .on
-                |> List.map (Dict.get fromChannel.message)
-                |> List.map (maybeToCmd fromChannel.payload)
-                |> Cmd.batch
-
-        Err _ ->
-            Cmd.none
+command : Payload -> List (Channel msg) -> Cmd msg
+command fromChannel channels =
+    channels
+        |> List.map .on
+        |> List.map (Dict.get fromChannel.message)
+        |> List.map (maybeToCmd fromChannel.payload)
+        |> Cmd.batch
 
 
 maybeToCmd : Value -> Maybe (Value -> msg) -> Cmd msg
@@ -114,9 +104,9 @@ maybeToCmd payload maybeFn =
             Cmd.none
 
 
-payloadDecoder : Decoder ChannelPayload
+payloadDecoder : Decoder Payload
 payloadDecoder =
-    Decode.map3 ChannelPayload
+    Decode.map3 Payload
         (Decode.field "topic" Decode.string)
         (Decode.field "message" Decode.string)
         (Decode.field "payload" Decode.value)

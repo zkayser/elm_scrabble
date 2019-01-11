@@ -1,4 +1,14 @@
-port module Phoenix.Socket exposing (Socket, createSocket, encode, init, named, socketCreated, subscriptions, withOnOpen)
+port module Phoenix.Socket exposing
+    ( Socket
+    , createSocket
+    , encode
+    , init
+    , socketCreated
+    , subscriptions
+    , withDebug
+    , withOnOpen
+    , withParams
+    )
 
 import Dict exposing (Dict)
 import Json.Decode exposing (Value)
@@ -13,7 +23,8 @@ type alias Socket msg =
     , onOpen : Maybe (Value -> msg)
     , onClose : Maybe (Value -> msg)
     , onError : Maybe (Value -> msg)
-    , name : String
+    , params : Maybe Value
+    , debug : Bool
     }
 
 
@@ -25,13 +36,14 @@ init endpoint =
     , onOpen = Nothing
     , onClose = Nothing
     , onError = Nothing
-    , name = "Default"
+    , params = Nothing
+    , debug = False
     }
 
 
-named : String -> Socket msg -> Socket msg
-named name socket =
-    { socket | name = name }
+withDebug : Socket msg -> Socket msg
+withDebug socket =
+    { socket | debug = True }
 
 
 withOnOpen : (Value -> msg) -> Socket msg -> Socket msg
@@ -47,6 +59,11 @@ withOnClose onCloseFn socket =
 withOnError : (Value -> msg) -> Socket msg -> Socket msg
 withOnError onErrorFn socket =
     { socket | onError = Just onErrorFn }
+
+
+withParams : Value -> Socket msg -> Socket msg
+withParams params socket =
+    { socket | params = Just params }
 
 
 subscriptions : Socket msg -> Sub msg
@@ -83,7 +100,8 @@ encode : Socket msg -> Value
 encode socket =
     Encode.object
         [ ( "endpoint", Encode.string socket.endpoint )
-        , ( "name", Encode.string socket.name )
+        , ( "params", Maybe.withDefault (Encode.object []) socket.params )
+        , ( "debug", Encode.bool socket.debug )
         ]
 
 
