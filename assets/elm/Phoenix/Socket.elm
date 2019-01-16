@@ -5,6 +5,8 @@ port module Phoenix.Socket exposing
     , init
     , socketCreated
     , withDebug
+    , withOnClose
+    , withOnError
     , withOnOpen
     , withParams
     )
@@ -20,8 +22,8 @@ type alias Socket msg =
     , channels : Dict String (Channel msg) -- for now
     , events : Dict ( String, String ) (Value -> msg)
     , onOpen : Maybe msg
-    , onClose : Maybe (Value -> msg)
-    , onError : Maybe (Value -> msg)
+    , onClose : Maybe msg
+    , onError : Maybe msg
     , params : Maybe Value
     , debug : Bool
     }
@@ -50,12 +52,12 @@ withOnOpen openMsg socket =
     { socket | onOpen = Just openMsg }
 
 
-withOnClose : (Value -> msg) -> Socket msg -> Socket msg
+withOnClose : msg -> Socket msg -> Socket msg
 withOnClose onCloseFn socket =
     { socket | onClose = Just onCloseFn }
 
 
-withOnError : (Value -> msg) -> Socket msg -> Socket msg
+withOnError : msg -> Socket msg -> Socket msg
 withOnError onErrorFn socket =
     { socket | onError = Just onErrorFn }
 

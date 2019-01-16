@@ -17,7 +17,9 @@ import Phoenix.Socket as Socket exposing (Socket)
 
 
 type IncomingData
-    = SocketOpened
+    = SocketClosed
+    | SocketErrored
+    | SocketOpened
     | ChannelMessageReceived Channel.Payload
 
 
@@ -25,6 +27,7 @@ type OutgoingData msg
     = CreateSocket (Socket msg)
     | CreateChannel (Channel msg)
     | CreatePush (Push msg)
+    | Disconnect
 
 
 type alias ExternalData =
@@ -63,12 +66,21 @@ sendDataOut data =
         CreatePush push ->
             outgoing { tag = "CreatePush", data = Push.encode push }
 
+        Disconnect ->
+            outgoing { tag = "Disconnect", data = Encode.null }
+
 
 receiveExternal : (IncomingData -> msg) -> (String -> msg) -> Sub msg
 receiveExternal tagger onError =
     incoming <|
         \external ->
             case external.tag of
+                "SocketClosed" ->
+                    tagger <| SocketClosed
+
+                "SocketErrored" ->
+                    tagger <| SocketErrored
+
                 "SocketOpened" ->
                     tagger <| SocketOpened
 

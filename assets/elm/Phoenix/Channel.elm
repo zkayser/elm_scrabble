@@ -1,16 +1,22 @@
 port module Phoenix.Channel exposing
     ( Channel
-    , Payload
-    , command
-    , createChannel
-    , encode
-    , init
-    , on
-    , onMessageReceived
-    , payloadDecoder
-    , subscriptions
-    , withPayload
+    , init, withPayload, on
+    , Payload, command, createChannel, encode, onMessageReceived, payloadDecoder, subscriptions
     )
+
+{-| A channel declares which topic should be joined, registers event handlers and has various callbacks for possible lifecycle events.
+
+
+# Definition
+
+@docs Channel
+
+
+# Helpers
+
+@docs init, withPayload, on, off, onJoin, onJoinError, onError, onDisconnect, onRejoin, onLeave, onLeaveError, withDebug, map
+
+-}
 
 import Dict exposing (Dict)
 import Json.Decode as Decode exposing (Decoder)
@@ -21,12 +27,11 @@ import Task exposing (Task)
 type alias Channel msg =
     { topic : String
     , payload : Maybe Value
-    , onRequestJoin : Maybe msg
     , onJoin : Maybe (Value -> msg)
     , onJoinError : Maybe (Value -> msg)
+    , onClose : Maybe msg
     , onDisconnect : Maybe msg
-    , onError : Maybe msg
-    , onRejoin : Maybe (Value -> msg)
+    , onError : Maybe (Value -> msg)
     , onLeave : Maybe (Value -> msg)
     , onLeaveError : Maybe (Value -> msg)
     , on : Dict String (Value -> msg)
@@ -44,16 +49,20 @@ init : String -> Channel msg
 init topic =
     { topic = topic
     , payload = Nothing
-    , onRequestJoin = Nothing
     , onJoin = Nothing
     , onJoinError = Nothing
+    , onClose = Nothing
     , onDisconnect = Nothing
     , onError = Nothing
-    , onRejoin = Nothing
     , onLeave = Nothing
     , onLeaveError = Nothing
     , on = Dict.empty
     }
+
+
+withOnJoin : (Value -> msg) -> Channel msg -> Channel msg
+withOnJoin callback channel =
+    { channel | onJoin = Just callback }
 
 
 withPayload : Value -> Channel msg -> Channel msg

@@ -165,6 +165,12 @@ update msg model =
 
         External incoming ->
             case incoming of
+                ExternalData.SocketClosed ->
+                    ( model, Cmd.none )
+
+                ExternalData.SocketErrored ->
+                    ( model, Cmd.none )
+
                 ExternalData.SocketOpened ->
                     let
                         channel =
