@@ -97,6 +97,10 @@ init flags =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    let
+        submissionValidator =
+            SubmissionValidator.validateSubmission model.phoenix.send
+    in
     case msg of
         CurrentTime time ->
             let
@@ -195,7 +199,7 @@ update msg model =
             ( model, Cmd.none )
 
         SubmitScore ->
-            case SubmissionValidator.validateSubmission UpdateScore model.context model.phoenix.send of
+            case submissionValidator UpdateScore model.context of
                 Ok cmd ->
                     ( model, cmd )
 
@@ -204,7 +208,8 @@ update msg model =
 
         SubmitForm ->
             let
-                ( phoenixModel, phxCmd ) = Phoenix.update (PhxMsg.createSocket model.phoenix.socket) model.phoenix
+                ( phoenixModel, phxCmd ) =
+                    Phoenix.update (PhxMsg.createSocket model.phoenix.socket) model.phoenix
             in
             ( { model | modal = Modal.None, phoenix = phoenixModel }, phxCmd )
 

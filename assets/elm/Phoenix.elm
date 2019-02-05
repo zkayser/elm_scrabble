@@ -1,4 +1,4 @@
-module Phoenix exposing (Model, addChannel, addPush, initialize, update)
+module Phoenix exposing (Model, Send, addChannel, addPush, initialize, update)
 
 import Dict exposing (Dict)
 import Json.Encode as Encode exposing (Value)
@@ -16,6 +16,10 @@ type alias Model msg =
     , pushes : Dict String (Push msg)
     , send : Data -> Cmd msg
     }
+
+
+type alias Send msg =
+    Data -> Cmd msg
 
 
 initialize : Socket msg -> (Data -> Cmd msg) -> Model msg

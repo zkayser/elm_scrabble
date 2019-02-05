@@ -32,6 +32,7 @@ defmodule MultiplierParser do
 	defp _parse([%{"DoubleLetter" => _}|_], _), do: {:error, {:invalid, :double_letter}}
 	defp _parse([%{"TripleLetter" => _}|_], _), do: {:error, {:invalid, :triple_letter}}
 	defp _parse([%{"Wildcard" => _}|_], _), do: {:error, {:invalid, :wildcard}}
+	defp _parse([object|tail], acc) when object == %{}, do: _parse(tail, acc)
 	defp _parse([object|_], _), do: {:error, {:invalid_key, hd(Map.keys(object))}}
 
 	defp sort(multipliers) do

@@ -6,6 +6,7 @@ import Data.Move exposing (Move)
 import Expect exposing (Expectation)
 import Json.Decode exposing (Value)
 import Logic.SubmissionValidator as Validator
+import Phoenix
 import Test exposing (..)
 
 
@@ -35,7 +36,7 @@ suite =
                     { grid = grid, movesMade = invalidMoves, tiles = [ tileC ] }
 
                 validateSubmission =
-                    Validator.validateSubmission Fake
+                    Validator.validateSubmission fakeSend Fake
             in
             [ test "Given an invalid play" <|
                 \_ ->
@@ -107,3 +108,8 @@ movesMade =
 
 type FakeMsg
     = Fake Value
+
+
+fakeSend : Phoenix.Send msg
+fakeSend =
+    \data -> Cmd.none

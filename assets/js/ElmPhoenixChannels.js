@@ -49,7 +49,7 @@ export class ElmPhoenixChannels {
   }
 
   connect({endpoint, params, debug}) {
-    if (this.socket && this.socket.connected()) {
+    if (this.socket && this.socket.isConnected()) {
       return;
     }
     let logger;
@@ -66,7 +66,7 @@ export class ElmPhoenixChannels {
   }
 
   disconnectSocket() {
-    if (this.socket && this.socket.connected()) {
+    if (this.socket && this.socket.isConnected()) {
       this.socket.disconnect();
     }
   }
