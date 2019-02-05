@@ -215,8 +215,16 @@ update msg model =
             ( { model | context = updatedContext }, Cmd.none )
 
         SocketOpened ->
-            Debug.log "Socket just opened"
-            ( model, Cmd.none )
+            let
+                channel =
+                    Channel.init "scrabble:lobby"
+                    |> Channel.withPayload ( Encode.object [ ( "user", Encode.string model.username ) ] )
+                    |> Channel.on "update" UpdateLeaderboard
+                    |> Channel.on "score_update" UpdateScore
+                phxMsg = PhxMsg.createChannel channel
+                ( phoenixModel, phxCmd ) = Phoenix.update phxMsg model.phoenix
+            in
+            ( { model | phoenix = phoenixModel }, phxCmd )
 
         UpdateLeaderboard payload ->
             case Json.decodeValue Leaderboard.decoder payload of
