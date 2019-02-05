@@ -1,4 +1,4 @@
-module ContextManagerTest exposing (..)
+module ContextManagerTest exposing (FakeMsg(..), suite)
 
 import Data.GameContext as Context
 import Data.Grid as Grid exposing (Tile)
@@ -134,6 +134,7 @@ suite =
                                 (\cell ->
                                     if cell.isCenter then
                                         { cell | tile = Just tileA }
+
                                     else
                                         cell
                                 )

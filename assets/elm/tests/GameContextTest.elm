@@ -1,4 +1,4 @@
-module GameContextTest exposing (..)
+module GameContextTest exposing (suite)
 
 import Data.GameContext as Context exposing (Turn(..))
 import Data.Grid as Grid exposing (Multiplier(..), Tile)
@@ -33,6 +33,7 @@ suite =
                                 (\cell ->
                                     if cell.position == ( 8, 8 ) then
                                         { cell | tile = Just (fakeTileWith 1 "A") }
+
                                     else
                                         cell
                                 )
@@ -60,6 +61,7 @@ suite =
                                 (\cell ->
                                     if cell.isCenter then
                                         { cell | tile = Just tileA }
+
                                     else
                                         cell
                                 )
@@ -85,6 +87,7 @@ suite =
                                 (\cell ->
                                     if cell.isCenter then
                                         { cell | tile = Just tileA }
+
                                     else
                                         cell
                                 )
@@ -104,6 +107,7 @@ suite =
                                 (\cell ->
                                     if cell.position == ( 7, 7 ) then
                                         { cell | tile = Just tileA }
+
                                     else
                                         cell
                                 )

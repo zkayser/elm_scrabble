@@ -1,4 +1,4 @@
-module Data.GameContext exposing (..)
+module Data.GameContext exposing (Context, Turn(..), init, isValidSubmission, moveIsNotOverLapping, update)
 
 import Data.Grid as Grid exposing (Grid, Position, Tile)
 import Data.Move as Move exposing (Move)
@@ -39,8 +39,10 @@ update turn context move =
                                 (\cell ->
                                     if cell.position == move.position then
                                         { cell | tile = Just move.tile }
+
                                     else if cell.tile == Just move.tile then
                                         { cell | tile = Nothing }
+
                                     else
                                         cell
                                 )
@@ -55,6 +57,7 @@ update turn context move =
                                 -- to the head of the list
                                 -- if the tile had already been played
                                 move :: List.filter (\mv -> mv.tile /= move.tile) context.movesMade
+
                             else
                                 move :: context.movesMade
 

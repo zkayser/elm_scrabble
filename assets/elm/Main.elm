@@ -17,7 +17,7 @@ import Logic.SubmissionValidator as SubmissionValidator
 import Logic.TileManager as TileManager exposing (generateTileBag, shuffleTileBag)
 import Phoenix
 import Phoenix.Channel as Channel exposing (Channel)
-import Phoenix.Message as PhxMsg exposing (Message(..), Event(..), PhoenixCommand(..), Data)
+import Phoenix.Message as PhxMsg exposing (Data, Event(..), Message(..), PhoenixCommand(..))
 import Phoenix.Socket as Socket exposing (Socket)
 import Requests.ScrabbleApi as ScrabbleApi
 import Responses.Scrabble as ScrabbleResponse exposing (ScrabbleResponse)
@@ -167,7 +167,8 @@ update msg model =
 
         PhoenixMessage incoming ->
             let
-                ( phoenixModel, phxCmd ) = Phoenix.update (Incoming incoming) model.phoenix
+                ( phoenixModel, phxCmd ) =
+                    Phoenix.update (Incoming incoming) model.phoenix
             in
             ( { model | phoenix = phoenixModel }, phxCmd )
 
@@ -218,11 +219,15 @@ update msg model =
             let
                 channel =
                     Channel.init "scrabble:lobby"
-                    |> Channel.withPayload ( Encode.object [ ( "user", Encode.string model.username ) ] )
-                    |> Channel.on "update" UpdateLeaderboard
-                    |> Channel.on "score_update" UpdateScore
-                phxMsg = PhxMsg.createChannel channel
-                ( phoenixModel, phxCmd ) = Phoenix.update phxMsg model.phoenix
+                        |> Channel.withPayload (Encode.object [ ( "user", Encode.string model.username ) ])
+                        |> Channel.on "update" UpdateLeaderboard
+                        |> Channel.on "score_update" UpdateScore
+
+                phxMsg =
+                    PhxMsg.createChannel channel
+
+                ( phoenixModel, phxCmd ) =
+                    Phoenix.update phxMsg model.phoenix
             in
             ( { model | phoenix = phoenixModel }, phxCmd )
 
@@ -305,8 +310,13 @@ showModal model =
         _ ->
             True
 
+
+
 -- PORTS
+
+
 port toPhoenix : Data -> Cmd msg
+
 
 port fromPhoenix : (Data -> msg) -> Sub msg
 

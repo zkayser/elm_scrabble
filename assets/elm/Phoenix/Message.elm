@@ -1,7 +1,8 @@
 module Phoenix.Message exposing
     ( Message(..), Data
-    , createSocket, createChannel, createPush, disconnect, leaveChannel, send, subscribe
-    , Event(..), PhoenixCommand(..)
+    , createSocket, createChannel, createPush, disconnect, leaveChannel
+    , subscribe
+    , Event(..), PhoenixCommand(..), send
     )
 
 {-| Phoenix.Message defines a set of messages that can be passed between external Phoenix socket/channel data sources and Elm.
@@ -145,7 +146,9 @@ send externalAppOutgoingPortFn command =
 
                 LeaveChannel channel ->
                     externalAppOutgoingPortFn { tag = "LeaveChannel", data = Channel.encode channel }
-        _ -> Cmd.none
+
+        _ ->
+            Cmd.none
 
 
 {-| Takes a user provided incoming port function along with a Phoenix Event, a tagging function, and an

@@ -143,7 +143,10 @@ update phoenixMessage model =
             ( model, model.send { tag = "LeaveChannel", data = Channel.encode channel } )
 
 
+
 -- COMMAND HELPERS
+
+
 maybeTriggerCommand : Maybe msg -> Cmd msg
 maybeTriggerCommand maybeCallback =
     case maybeCallback of
@@ -163,7 +166,11 @@ maybeTriggerCmdWithPayload maybeCallback =
         Nothing ->
             \_ -> Cmd.none
 
+
+
 -- HELPERS
+
+
 updateChannelWith : (Channel msg -> Channel msg) -> String -> Model msg -> Model msg
 updateChannelWith channelFn topic model =
     { model | channels = Dict.update topic (Maybe.map channelFn) model.channels }

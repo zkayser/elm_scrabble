@@ -1,4 +1,4 @@
-module Types.Messages exposing (..)
+module Types.Messages exposing (Message, MessageType(..))
 
 
 type MessageType

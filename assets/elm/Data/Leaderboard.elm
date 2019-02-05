@@ -1,4 +1,4 @@
-module Data.Leaderboard exposing (..)
+module Data.Leaderboard exposing (Entry, Leaderboard, decoder, entryDecoder)
 
 import Json.Decode as Decode exposing (Decoder)
 

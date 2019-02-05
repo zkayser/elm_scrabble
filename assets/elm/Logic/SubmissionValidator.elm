@@ -46,8 +46,10 @@ errors : Context -> ContextError
 errors context =
     if not <| isCenterPlayed context then
         CenterNotPlayed
+
     else if isFloatingTile context then
         FloatingTile
+
     else
         NoError
 
@@ -70,6 +72,7 @@ isFloatingTile : Context -> Bool
 isFloatingTile context =
     if List.length context.movesMade > 1 then
         False
+
     else
         case List.head context.movesMade of
             Just move ->
@@ -93,5 +96,6 @@ neighboringTiles ( row, col ) cell =
 
             Nothing ->
                 Nothing
+
     else
         Nothing

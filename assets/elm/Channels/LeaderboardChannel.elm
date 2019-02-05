@@ -1,8 +1,8 @@
 port module Channels.LeaderboardChannel exposing (submitPlay)
 
 import Data.ScrabblePlay as Play exposing (Play)
-import Phoenix.Message as Message exposing (Data)
 import Json.Encode as Encode exposing (Value)
+import Phoenix.Message as Message exposing (Data)
 import Phoenix.Push as Push
 import Phoenix.Socket as Socket exposing (Socket)
 

@@ -1,4 +1,4 @@
-module TestData exposing (..)
+module TestData exposing (buildMove, buildPlayFor, createMoves, createTile, fakeTileWith, initialTiles, insertGridIntoContext, insertMoveIntoGrid, insertMovesIntoContext, insertMovesIntoGrid, movesMade, tileA, tileB, tileC, tileD)
 
 import Data.GameContext as Context exposing (Context)
 import Data.Grid as Grid exposing (Cell, Grid, Position, Tile)
@@ -53,6 +53,7 @@ insertMoveIntoGrid move grid =
         (\cell ->
             if cell.position == move.position then
                 { cell | tile = Just move.tile }
+
             else
                 cell
         )

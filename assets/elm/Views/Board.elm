@@ -1,4 +1,4 @@
-module Views.Board exposing (..)
+module Views.Board exposing (Model, view)
 
 import Data.GameContext exposing (Context)
 import Data.Grid as Grid exposing (Cell, Grid, Tile)
