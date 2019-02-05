@@ -1,4 +1,4 @@
-module Responses.Scrabble exposing (..)
+module Responses.Scrabble exposing (ScrabbleResponse, decoder)
 
 import Json.Decode as Decode
 

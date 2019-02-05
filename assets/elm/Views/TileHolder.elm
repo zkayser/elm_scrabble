@@ -1,4 +1,4 @@
-module Views.TileHolder exposing (..)
+module Views.TileHolder exposing (DragConfig, Model, view, viewTile, viewTiles)
 
 import Data.GameContext exposing (Context)
 import Data.Grid as Grid exposing (Cell, Tile)
@@ -34,5 +34,5 @@ viewTile : DragConfig msg -> Tile -> Html msg
 viewTile config tile =
     div ([ class "tile" ] ++ DragAndDrop.draggable (config.dragStartMsg tile) config.dragEndMsg)
         [ span [ class "letter" ] [ text tile.letter ]
-        , span [ class "value" ] [ text <| toString tile.value ]
+        , span [ class "value" ] [ text <| String.fromInt tile.value ]
         ]

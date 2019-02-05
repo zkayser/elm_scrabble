@@ -70,6 +70,7 @@ updateContextWith tile letter model =
                         (\cell ->
                             if cell.tile == Just tile then
                                 { cell | tile = Just { tile | letter = formattedLetter } }
+
                             else
                                 cell
                         )
@@ -80,6 +81,7 @@ updateContextWith tile letter model =
                         (\move ->
                             if move.tile == tile then
                                 { move | tile = { tile | letter = formattedLetter } }
+
                             else
                                 move
                         )
@@ -126,6 +128,7 @@ handleTileDrop tile context =
                         (\cell ->
                             if cell.tile == Just tile then
                                 { cell | tile = Nothing }
+
                             else
                                 cell
                         )

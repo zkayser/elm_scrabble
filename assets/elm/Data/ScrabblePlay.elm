@@ -1,4 +1,4 @@
-module Data.ScrabblePlay exposing (..)
+module Data.ScrabblePlay exposing (Multipliers, Play, encode, encodeList, encodeMultipliers, insertTile, tilesToPlay)
 
 import Data.Grid as Grid exposing (Multiplier(..), Tile)
 import Dict exposing (Dict)
@@ -34,18 +34,18 @@ insertTile multipliers tile =
             multipliers
 
         DoubleWord ->
-            Dict.insert (toString DoubleWord) [] multipliers
+            Dict.insert (Debug.toString DoubleWord) [] multipliers
 
         TripleWord ->
-            Dict.insert (toString TripleWord) [] multipliers
+            Dict.insert (Debug.toString TripleWord) [] multipliers
 
         multiplier ->
-            case Dict.get (toString multiplier) multipliers of
+            case Dict.get (Debug.toString multiplier) multipliers of
                 Just letters ->
-                    Dict.insert (toString multiplier) (tile.letter :: letters) multipliers
+                    Dict.insert (Debug.toString multiplier) (tile.letter :: letters) multipliers
 
                 Nothing ->
-                    Dict.insert (toString multiplier) [ tile.letter ] multipliers
+                    Dict.insert (Debug.toString multiplier) [ tile.letter ] multipliers
 
 
 encode : Play -> Encode.Value
@@ -59,11 +59,10 @@ encode play =
 encodeList : List Play -> Encode.Value
 encodeList plays =
     Encode.object
-        [ ( "plays", Encode.list <| List.map (\play -> encode play) plays ) ]
+        [ ( "plays", Encode.list encode plays ) ]
 
 
 encodeMultipliers : Multipliers -> Encode.Value
 encodeMultipliers multipliers =
-    Dict.toList multipliers
-        |> List.map (\( key, value ) -> Encode.object [ ( key, Encode.list (List.map Encode.string value) ) ])
-        |> Encode.list
+    multipliers
+        |> Encode.dict identity (Encode.list Encode.string)

@@ -6,6 +6,7 @@ import Data.Grid as Grid exposing (Cell, Grid, Position, Tile)
 import Data.Move as Move
 import Json.Decode exposing (Value)
 import Logic.Validator as Validator exposing (ValidatorState(..))
+import Phoenix
 
 
 type ContextError
@@ -15,12 +16,12 @@ type ContextError
 
 
 {-| This function can fail if an invalid play is attempted.
-To account for this, a `Result String (Context, Cmd msg, List Tile )`
+To account for this, a `Result String (Cmd msg)`
 type is returned so that the caller of the function can react
 accordingly.
 -}
-validateSubmission : (Value -> msg) -> Context -> Result String (Cmd msg)
-validateSubmission msg context =
+validateSubmission : Phoenix.Send msg -> (Value -> msg) -> Context -> Result String (Cmd msg)
+validateSubmission phxSendFn msg context =
     case errors context of
         CenterNotPlayed ->
             Err "You must play a tile on the center piece"
@@ -31,7 +32,7 @@ validateSubmission msg context =
         NoError ->
             case Validator.validate (Move.validate context.movesMade) context of
                 Validated play ->
-                    Ok (Leaderboard.submitPlay play)
+                    Ok (Leaderboard.submitPlay phxSendFn play)
 
                 _ ->
                     Err "Invalid play"
@@ -45,8 +46,10 @@ errors : Context -> ContextError
 errors context =
     if not <| isCenterPlayed context then
         CenterNotPlayed
+
     else if isFloatingTile context then
         FloatingTile
+
     else
         NoError
 
@@ -55,7 +58,7 @@ isCenterPlayed : Context -> Bool
 isCenterPlayed context =
     let
         list =
-            List.filter (\cell -> cell.isCenter) context.grid
+            List.filter .isCenter context.grid
     in
     case list of
         center :: tail ->
@@ -69,6 +72,7 @@ isFloatingTile : Context -> Bool
 isFloatingTile context =
     if List.length context.movesMade > 1 then
         False
+
     else
         case List.head context.movesMade of
             Just move ->
@@ -80,11 +84,11 @@ isFloatingTile context =
 
 hasNeighbor : Grid.Position -> Grid.Grid -> Bool
 hasNeighbor position grid =
-    (List.length <| List.filterMap (hasNeighboringTile position) grid) > 0
+    (List.length <| List.filterMap (neighboringTiles position) grid) > 0
 
 
-hasNeighboringTile : Grid.Position -> Grid.Cell -> Maybe Grid.Position
-hasNeighboringTile ( row, col ) cell =
+neighboringTiles : Grid.Position -> Grid.Cell -> Maybe Grid.Position
+neighboringTiles ( row, col ) cell =
     if List.member cell.position [ ( row + 1, col ), ( row - 1, col ), ( row, col + 1 ), ( row, col - 1 ) ] then
         case cell.tile of
             Just tile ->
@@ -92,5 +96,6 @@ hasNeighboringTile ( row, col ) cell =
 
             Nothing ->
                 Nothing
+
     else
         Nothing

@@ -1,4 +1,4 @@
-module GridTest exposing (..)
+module GridTest exposing (suite)
 
 import Data.Grid as Grid exposing (Dimension(..), Grid, Position, Tile)
 import Data.Move exposing (Move)

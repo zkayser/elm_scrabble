@@ -1,4 +1,4 @@
-module Widgets.Modals exposing (..)
+module Widgets.Modals exposing (Modal(..), view)
 
 import Data.Grid exposing (Tile)
 import Html exposing (..)

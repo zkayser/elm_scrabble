@@ -1,4 +1,4 @@
-module SubmissionValidatorTest exposing (..)
+module SubmissionValidatorTest exposing (FakeMsg(..), createTile, movesMade, suite, tileA, tileB, tileC, tileD)
 
 import Data.GameContext as Context
 import Data.Grid as Grid exposing (Tile)
@@ -6,6 +6,7 @@ import Data.Move exposing (Move)
 import Expect exposing (Expectation)
 import Json.Decode exposing (Value)
 import Logic.SubmissionValidator as Validator
+import Phoenix
 import Test exposing (..)
 
 
@@ -19,8 +20,10 @@ suite =
                         (\cell ->
                             if cell.isCenter then
                                 { cell | tile = Just tileA }
+
                             else if cell.position == ( 8, 9 ) then
                                 { cell | tile = Just tileB }
+
                             else
                                 cell
                         )
@@ -33,7 +36,7 @@ suite =
                     { grid = grid, movesMade = invalidMoves, tiles = [ tileC ] }
 
                 validateSubmission =
-                    Validator.validateSubmission Fake
+                    Validator.validateSubmission fakeSend Fake
             in
             [ test "Given an invalid play" <|
                 \_ ->
@@ -105,3 +108,8 @@ movesMade =
 
 type FakeMsg
     = Fake Value
+
+
+fakeSend : Phoenix.Send msg
+fakeSend =
+    \data -> Cmd.none

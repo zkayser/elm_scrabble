@@ -48,5 +48,10 @@ defmodule MultiplierParserTest do
 			multipliers = [%{"TripleWord" => ["a"], "DoubleWord" => ["a"]}]
 			assert {:error, {:invalid, :double_word}} = MultiplierParser.parse(multipliers)
 		end
+
+		test "With a multiplier not provided in a list" do
+			multipliers = %{"DoubleWord" => []}
+			assert {:ok, [:double_word]} = MultiplierParser.parse(multipliers)
+		end
 	end
 end

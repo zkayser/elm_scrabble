@@ -1,5 +1,6 @@
-module Main exposing (..)
+port module Main exposing (Model, Msg(..), dragAndDropConfig, init, main, showModal, subscriptions, update, view)
 
+import Browser
 import Channels.LeaderboardChannel as LeaderboardChannel
 import Data.GameContext as GameContext exposing (Context, Turn)
 import Data.Grid as Grid exposing (Cell, Grid, Tile)
@@ -10,15 +11,18 @@ import Html.Attributes as Attributes
 import Html.Events as Events
 import Http
 import Json.Decode as Json
+import Json.Encode as Encode
 import Logic.ContextManager as ContextManager
 import Logic.SubmissionValidator as SubmissionValidator
 import Logic.TileManager as TileManager exposing (generateTileBag, shuffleTileBag)
 import Phoenix
-import Phoenix.Channel exposing (Channel)
+import Phoenix.Channel as Channel exposing (Channel)
+import Phoenix.Message as PhxMsg exposing (Data, Event(..), Message(..), PhoenixCommand(..))
+import Phoenix.Socket as Socket exposing (Socket)
 import Requests.ScrabbleApi as ScrabbleApi
 import Responses.Scrabble as ScrabbleResponse exposing (ScrabbleResponse)
 import Task
-import Time exposing (Time)
+import Time exposing (Posix)
 import Types.Messages as Message exposing (Message)
 import Views.Board as Board
 import Views.Scoreboard as Scoreboard
@@ -42,32 +46,35 @@ type alias Model =
     , modal : Modal Msg
     , discardTilesMsg : Msg
     , finishedTurnMsg : Msg
+    , phoenix : Phoenix.Model Msg
     }
 
 
 type Msg
-    = CurrentTime Time
-    | ClearMessages Time
+    = CurrentTime Posix
+    | ClearMessages Posix
     | DiscardTiles
     | DragStarted Tile
     | DragEnd
     | Dropped Cell
     | DragOver Cell
     | FinishTurn
+    | OutsideError String
     | TileHolderDrop
     | TileHolderDragover
     | JoinedChannel Json.Value
+    | PhoenixMessage Event
     | UpdateLeaderboard Json.Value
     | UpdateScore Json.Value
+    | SocketOpened
     | SubmitScore
     | SubmitForm
     | SetUsername String
     | SetWildcardLetter Tile String
-    | SocketConnect
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Json.Value -> ( Model, Cmd Msg )
+init flags =
     ( { tileBag = generateTileBag
       , dragAndDropConfig = dragAndDropConfig
       , dragging = Nothing
@@ -82,6 +89,7 @@ init =
       , modal = Modal.UserPrompt SubmitForm SetUsername
       , finishedTurnMsg = FinishTurn
       , discardTilesMsg = DiscardTiles
+      , phoenix = Phoenix.initialize (Socket.init "/socket" |> Socket.onOpen SocketOpened |> Socket.withDebug) toPhoenix
       }
     , Task.perform CurrentTime Time.now
     )
@@ -89,6 +97,10 @@ init =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
+    let
+        submissionValidator =
+            SubmissionValidator.validateSubmission model.phoenix.send
+    in
     case msg of
         CurrentTime time ->
             let
@@ -157,6 +169,13 @@ update msg model =
         DragOver cell ->
             ( model, Cmd.none )
 
+        PhoenixMessage incoming ->
+            let
+                ( phoenixModel, phxCmd ) =
+                    Phoenix.update (Incoming incoming) model.phoenix
+            in
+            ( { model | phoenix = phoenixModel }, phxCmd )
+
         FinishTurn ->
             ( { model | turn = GameContext.Inactive }, Cmd.none )
 
@@ -172,11 +191,15 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
+        OutsideError error ->
+            Debug.log error
+                ( model, Cmd.none )
+
         TileHolderDragover ->
             ( model, Cmd.none )
 
         SubmitScore ->
-            case SubmissionValidator.validateSubmission UpdateScore model.context of
+            case submissionValidator UpdateScore model.context of
                 Ok cmd ->
                     ( model, cmd )
 
@@ -185,15 +208,10 @@ update msg model =
 
         SubmitForm ->
             let
-                channels =
-                    case model.channels of
-                        [] ->
-                            [ LeaderboardChannel.channel model socketConfig ]
-
-                        _ ->
-                            model.channels
+                ( phoenixModel, phxCmd ) =
+                    Phoenix.update (PhxMsg.createSocket model.phoenix.socket) model.phoenix
             in
-            ( { model | modal = Modal.None, channels = channels }, Cmd.none )
+            ( { model | modal = Modal.None, phoenix = phoenixModel }, phxCmd )
 
         SetUsername string ->
             ( { model | username = string }, Cmd.none )
@@ -204,6 +222,22 @@ update msg model =
                     ContextManager.updateContextWith tile letter model
             in
             ( { model | context = updatedContext }, Cmd.none )
+
+        SocketOpened ->
+            let
+                channel =
+                    Channel.init "scrabble:lobby"
+                        |> Channel.withPayload (Encode.object [ ( "user", Encode.string model.username ) ])
+                        |> Channel.on "update" UpdateLeaderboard
+                        |> Channel.on "score_update" UpdateScore
+
+                phxMsg =
+                    PhxMsg.createChannel channel
+
+                ( phoenixModel, phxCmd ) =
+                    Phoenix.update phxMsg model.phoenix
+            in
+            ( { model | phoenix = phoenixModel }, phxCmd )
 
         UpdateLeaderboard payload ->
             case Json.decodeValue Leaderboard.decoder payload of
@@ -225,38 +259,36 @@ update msg model =
                 Err _ ->
                     ( { model | messages = ( Message.Error, "Something went wrong" ) :: model.messages }, Cmd.none )
 
-        SocketConnect ->
-            ( model, Cmd.none )
-
         JoinedChannel _ ->
             ( model, Cmd.none )
 
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
-    div [ Attributes.class "scrabble" ]
-        [ div [ Attributes.class "container" ]
-            [ Board.view model
-            , TileHolder.view TileHolderDrop TileHolderDragover model
-            ]
-        , div [ Attributes.class "scoreboard-container" ]
-            [ Scoreboard.view SubmitScore model ]
-        , div
-            [ Attributes.classList
-                [ ( "modal-container", showModal model )
-                , ( "hidden", not (showModal model) )
+    { title = "Elm Scrabble"
+    , body =
+        [ div [ Attributes.class "scrabble" ]
+            [ div [ Attributes.class "container" ]
+                [ Board.view model
+                , TileHolder.view TileHolderDrop TileHolderDragover model
                 ]
+            , div [ Attributes.class "scoreboard-container" ]
+                [ Scoreboard.view SubmitScore model ]
+            , div
+                [ Attributes.classList
+                    [ ( "modal-container", showModal model )
+                    , ( "hidden", not (showModal model) )
+                    ]
+                ]
+                [ Modal.view model.modal ]
             ]
-            [ Modal.view model.modal ]
         ]
+    }
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     let
-        channelSubscriptions =
-            [ Phoenix.connect (LeaderboardChannel.socket socketConfig) model.channels ]
-
         clearMessages =
             case model.messages of
                 [] ->
@@ -265,16 +297,7 @@ subscriptions model =
                 _ ->
                     Time.every 3000 ClearMessages
     in
-    Sub.batch <| clearMessages :: channelSubscriptions
-
-
-socketConfig : LeaderboardChannel.Config Msg
-socketConfig =
-    { onOpen = SocketConnect
-    , onJoin = JoinedChannel
-    , onUpdate = UpdateLeaderboard
-    , onScoreUpdate = UpdateScore
-    }
+    Sub.batch <| [ clearMessages, PhxMsg.subscribe fromPhoenix PhoenixMessage OutsideError ]
 
 
 dragAndDropConfig : DragAndDrop.Config Msg Tile Cell
@@ -296,8 +319,19 @@ showModal model =
             True
 
 
+
+-- PORTS
+
+
+port toPhoenix : Data -> Cmd msg
+
+
+port fromPhoenix : (Data -> msg) -> Sub msg
+
+
+main : Program Json.Value Model Msg
 main =
-    Html.program
+    Browser.document
         { init = init
         , update = update
         , subscriptions = subscriptions

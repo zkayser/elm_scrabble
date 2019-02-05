@@ -69,6 +69,7 @@ updateState playedTiles cell currentState =
                 Just tile ->
                     if List.member tile playedTiles then
                         MoveDetected [ { tile | multiplier = cell.multiplier } ]
+
                     else
                         PossibleMoveFound [ { tile | multiplier = cell.multiplier } ]
 
@@ -80,6 +81,7 @@ updateState playedTiles cell currentState =
                 Just tile ->
                     if List.member tile playedTiles then
                         MoveDetected <| { tile | multiplier = cell.multiplier } :: tiles
+
                     else
                         PossibleMoveFound <| { tile | multiplier = cell.multiplier } :: tiles
 
@@ -94,6 +96,7 @@ updateState playedTiles cell currentState =
                 Nothing ->
                     if List.all (\tile -> List.member tile.id (idsFor tiles)) playedTiles then
                         Validated <| handleValidationForPlay tiles cell
+
                     else
                         Invalidated
 
@@ -114,16 +117,16 @@ secondaryFor context dimension =
     case dimension of
         Grid.Row row ->
             case handleValidate (List.filter (\move -> Tuple.first move.position == row) context.movesMade) (Grid.get context.grid dimension) of
-                Validated play ->
-                    List.filter (\play -> String.length play.word > 1) play
+                Validated plays ->
+                    List.filter (\play -> String.length play.word > 1) plays
 
                 _ ->
                     []
 
         Grid.Column column ->
             case handleValidate (List.filter (\move -> Tuple.second move.position == column) context.movesMade) (Grid.get context.grid dimension) of
-                Validated play ->
-                    List.filter (\play -> String.length play.word > 1) play
+                Validated plays ->
+                    List.filter (\play -> String.length play.word > 1) plays
 
                 _ ->
                     []
@@ -141,6 +144,7 @@ finalizeState playedTiles state =
         MoveDetected tiles ->
             if List.all (\tile -> List.member tile.id (idsFor tiles)) playedTiles then
                 Validated <| List.filter (\play -> String.length play.word > 1) [ ScrabblePlay.tilesToPlay tiles ]
+
             else
                 Invalidated
 
@@ -162,6 +166,7 @@ handleValidationForPlay tiles cell =
                 -- The center is the only place where an isolated, one-off tile can be
                 -- played legally, so we form a play for it here:
                 [ ScrabblePlay.tilesToPlay tiles ]
+
             else
                 -- If there was only one tile, on the main handleValidation
                 -- loop, it is not valid so return an empty list of plays:

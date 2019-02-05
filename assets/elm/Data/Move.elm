@@ -1,4 +1,4 @@
-module Data.Move exposing (..)
+module Data.Move exposing (Move, validate)
 
 import Data.Grid as Grid exposing (Dimension(..), Position, Tile)
 
@@ -23,7 +23,9 @@ validate moves =
         ( row, column ) :: tail ->
             if List.all (\( r, _ ) -> r == row) tail then
                 Row row
+
             else if List.all (\( _, c ) -> c == column) tail then
                 Column column
+
             else
                 Invalid

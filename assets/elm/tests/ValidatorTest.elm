@@ -1,4 +1,4 @@
-module ValidatorTest exposing (..)
+module ValidatorTest exposing (suite)
 
 import Data.GameContext exposing (Context)
 import Data.Grid as Grid exposing (Dimension(..), Grid, Position)
