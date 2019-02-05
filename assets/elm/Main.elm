@@ -203,7 +203,10 @@ update msg model =
                     ( { model | messages = [ ( Message.Error, message ) ] }, Cmd.none )
 
         SubmitForm ->
-            ( { model | modal = Modal.None }, PhxMsg.send model.phoenix.send <| PhxMsg.createSocket model.phoenix.socket )
+            let
+                ( phoenixModel, phxCmd ) = Phoenix.update (PhxMsg.createSocket model.phoenix.socket) model.phoenix
+            in
+            ( { model | modal = Modal.None, phoenix = phoenixModel }, phxCmd )
 
         SetUsername string ->
             ( { model | username = string }, Cmd.none )
