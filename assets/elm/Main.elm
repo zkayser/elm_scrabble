@@ -1,4 +1,4 @@
-module Main exposing (Model, Msg(..), dragAndDropConfig, init, main, showModal, subscriptions, update, view)
+port module Main exposing (Model, Msg(..), dragAndDropConfig, init, main, showModal, subscriptions, update, view)
 
 import Browser
 import Channels.LeaderboardChannel as LeaderboardChannel
@@ -6,7 +6,6 @@ import Data.GameContext as GameContext exposing (Context, Turn)
 import Data.Grid as Grid exposing (Cell, Grid, Tile)
 import Data.Leaderboard as Leaderboard exposing (Leaderboard)
 import Data.Move as Move
-import ExternalData
 import Html exposing (..)
 import Html.Attributes as Attributes
 import Html.Events as Events
@@ -16,7 +15,9 @@ import Json.Encode as Encode
 import Logic.ContextManager as ContextManager
 import Logic.SubmissionValidator as SubmissionValidator
 import Logic.TileManager as TileManager exposing (generateTileBag, shuffleTileBag)
+import Phoenix
 import Phoenix.Channel as Channel exposing (Channel)
+import Phoenix.Message as PhxMsg exposing (Message(..), Event(..), PhoenixCommand(..), Data)
 import Phoenix.Socket as Socket exposing (Socket)
 import Requests.ScrabbleApi as ScrabbleApi
 import Responses.Scrabble as ScrabbleResponse exposing (ScrabbleResponse)
@@ -45,7 +46,7 @@ type alias Model =
     , modal : Modal Msg
     , discardTilesMsg : Msg
     , finishedTurnMsg : Msg
-    , socket : Socket Msg
+    , phoenix : Phoenix.Model Msg
     }
 
 
@@ -57,14 +58,15 @@ type Msg
     | DragEnd
     | Dropped Cell
     | DragOver Cell
-    | External ExternalData.IncomingData
     | FinishTurn
     | OutsideError String
     | TileHolderDrop
     | TileHolderDragover
     | JoinedChannel Json.Value
+    | PhoenixMessage Event
     | UpdateLeaderboard Json.Value
     | UpdateScore Json.Value
+    | SocketOpened
     | SubmitScore
     | SubmitForm
     | SetUsername String
@@ -87,7 +89,7 @@ init flags =
       , modal = Modal.UserPrompt SubmitForm SetUsername
       , finishedTurnMsg = FinishTurn
       , discardTilesMsg = DiscardTiles
-      , socket = Socket.init "/socket" |> Socket.withOnOpen (External ExternalData.SocketOpened) |> Socket.withDebug
+      , phoenix = Phoenix.initialize (Socket.init "/socket" |> Socket.onOpen SocketOpened |> Socket.withDebug) toPhoenix
       }
     , Task.perform CurrentTime Time.now
     )
@@ -163,26 +165,11 @@ update msg model =
         DragOver cell ->
             ( model, Cmd.none )
 
-        External incoming ->
-            case incoming of
-                ExternalData.SocketClosed ->
-                    ( model, Cmd.none )
-
-                ExternalData.SocketErrored ->
-                    ( model, Cmd.none )
-
-                ExternalData.SocketOpened ->
-                    let
-                        channel =
-                            Channel.init "scrabble:lobby"
-                                |> Channel.withPayload (Encode.object [ ( "user", Encode.string model.username ) ])
-                                |> Channel.on "update" UpdateLeaderboard
-                                |> Channel.on "score_update" UpdateScore
-                    in
-                    ( { model | channels = [ channel ] }, ExternalData.sendDataOut <| ExternalData.createChannel channel )
-
-                ExternalData.ChannelMessageReceived payload ->
-                    ( model, Channel.command payload model.channels )
+        PhoenixMessage incoming ->
+            let
+                ( phoenixModel, phxCmd ) = Phoenix.update (Incoming incoming) model.phoenix
+            in
+            ( { model | phoenix = phoenixModel }, phxCmd )
 
         FinishTurn ->
             ( { model | turn = GameContext.Inactive }, Cmd.none )
@@ -207,7 +194,7 @@ update msg model =
             ( model, Cmd.none )
 
         SubmitScore ->
-            case SubmissionValidator.validateSubmission UpdateScore model.context of
+            case SubmissionValidator.validateSubmission UpdateScore model.context model.phoenix.send of
                 Ok cmd ->
                     ( model, cmd )
 
@@ -215,7 +202,7 @@ update msg model =
                     ( { model | messages = [ ( Message.Error, message ) ] }, Cmd.none )
 
         SubmitForm ->
-            ( { model | modal = Modal.None }, ExternalData.sendDataOut <| ExternalData.createSocket model.socket )
+            ( { model | modal = Modal.None }, PhxMsg.send model.phoenix.send <| PhxMsg.createSocket model.phoenix.socket )
 
         SetUsername string ->
             ( { model | username = string }, Cmd.none )
@@ -226,6 +213,10 @@ update msg model =
                     ContextManager.updateContextWith tile letter model
             in
             ( { model | context = updatedContext }, Cmd.none )
+
+        SocketOpened ->
+            Debug.log "Socket just opened"
+            ( model, Cmd.none )
 
         UpdateLeaderboard payload ->
             case Json.decodeValue Leaderboard.decoder payload of
@@ -285,7 +276,7 @@ subscriptions model =
                 _ ->
                     Time.every 3000 ClearMessages
     in
-    Sub.batch <| [ clearMessages, ExternalData.receiveExternal External OutsideError ]
+    Sub.batch <| [ clearMessages, PhxMsg.subscribe fromPhoenix PhoenixMessage OutsideError ]
 
 
 dragAndDropConfig : DragAndDrop.Config Msg Tile Cell
@@ -305,6 +296,11 @@ showModal model =
 
         _ ->
             True
+
+-- PORTS
+port toPhoenix : Data -> Cmd msg
+
+port fromPhoenix : (Data -> msg) -> Sub msg
 
 
 main : Program Json.Value Model Msg

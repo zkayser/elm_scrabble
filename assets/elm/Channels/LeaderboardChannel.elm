@@ -1,17 +1,17 @@
 port module Channels.LeaderboardChannel exposing (submitPlay)
 
 import Data.ScrabblePlay as Play exposing (Play)
-import ExternalData
+import Phoenix.Message as Message exposing (Data)
 import Json.Encode as Encode exposing (Value)
 import Phoenix.Push as Push
 import Phoenix.Socket as Socket exposing (Socket)
 
 
-submitPlay : List Play -> Cmd msg
-submitPlay plays =
+submitPlay : (Data -> Cmd msg) -> List Play -> Cmd msg
+submitPlay phoenixSendFn plays =
     let
         push =
             Push.init "scrabble:lobby" "submit_play"
                 |> Push.withPayload (Play.encodeList plays)
     in
-    ExternalData.sendDataOut <| ExternalData.createPush push
+    Message.send phoenixSendFn <| Message.createPush push

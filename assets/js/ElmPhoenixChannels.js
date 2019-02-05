@@ -1,5 +1,3 @@
-import { Socket } from 'phoenix';
-
 const TAGS = {
   CREATE_SOCKET: 'CreateSocket',
   CREATE_CHANNEL: 'CreateChannel',
@@ -14,12 +12,15 @@ const TAGS = {
   CHANNEL_JOIN_TIMEOUT: 'ChannelJoinTimeout',
   CHANNEL_LEFT: 'ChannelLeft',
   CHANNEL_LEAVE_ERROR: 'ChannelLeaveError',
-  CHANNEL_MESSAGE_RECEIVED: 'ChannelMessageReceived'
+  CHANNEL_MESSAGE_RECEIVED: 'ChannelMessageReceived',
+  PUSH_OK: 'PushOk',
+  PUSH_ERROR: 'PushError'
 };
 
-export class PhoenixData {
+export class ElmPhoenixChannels {
 
-  constructor({incoming, outgoing}) {
+  constructor(Socket, { fromPhoenix: incoming, toPhoenix: outgoing}) {
+    this.SOCKET_CLASS = Socket;
     this.socket = null;
     this.channels = {};
     this.toElm = incoming;
@@ -56,11 +57,11 @@ export class PhoenixData {
       logger = (kind, msg, data) => console.log(`${kind}: ${msg}`, data)
     };
 
-    const socket = new Socket(endpoint, { ...params, logger: logger });
+    const socket = new this.SOCKET_CLASS(endpoint, { ...params, logger: logger });
     socket.connect();
-    socket.onOpen(() => this.toElm.send({tag: TAGS.SOCKET_OPENED, data: {}}));
-    socket.onClose(() => this.toElm.send({tag: TAGS.SOCKET_CLOSED, data: {}}));
-    socket.onError((error) => this.toElm.send({tag: TAGS.SOCKET_ERRORED, data: { error }}));
+    socket.onOpen(() => this.toElm.send({ tag: TAGS.SOCKET_OPENED, data: {}}));
+    socket.onClose(() => this.toElm.send({ tag: TAGS.SOCKET_CLOSED, data: {}}));
+    socket.onError((error) => this.toElm.send({ tag: TAGS.SOCKET_ERRORED, data: { payload: error, message: TAGS.SOCKET_ERRORED }}));
     this.socket = socket;
   }
 
@@ -85,7 +86,7 @@ export class PhoenixData {
 
     messages.forEach((message) => {
       channel.on(message, (payload) => {
-        this.toElm.send({tag: TAGS.CHANNEL_MESSAGE_RECEIVED, data: { payload: payload, topic, message}});
+        this.toElm.send({ tag: TAGS.CHANNEL_MESSAGE_RECEIVED, data: { payload: payload, topic, message}});
       });
     });
 
@@ -112,6 +113,12 @@ export class PhoenixData {
     }
 
     const channel = this.channels[topic];
-    channel.push(event, payload);
+    channel.push(event, payload)
+      .receive("ok", (payload) => {
+        this.toElm.send({ tag: TAGS.PUSH_OK, data: { payload, topic, message: TAGS.PUSH_OK }})
+      })
+      .receive("error", (error) => {
+        this.toElm.send({ tag: TAGS.PUSH_ERROR, data: { payload, topic, message: TAGS.PUSH_ERROR }})
+      })
   }
 }

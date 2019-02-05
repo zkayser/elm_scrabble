@@ -6,6 +6,7 @@ import Data.Grid as Grid exposing (Cell, Grid, Position, Tile)
 import Data.Move as Move
 import Json.Decode exposing (Value)
 import Logic.Validator as Validator exposing (ValidatorState(..))
+import Phoenix.Message as Message exposing (Data)
 
 
 type ContextError
@@ -19,8 +20,8 @@ To account for this, a `Result String (Cmd msg)`
 type is returned so that the caller of the function can react
 accordingly.
 -}
-validateSubmission : (Value -> msg) -> Context -> Result String (Cmd msg)
-validateSubmission msg context =
+validateSubmission : (Value -> msg) -> Context -> (Data -> Cmd msg) -> Result String (Cmd msg)
+validateSubmission msg context phxSendFn =
     case errors context of
         CenterNotPlayed ->
             Err "You must play a tile on the center piece"
@@ -31,7 +32,7 @@ validateSubmission msg context =
         NoError ->
             case Validator.validate (Move.validate context.movesMade) context of
                 Validated play ->
-                    Ok (Leaderboard.submitPlay play)
+                    Ok (Leaderboard.submitPlay phxSendFn play)
 
                 _ ->
                     Err "Invalid play"
