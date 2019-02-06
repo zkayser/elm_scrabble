@@ -1,8 +1,8 @@
 defmodule Scrabble.Board do
-  alias Scrabble.Board.Server
+  alias Scrabble.Board.{Server, Supervisor}
 
-  def new() do
-    GenServer.start_link(Server, %{})
+  def new(name) do
+    GenServer.start_link(Server, %{}, name: Supervisor.via_tuple_for(name))
   end
 
   def play(board, params) when is_list(params) do

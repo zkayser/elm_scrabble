@@ -1,11 +1,16 @@
 defmodule ElmScrabbleWeb.ScrabbleChannel do
   require Logger
   alias Scrabble.Leaderboard
+  alias Scrabble.Board.Supervisor, as: BoardSupervisor
+  alias Scrabble.Board
   use Phoenix.Channel
 
   def join("scrabble:lobby", %{"user" => user}, socket) do
     Leaderboard.put(user)
+    {:ok, board_name} = BoardSupervisor.create_board(user)
+    Logger.debug "[SCRABBLE LOBBY]  #{board_name} state: #{Board.play(BoardSupervisor.get_pid(board_name), nil, nil)}"
     socket = assign(socket, :user, user)
+    socket = assign(socket, :board_name, "Board_#{user}")
     {:ok, socket}
   end
 

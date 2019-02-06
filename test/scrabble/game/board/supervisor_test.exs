@@ -39,6 +39,13 @@ defmodule Scrabble.Board.SupervisorTest do
       assert {:ok, name} = Supervisor.create_board(name)
       assert pid == Supervisor.get_pid(name)
     end
+
+    test "creates different processes for boards with different names" do
+      assert {:ok, name_1} = Supervisor.create_board(process_name())
+      assert {:ok, name_2} = Supervisor.create_board(process_name())
+
+      refute Supervisor.get_pid(name_1) == Supervisor.get_pid(name_2)
+    end
   end
 
   defp process_name(), do: "Board_#{Base.encode16(:crypto.strong_rand_bytes(8))}"
