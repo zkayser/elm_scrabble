@@ -2,9 +2,7 @@ defmodule Scrabble.Board do
   alias Scrabble.Board.Server
 
   def new() do
-    {:ok, pid} = GenServer.start_link(Server, %{})
-    board = GenServer.call(pid, :state)
-    {board, pid}
+    GenServer.start_link(Server, %{})
   end
 
   def play(board, params) when is_list(params) do
