@@ -31,6 +31,14 @@ defmodule Scrabble.Board.SupervisorTest do
              |> Supervisor.get_pid()
              |> Process.alive?()
     end
+
+    test "prevents multiple processes with the same name from being started" do
+      name = process_name()
+      assert {:ok, name} = Supervisor.create_board(name)
+      pid = Supervisor.get_pid(name)
+      assert {:ok, name} = Supervisor.create_board(name)
+      assert pid == Supervisor.get_pid(name)
+    end
   end
 
   defp process_name(), do: "Board_#{Base.encode16(:crypto.strong_rand_bytes(8))}"
