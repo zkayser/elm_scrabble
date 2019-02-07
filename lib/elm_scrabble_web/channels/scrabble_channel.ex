@@ -9,17 +9,19 @@ defmodule ElmScrabbleWeb.ScrabbleChannel do
     Leaderboard.put(user)
     {:ok, board_name} = BoardSupervisor.create_board(user)
 
-    Logger.debug(
-      "[ScrabbleChannel] Started board process: #{inspect(Board.state(board_name), pretty: true)}"
-    )
-
     socket = assign(socket, :user, user)
-    socket = assign(socket, :board_name, "Board_#{user}")
+    socket = assign(socket, :board_name, board_name)
+    send(self(), :init)
     {:ok, socket}
   end
 
   def join(channel, _, _socket) do
     {:error, %{reason: "Channel #{channel} does not exist"}}
+  end
+
+  def handle_info(:init, socket) do
+    push(socket, "board_init", %{board: inspect(Board.state(socket.assigns.board_name), pretty: true)})
+    {:noreply, socket}
   end
 
   def handle_in("submit_play", %{"plays" => _} = plays, socket) do
