@@ -48,5 +48,15 @@ defmodule Scrabble.Board.SupervisorTest do
     end
   end
 
+  describe "stop_board/1" do
+    test "stops a child board process and removes its pid from the registry" do
+      assert {:ok, board_id} = Supervisor.create_board(process_name())
+      pid = Supervisor.get_pid(board_id)
+      assert is_pid(pid)
+      :ok = Supervisor.stop_board(board_id)
+      assert {:error, :not_started} = Supervisor.get_pid(board_id)
+    end
+  end
+
   defp process_name(), do: "Board_#{Base.encode16(:crypto.strong_rand_bytes(8))}"
 end

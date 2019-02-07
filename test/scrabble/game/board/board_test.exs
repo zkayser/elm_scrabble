@@ -17,8 +17,15 @@ defmodule Scrabble.BoardTest do
       id = TestData.generate_board_id()
       {:ok, id} = Supervisor.create_board(id)
       assert id |> Supervisor.get_pid() |> Process.alive?()
-      Board.stop(id)
+      :ok = Board.stop(id)
       assert {:error, :not_started} = Supervisor.get_pid(id)
+    end
+  end
+
+  describe "state/1" do
+    test "returns the board state" do
+      {:ok, id} = Supervisor.create_board(TestData.generate_board_id())
+      assert Scrabble.Board.Impl.new().grid == Board.state(id).grid
     end
   end
 end

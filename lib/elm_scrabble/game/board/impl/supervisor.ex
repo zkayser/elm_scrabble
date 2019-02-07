@@ -21,8 +21,7 @@ defmodule Scrabble.Board.Supervisor do
     spec = %{id: Scrabble.Board, start: {Scrabble.Board, :new, [name]}, restart: :transient}
 
     case DynamicSupervisor.start_child(__MODULE__, spec) do
-      {:ok, pid} ->
-        Registry.register(@registry, name, pid)
+      {:ok, pid} when is_pid(pid) ->
         {:ok, name}
 
       {:error, {:already_started, _pid}} ->
@@ -35,11 +34,17 @@ defmodule Scrabble.Board.Supervisor do
 
   def create_board(_), do: {:error, @invalid_process_name}
 
+  def stop_board(name) when is_binary(name) do
+    case GenServer.whereis(via_tuple_for(name)) do
+      pid when is_pid(pid) -> DynamicSupervisor.terminate_child(__MODULE__, pid)
+      nil -> :ok
+    end
+  end
+
   def get_pid(name) do
-    case Registry.lookup(@registry, name) do
-      [] -> {:error, :not_started}
-      [{pid, _}] when is_pid(pid) -> pid
-      _ -> {:error, :pid_not_found}
+    case GenServer.whereis(via_tuple_for(name)) do
+      nil -> {:error, :not_started}
+      pid when is_pid(pid) -> pid
     end
   end
 
