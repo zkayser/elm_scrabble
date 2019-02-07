@@ -26,13 +26,13 @@ defmodule ElmScrabbleWeb.ConnCase do
     end
   end
 
-
   setup tags do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(ElmScrabble.Repo)
+
     unless tags[:async] do
       Ecto.Adapters.SQL.Sandbox.mode(ElmScrabble.Repo, {:shared, self()})
     end
+
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
-
 end

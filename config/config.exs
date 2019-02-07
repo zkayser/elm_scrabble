@@ -17,8 +17,7 @@ config :elm_scrabble, ElmScrabbleWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "RtSA/jp0hXlRJwVYA0H6jGcaSnwRHgOgikURpa+m73+IY7HP7Vz8/VNTr8XhJstc",
   render_errors: [view: ElmScrabbleWeb.ErrorView, accepts: ~w(html json)],
-  pubsub: [name: ElmScrabble.PubSub,
-           adapter: Phoenix.PubSub.PG2]
+  pubsub: [name: ElmScrabble.PubSub, adapter: Phoenix.PubSub.PG2]
 
 # Configures Elixir's Logger
 config :logger, :console,
@@ -27,4 +26,4 @@ config :logger, :console,
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
-import_config "#{Mix.env}.exs"
+import_config "#{Mix.env()}.exs"

@@ -2,7 +2,7 @@ defmodule ElmScrabbleWeb.PageControllerTest do
   use ElmScrabbleWeb.ConnCase
 
   test "GET /", %{conn: conn} do
-    conn = get conn, "/"
+    conn = get(conn, "/")
     assert html_response(conn, 200)
   end
 end

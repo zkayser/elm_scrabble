@@ -8,7 +8,11 @@ defmodule ElmScrabbleWeb.ScrabbleChannel do
   def join("scrabble:lobby", %{"user" => user}, socket) do
     Leaderboard.put(user)
     {:ok, board_name} = BoardSupervisor.create_board(user)
-    Logger.debug "[SCRABBLE LOBBY]  #{board_name} state: #{Board.play(BoardSupervisor.get_pid(board_name), nil, nil)}"
+
+    Logger.debug(
+      "[ScrabbleChannel] Started board process: #{inspect(Board.state(board_name), pretty: true)}"
+    )
+
     socket = assign(socket, :user, user)
     socket = assign(socket, :board_name, "Board_#{user}")
     {:ok, socket}
