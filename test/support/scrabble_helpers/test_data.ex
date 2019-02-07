@@ -41,4 +41,6 @@ defmodule Scrabble.TestData do
     {:ok, grid} = Grid.place_tiles(grid, Enum.zip(tiles(word), positions))
     grid
   end
+
+  def generate_board_id, do: "Board_#{Base.encode16(:crypto.strong_rand_bytes(8))}"
 end
