@@ -18,7 +18,7 @@ defmodule Scrabble.Board.Supervisor do
   ##############
 
   def create_board(name) when is_binary(name) do
-    spec = %{id: Scrabble.Board, start: {Scrabble.Board, :new, [name]}}
+    spec = %{id: Scrabble.Board, start: {Scrabble.Board, :new, [name]}, restart: :transient}
 
     case DynamicSupervisor.start_child(__MODULE__, spec) do
       {:ok, pid} ->
