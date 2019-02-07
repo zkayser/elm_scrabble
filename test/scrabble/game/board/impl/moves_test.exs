@@ -1,7 +1,7 @@
 defmodule MovesTest do
   use ExUnit.Case
   alias Scrabble.Position
-  alias Scrabble.Moves
+  alias Scrabble.Board.Moves
 
   @valid_on_row Enum.map(1..5, &Position.make(1, &1))
   @valid_on_col Enum.map(1..5, &Position.make(&1, 1))

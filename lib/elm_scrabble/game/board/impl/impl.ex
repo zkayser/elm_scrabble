@@ -1,7 +1,7 @@
 defmodule Scrabble.Board.Impl do
   alias __MODULE__, as: Board
-  alias Scrabble.{Grid, Tile, TileManager, Moves, Position}
-  alias Scrabble.Board.Validator
+  alias Scrabble.{Grid, Tile, TileManager, Position}
+  alias Scrabble.Board.{Moves, Validator}
   alias Scrabble.Board.ApiParams, as: Params
 
   @type t :: %Board{

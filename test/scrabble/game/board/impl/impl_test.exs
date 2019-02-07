@@ -1,4 +1,4 @@
-defmodule BoardTest do
+defmodule Scrabble.Board.ImplTest do
   use ExUnit.Case
   alias Scrabble.Board.Impl, as: Board
   alias Scrabble.Position

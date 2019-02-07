@@ -1,4 +1,4 @@
-defmodule Scrabble.Moves do
+defmodule Scrabble.Board.Moves do
   alias Scrabble.Position
 
   @type t :: [Position.t()]

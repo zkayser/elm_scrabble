@@ -1,6 +1,7 @@
 defmodule Scrabble.Board.Validator do
   alias Scrabble.Board.Impl, as: Board
-  alias Scrabble.{Grid, Tile, Cell, Position, Moves}
+  alias Scrabble.Board.Moves
+  alias Scrabble.{Grid, Tile, Cell, Position}
   @no_center_tile "You must play a tile on the center piece."
   @invalid_dimension "You must play along a single row or column."
   @gaps "It looks like you have a gap between your tiles."

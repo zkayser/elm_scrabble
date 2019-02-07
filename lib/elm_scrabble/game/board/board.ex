@@ -5,6 +5,12 @@ defmodule Scrabble.Board do
     GenServer.start_link(Server, %{}, name: Supervisor.via_tuple_for(name))
   end
 
+  def stop(name) do
+    name
+    |> Supervisor.via_tuple_for()
+    |> GenServer.stop()
+  end
+
   def play(board, params) when is_list(params) do
     GenServer.call(board, {:play, params})
   end
