@@ -206,7 +206,7 @@ defmodule Scrabble.Board.Validator do
 
     Enum.filter(subgrid, &filter_func(&1).(move, filter_dim, filter_op))
     |> Enum.sort(&sort_func(&1, &2).(sort_dim, sort_op))
-    |> Enum.take_while(&cell_not_empty(&1))
+    |> Enum.take_while(&cell_not_empty?(&1))
   end
 
   defp filter_func({_, cell}) do
@@ -221,7 +221,7 @@ defmodule Scrabble.Board.Validator do
     end
   end
 
-  defp cell_not_empty({_, cell}), do: cell.tile != :empty
+  defp cell_not_empty?({_, cell}), do: cell.tile != :empty
 
   defp invalidate_with_message(board, false) do
     %Board{board | validity: {:invalid, @no_center_tile}, invalid_at: [Position.make(8, 8)]}
