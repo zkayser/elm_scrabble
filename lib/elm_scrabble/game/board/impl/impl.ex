@@ -39,7 +39,7 @@ defmodule Scrabble.Board.Impl do
 
   @spec play(t(), Tile.t(), {pos_integer(), pos_integer()}) :: t()
   def play(%Board{tile_state: tiles} = board, tile, position) do
-    with true <- tile in tiles.in_play && tile not in tiles.played,
+    with true <- playable_tile?(tile).(tiles),
          {:ok, new_grid} <- Grid.place_tile(board.grid, tile, position) do
       update_state(
         {board, [{:update_grid, new_grid}, {:tile_played, tile}, {:add_move, position}]}
@@ -74,5 +74,8 @@ defmodule Scrabble.Board.Impl do
     fn tiles ->
       tile in tiles.in_play && tile not in tiles.played
     end
+  end
+  defp playable_tile?(tile) do
+    fn tiles -> tile in tiles.in_play && tile not in tiles.played end
   end
 end
