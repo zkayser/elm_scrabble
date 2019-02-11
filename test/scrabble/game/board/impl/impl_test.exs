@@ -10,7 +10,7 @@ defmodule Scrabble.Board.ImplTest do
     test "Generates a new board setup and board is initially invalid" do
       board = Board.new()
       assert %Board{} = board
-      assert board.validity == {:invalid, "You haven't made any moves yet."}
+      assert board.validity == :initial
       assert length(Map.keys(board.grid)) == @default_grid_cells
     end
   end
