@@ -11,13 +11,13 @@ defmodule Scrabble.Board.Impl do
           validity: validity(),
           invalid_at: [Position.t()]
         }
-  @type validity :: {:valid, String.t()} | {:invalid, message()}
+  @type validity :: {:valid, String.t()} | {:invalid, message()} | :initial
   @type message :: String.t()
 
   defstruct grid: Grid.setup(),
             tile_state: TileManager.new(),
             moves: [],
-            validity: {:invalid, "You haven't made any moves yet."},
+            validity: :initial,
             invalid_at: []
 
   @spec new() :: t()
