@@ -3,6 +3,7 @@ module Logic.ContextManager exposing (discardTiles, handleTileDrop, update, upda
 import Data.GameContext as Context exposing (Context)
 import Data.Grid as Grid exposing (Tile)
 import Data.Move as Move
+import Data.Multiplier as Multiplier
 import Responses.Scrabble as ScrabbleResponse exposing (ScrabbleResponse)
 import Types.Messages as Message exposing (Message)
 
@@ -58,7 +59,7 @@ updateContextWith tile letter model =
             model.context
     in
     case tile.multiplier of
-        Grid.Wildcard ->
+        Multiplier.Wildcard ->
             let
                 formattedLetter =
                     String.reverse letter

@@ -3,6 +3,7 @@ module ContextManagerTest exposing (FakeMsg(..), suite)
 import Data.GameContext as Context
 import Data.Grid as Grid exposing (Tile)
 import Data.Move as Move exposing (Move)
+import Data.Multiplier as Multiplier
 import Dict
 import Expect exposing (Expectation)
 import Http
@@ -46,7 +47,7 @@ suite =
                     []
 
                 expectedRetired =
-                    [ { letter = "B", id = 2, value = 2, multiplier = Grid.NoMultiplier }, { letter = "A", id = 1, value = 1, multiplier = Grid.NoMultiplier } ]
+                    [ { letter = "B", id = 2, value = 2, multiplier = Multiplier.NoMultiplier }, { letter = "A", id = 1, value = 1, multiplier = Multiplier.NoMultiplier } ]
 
                 model =
                     { score = 0, context = context, tileBag = initialTileBag, messages = [], retiredTiles = [] }

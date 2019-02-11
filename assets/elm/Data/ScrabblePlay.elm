@@ -1,6 +1,7 @@
 module Data.ScrabblePlay exposing (Multipliers, Play, encode, encodeList, encodeMultipliers, insertTile, tilesToPlay)
 
-import Data.Grid as Grid exposing (Multiplier(..), Tile)
+import Data.Grid as Grid exposing (Tile)
+import Data.Multiplier as Multiplier exposing (Multiplier(..))
 import Dict exposing (Dict)
 import Json.Encode as Encode
 
@@ -34,18 +35,18 @@ insertTile multipliers tile =
             multipliers
 
         DoubleWord ->
-            Dict.insert (Debug.toString DoubleWord) [] multipliers
+            Dict.insert (Multiplier.toString DoubleWord) [] multipliers
 
         TripleWord ->
-            Dict.insert (Debug.toString TripleWord) [] multipliers
+            Dict.insert (Multiplier.toString TripleWord) [] multipliers
 
         multiplier ->
-            case Dict.get (Debug.toString multiplier) multipliers of
+            case Dict.get (Multiplier.toString multiplier) multipliers of
                 Just letters ->
-                    Dict.insert (Debug.toString multiplier) (tile.letter :: letters) multipliers
+                    Dict.insert (Multiplier.toString multiplier) (tile.letter :: letters) multipliers
 
                 Nothing ->
-                    Dict.insert (Debug.toString multiplier) [ tile.letter ] multipliers
+                    Dict.insert (Multiplier.toString multiplier) [ tile.letter ] multipliers
 
 
 encode : Play -> Encode.Value

@@ -1,5 +1,6 @@
-module Data.Grid exposing (Cell, Dimension(..), Grid, Multiplier(..), Position, Tile, cellToHtml, center, disableDragOnTile, doubleLetterPositions, doubleWordPositions, get, init, initialCellForPosition, isMultipleOf15, multiplierFor, positionFor, positionList, tileToHtml, tripleLetterPositions, tripleWordPositions)
+module Data.Grid exposing (Cell, Dimension(..), Grid, Position, Tile, cellToHtml, center, disableDragOnTile, doubleLetterPositions, doubleWordPositions, get, init, initialCellForPosition, isMultipleOf15, multiplierFor, positionFor, positionList, tileToHtml, tripleLetterPositions, tripleWordPositions)
 
+import Data.Multiplier exposing (Multiplier(..))
 import Html exposing (..)
 import Html.Attributes exposing (class, src)
 import Widgets.DragAndDrop exposing (Config, draggable, droppable)
@@ -27,15 +28,6 @@ type alias Tile =
     , value : Int
     , multiplier : Multiplier
     }
-
-
-type Multiplier
-    = DoubleWord
-    | TripleWord
-    | DoubleLetter
-    | TripleLetter
-    | NoMultiplier
-    | Wildcard
 
 
 type Dimension

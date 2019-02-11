@@ -6,6 +6,7 @@ import Data.GameContext as GameContext exposing (Context, Turn)
 import Data.Grid as Grid exposing (Cell, Grid, Tile)
 import Data.Leaderboard as Leaderboard exposing (Leaderboard)
 import Data.Move as Move
+import Data.Multiplier as Multiplier
 import Html exposing (..)
 import Html.Attributes as Attributes
 import Html.Events as Events
@@ -152,7 +153,7 @@ update msg model =
                     let
                         newModal =
                             case tile.multiplier of
-                                Grid.Wildcard ->
+                                Multiplier.Wildcard ->
                                     Modal.WildcardPrompt SubmitForm (SetWildcardLetter tile)
 
                                 _ ->

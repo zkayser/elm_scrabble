@@ -2,6 +2,7 @@ module MoveTest exposing (suite)
 
 import Data.Grid as Grid exposing (Dimension(..))
 import Data.Move as Move
+import Data.Multiplier as Multiplier
 import Expect exposing (Expectation)
 import Test exposing (..)
 
@@ -12,7 +13,7 @@ suite =
         [ describe "Validate" <|
             let
                 tile =
-                    { letter = "A", id = 1, value = 1, multiplier = Grid.NoMultiplier }
+                    { letter = "A", id = 1, value = 1, multiplier = Multiplier.NoMultiplier }
             in
             [ test "Validate with valid moves along a row" <|
                 \_ ->

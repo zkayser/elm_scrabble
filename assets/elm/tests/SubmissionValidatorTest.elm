@@ -3,6 +3,7 @@ module SubmissionValidatorTest exposing (FakeMsg(..), createTile, movesMade, sui
 import Data.GameContext as Context
 import Data.Grid as Grid exposing (Tile)
 import Data.Move exposing (Move)
+import Data.Multiplier as Multiplier
 import Expect exposing (Expectation)
 import Json.Decode exposing (Value)
 import Logic.SubmissionValidator as Validator
@@ -78,27 +79,27 @@ suite =
 
 tileA : Tile
 tileA =
-    { letter = "A", id = 1, value = 1, multiplier = Grid.NoMultiplier }
+    { letter = "A", id = 1, value = 1, multiplier = Multiplier.NoMultiplier }
 
 
 tileB : Tile
 tileB =
-    { letter = "B", id = 2, value = 2, multiplier = Grid.NoMultiplier }
+    { letter = "B", id = 2, value = 2, multiplier = Multiplier.NoMultiplier }
 
 
 tileC : Tile
 tileC =
-    { letter = "C", id = 3, value = 3, multiplier = Grid.NoMultiplier }
+    { letter = "C", id = 3, value = 3, multiplier = Multiplier.NoMultiplier }
 
 
 tileD : Tile
 tileD =
-    { letter = "D", id = 4, value = 4, multiplier = Grid.NoMultiplier }
+    { letter = "D", id = 4, value = 4, multiplier = Multiplier.NoMultiplier }
 
 
 createTile : String -> Tile
 createTile letter =
-    { letter = letter, id = 1, value = 4, multiplier = Grid.NoMultiplier }
+    { letter = letter, id = 1, value = 4, multiplier = Multiplier.NoMultiplier }
 
 
 movesMade : List Move
