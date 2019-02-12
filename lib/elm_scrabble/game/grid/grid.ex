@@ -89,15 +89,17 @@ defmodule Scrabble.Grid do
 
   @spec encode(t()) :: String.t()
   def encode(grid) do
-    Enum.reduce(Map.values(grid), {:ok, []}, fn cell, {:ok, acc} ->
-      with {:ok, encoded_cell} <- Jason.encode(cell) do
-        {:ok, [encoded_cell|acc]}
-      else
-        _ -> {:error, :serialization_failure}
-      end
-      _, {:error, _} -> {:error, :serialization_failure}
-    end
-    )
+    Enum.reduce(Map.values(grid), {:ok, []}, fn
+      cell, {:ok, acc} ->
+        with {:ok, encoded_cell} <- Jason.encode(cell) do
+          {:ok, [encoded_cell | acc]}
+        else
+          _ -> {:error, :serialization_failure}
+        end
+
+      _, {:error, _} ->
+        {:error, :serialization_failure}
+    end)
   end
 
   defp do_place_tile(grid, tile, {row, col}) do

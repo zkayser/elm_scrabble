@@ -75,6 +75,7 @@ defmodule Scrabble.Board.Impl do
       tile in tiles.in_play && tile not in tiles.played
     end
   end
+
   defp playable_tile?(tile) do
     fn tiles -> tile in tiles.in_play && tile not in tiles.played end
   end

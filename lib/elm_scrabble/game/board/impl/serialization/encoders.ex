@@ -3,7 +3,8 @@ defimpl Jason.Encoder, for: Scrabble.Cell do
 
   def encode(value, opts) do
     Encode.map(
-      %{tile: value.tile,
+      %{
+        tile: value.tile,
         position: encode_position(value.position),
         multiplier: value.multiplier
       },
@@ -23,13 +24,14 @@ defimpl Jason.Encoder, for: Scrabble.Board.Impl do
 
   def encode(value, opts) do
     Encode.map(
-      %{grid: encode_grid(value.grid),
+      %{
+        grid: encode_grid(value.grid),
         tile_state: encode_sub_struct(value.tile_state),
         moves: Encode.list(value.moves, opts),
         validity: encode_validity(value.validity),
         invalid_at: Encode.list(value.invalid_at, opts)
-        },
-        opts
+      },
+      opts
     )
   end
 
@@ -50,12 +52,16 @@ end
 
 defimpl Jason.Encoder, for: Scrabble.TileManager do
   alias Jason.Encode
+
   def encode(value, opts) do
-    Encode.map(%{
+    Encode.map(
+      %{
         in_play: encode_list(value.in_play, opts),
         tile_bag: encode_list(value.tile_bag, opts),
         played: encode_list(value.played, opts)
-      }, opts)
+      },
+      opts
+    )
   end
 
   defp encode_list(positions, _opts) do
