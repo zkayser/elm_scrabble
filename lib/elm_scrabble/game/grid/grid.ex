@@ -94,7 +94,7 @@ defmodule Scrabble.Grid do
           }
         ]
   def encode(grid) do
-    Enum.reduce(grid, [], fn {key, value}, acc ->
+    Enum.reduce(grid, [], fn {_key, value}, acc ->
       [
         %{
           tile: Tile.encode(value.tile),
