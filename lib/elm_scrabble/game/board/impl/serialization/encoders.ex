@@ -22,6 +22,7 @@ defimpl Jason.Encoder, for: Scrabble.Board.Impl do
   alias Jason.Encode
   alias Scrabble.Grid
 
+  @spec encode(Scrabble.Board.Impl.t(), Encode.opts()) :: iodata()
   def encode(value, opts) do
     Encode.map(
       %{
