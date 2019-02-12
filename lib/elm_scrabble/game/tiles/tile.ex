@@ -8,8 +8,6 @@ defmodule Scrabble.Tile do
           }
           | :empty
 
-  @derive Jason.Encoder
-
   defstruct letter: "",
             multiplier: :no_multiplier,
             id: 1,
@@ -20,6 +18,13 @@ defmodule Scrabble.Tile do
 
   def create({letter, id}) do
     %__MODULE__{letter: letter, multiplier: :no_multiplier, id: id, value: val_for(letter)}
+  end
+
+  @spec encode(t()) :: map() | String.t()
+  def encode(:empty), do: "empty"
+
+  def encode(tile) do
+    %{letter: tile.letter, multiplier: tile.multiplier, id: tile.id, value: tile.value}
   end
 
   defp val_for(letter) when letter in ~w(A E I L N O R S T U), do: 1

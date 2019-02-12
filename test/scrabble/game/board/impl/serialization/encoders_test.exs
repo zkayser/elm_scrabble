@@ -7,8 +7,8 @@ defmodule Scrabble.Board.EncodersTest do
 
   describe "encode/1 with Grid" do
     test "it encodes a grid" do
-      assert {:ok, json} = Grid.encode(Grid.setup())
-      assert length(json) == @grid_length
+      assert encoded = Grid.encode(Grid.setup())
+      assert length(encoded) == @grid_length
     end
   end
 
