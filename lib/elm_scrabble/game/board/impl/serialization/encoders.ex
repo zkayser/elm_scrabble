@@ -19,7 +19,6 @@ defimpl Jason.Encoder, for: Scrabble.Board.Impl do
   defp encode_tile_manager(tile_manager) do
     %{
       in_play: encode_tiles(tile_manager.in_play),
-      tile_bag: encode_tiles(tile_manager.tile_bag),
       played: encode_tiles(tile_manager.played)
     }
   end
