@@ -1,5 +1,6 @@
 defmodule Scrabble.Grid do
   alias Scrabble.{Cell, Multiplier, Position}
+  alias Jason.Encode
   @type t :: %{required(Position.t()) => Cell.t()}
   @typep result :: {:ok | :error, t()}
   @typep position :: {pos_integer(), pos_integer()}
@@ -84,6 +85,19 @@ defmodule Scrabble.Grid do
   @spec update_subgrid(t(), [{Position.t(), Cell.t()}]) :: t()
   def update_subgrid(grid, subgrid) do
     Enum.reduce(subgrid, grid, fn {pos, cell}, new_grid -> Map.put(new_grid, pos, cell) end)
+  end
+
+  @spec encode(t()) :: String.t()
+  def encode(grid) do
+    Enum.reduce(Map.values(grid), {:ok, []}, fn cell, {:ok, acc} ->
+      with {:ok, encoded_cell} <- Jason.encode(cell) do
+        {:ok, [encoded_cell|acc]}
+      else
+        _ -> {:error, :serialization_failure}
+      end
+      _, {:error, _} -> {:error, :serialization_failure}
+    end
+    )
   end
 
   defp do_place_tile(grid, tile, {row, col}) do

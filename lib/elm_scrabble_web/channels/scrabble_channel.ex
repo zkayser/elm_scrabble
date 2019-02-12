@@ -20,7 +20,7 @@ defmodule ElmScrabbleWeb.ScrabbleChannel do
   end
 
   def handle_info(:init, socket) do
-    push(socket, "board_init", %{board: inspect(Board.state(socket.assigns.board_name), pretty: true)})
+    push(socket, "board_init", %{board: Board.state(socket.assigns.board_name)})
     {:noreply, socket}
   end
 

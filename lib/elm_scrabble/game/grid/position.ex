@@ -4,6 +4,7 @@ defmodule Scrabble.Position do
           col: pos_integer()
         }
   @type dimension :: :row | :col
+  @derive Jason.Encoder
 
   defstruct row: 1,
             col: 1
