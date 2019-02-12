@@ -61,10 +61,4 @@ defmodule Scrabble.Board.ImplTest do
       refute @tile in board.tile_state.in_play
     end
   end
-
-  describe "serialization" do
-    test "encodes a Board.Impl struct to a JSON string" do
-      assert {:ok, json} = Jason.encode(Board.new())
-    end
-  end
 end

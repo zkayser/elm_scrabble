@@ -8,6 +8,8 @@ defmodule Scrabble.Tile do
           }
           | :empty
 
+  @derive Jason.Encoder
+
   defstruct letter: "",
             multiplier: :no_multiplier,
             id: 1,
