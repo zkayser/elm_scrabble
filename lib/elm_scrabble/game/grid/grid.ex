@@ -86,7 +86,7 @@ defmodule Scrabble.Grid do
     Enum.reduce(subgrid, grid, fn {pos, cell}, new_grid -> Map.put(new_grid, pos, cell) end)
   end
 
-  @spec encode(t()) :: {:ok, iodata()} | {:error, :serialization_failure}
+  @spec encode(t()) :: [%{tile: map() | String.t(), position: %{row: pos_integer(), col: pos_integer()}, multiplier: Scrabble.Multiplier.t()}]
   def encode(grid) do
     Enum.reduce(grid, [], fn {key, value}, acc ->
       [
