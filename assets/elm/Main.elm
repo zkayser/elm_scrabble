@@ -52,7 +52,8 @@ type alias Model =
 
 
 type Msg
-    = CurrentTime Posix
+    = BoardInit Json.Value
+    | CurrentTime Posix
     | ClearMessages Posix
     | DiscardTiles
     | DragStarted Tile
@@ -103,6 +104,8 @@ update msg model =
             SubmissionValidator.validateSubmission model.phoenix.send
     in
     case msg of
+        BoardInit payload ->
+            ( model, Cmd.none )
         CurrentTime time ->
             let
                 shuffledTiles =
@@ -231,6 +234,7 @@ update msg model =
                         |> Channel.withPayload (Encode.object [ ( "user", Encode.string model.username ) ])
                         |> Channel.on "update" UpdateLeaderboard
                         |> Channel.on "score_update" UpdateScore
+                        |> Channel.on "board_init" BoardInit
 
                 phxMsg =
                     PhxMsg.createChannel channel
