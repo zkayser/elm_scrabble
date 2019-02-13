@@ -1,7 +1,8 @@
 module Data.ScrabblePlay exposing (Multipliers, Play, encode, encodeList, encodeMultipliers, insertTile, tilesToPlay)
 
-import Data.Grid as Grid exposing (Tile)
+import Data.Grid as Grid
 import Data.Multiplier as Multiplier exposing (Multiplier(..))
+import Data.Tile exposing (Tile)
 import Dict exposing (Dict)
 import Json.Encode as Encode
 

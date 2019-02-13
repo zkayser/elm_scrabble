@@ -1,7 +1,9 @@
 module GridTest exposing (suite)
 
-import Data.Grid as Grid exposing (Dimension(..), Grid, Position, Tile)
+import Data.Grid as Grid exposing (Dimension(..), Grid)
 import Data.Move exposing (Move)
+import Data.Position exposing (Position)
+import Data.Tile exposing (Tile)
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import Test exposing (..)

@@ -1,7 +1,9 @@
 module Data.GameContext exposing (Context, Turn(..), init, isValidSubmission, moveIsNotOverLapping, update)
 
-import Data.Grid as Grid exposing (Grid, Position, Tile)
+import Data.Grid as Grid exposing (Grid)
 import Data.Move as Move exposing (Move)
+import Data.Position exposing (Position)
+import Data.Tile exposing (Tile)
 
 
 type alias Context =

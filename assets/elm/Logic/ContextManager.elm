@@ -1,9 +1,10 @@
 module Logic.ContextManager exposing (discardTiles, handleTileDrop, update, updateContextWith)
 
 import Data.GameContext as Context exposing (Context)
-import Data.Grid as Grid exposing (Tile)
+import Data.Grid as Grid
 import Data.Move as Move
 import Data.Multiplier as Multiplier
+import Data.Tile exposing (Tile)
 import Responses.Scrabble as ScrabbleResponse exposing (ScrabbleResponse)
 import Types.Messages as Message exposing (Message)
 

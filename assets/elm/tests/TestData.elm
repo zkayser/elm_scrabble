@@ -1,10 +1,13 @@
 module TestData exposing (buildMove, buildPlayFor, createMoves, createTile, fakeTileWith, initialTiles, insertGridIntoContext, insertMoveIntoGrid, insertMovesIntoContext, insertMovesIntoGrid, movesMade, tileA, tileB, tileC, tileD)
 
+import Data.Cell exposing (Cell)
 import Data.GameContext as Context exposing (Context)
-import Data.Grid as Grid exposing (Cell, Grid, Position, Tile)
+import Data.Grid as Grid exposing (Grid)
 import Data.Move exposing (Move)
 import Data.Multiplier as Multiplier
+import Data.Position exposing (Position)
 import Data.ScrabblePlay as Play exposing (Play)
+import Data.Tile exposing (Tile)
 import Dict
 
 

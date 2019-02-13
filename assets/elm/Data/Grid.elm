@@ -1,6 +1,8 @@
-module Data.Grid exposing (Cell, Dimension(..), Grid, Position, Tile, cellToHtml, center, disableDragOnTile, doubleLetterPositions, doubleWordPositions, get, init, initialCellForPosition, isMultipleOf15, multiplierFor, positionFor, positionList, tileToHtml, tripleLetterPositions, tripleWordPositions)
+module Data.Grid exposing (Dimension(..), Grid, Position, cellToHtml, center, disableDragOnTile, doubleLetterPositions, doubleWordPositions, get, init, initialCellForPosition, isMultipleOf15, multiplierFor, positionFor, positionList, tileToHtml, tripleLetterPositions, tripleWordPositions)
 
+import Data.Cell exposing (Cell)
 import Data.Multiplier exposing (Multiplier(..))
+import Data.Tile exposing (Tile)
 import Html exposing (..)
 import Html.Attributes exposing (class, src)
 import Widgets.DragAndDrop exposing (Config, draggable, droppable)
@@ -10,24 +12,8 @@ type alias Grid =
     List Cell
 
 
-type alias Cell =
-    { position : Position
-    , multiplier : Multiplier
-    , tile : Maybe Tile
-    , isCenter : Bool
-    }
-
-
 type alias Position =
     ( Int, Int )
-
-
-type alias Tile =
-    { letter : String
-    , id : Int
-    , value : Int
-    , multiplier : Multiplier
-    }
 
 
 type Dimension

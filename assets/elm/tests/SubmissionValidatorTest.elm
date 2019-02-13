@@ -1,9 +1,10 @@
 module SubmissionValidatorTest exposing (FakeMsg(..), createTile, movesMade, suite, tileA, tileB, tileC, tileD)
 
 import Data.GameContext as Context
-import Data.Grid as Grid exposing (Tile)
+import Data.Grid as Grid
 import Data.Move exposing (Move)
 import Data.Multiplier as Multiplier
+import Data.Tile exposing (Tile)
 import Expect exposing (Expectation)
 import Json.Decode exposing (Value)
 import Logic.SubmissionValidator as Validator

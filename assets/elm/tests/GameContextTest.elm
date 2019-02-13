@@ -1,8 +1,9 @@
 module GameContextTest exposing (suite)
 
 import Data.GameContext as Context exposing (Turn(..))
-import Data.Grid as Grid exposing (Tile)
+import Data.Grid as Grid
 import Data.Multiplier exposing (Multiplier(..))
+import Data.Tile exposing (Tile)
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import Test exposing (..)

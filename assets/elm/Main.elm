@@ -106,6 +106,7 @@ update msg model =
     case msg of
         BoardInit payload ->
             ( model, Cmd.none )
+
         CurrentTime time ->
             let
                 shuffledTiles =

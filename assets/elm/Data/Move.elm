@@ -1,6 +1,8 @@
 module Data.Move exposing (Move, validate)
 
-import Data.Grid as Grid exposing (Dimension(..), Position, Tile)
+import Data.Grid as Grid exposing (Dimension(..))
+import Data.Position exposing (Position)
+import Data.Tile exposing (Tile)
 
 
 type alias Move =

@@ -1,9 +1,12 @@
 module Logic.SubmissionValidator exposing (validateSubmission)
 
 import Channels.LeaderboardChannel as Leaderboard
+import Data.Cell exposing (Cell)
 import Data.GameContext as Context exposing (Context)
-import Data.Grid as Grid exposing (Cell, Grid, Position, Tile)
+import Data.Grid as Grid exposing (Grid)
 import Data.Move as Move
+import Data.Position exposing (Position)
+import Data.Tile exposing (Tile)
 import Json.Decode exposing (Value)
 import Logic.Validator as Validator exposing (ValidatorState(..))
 import Phoenix
@@ -82,12 +85,12 @@ isFloatingTile context =
                 False
 
 
-hasNeighbor : Grid.Position -> Grid.Grid -> Bool
+hasNeighbor : Position -> Grid -> Bool
 hasNeighbor position grid =
     (List.length <| List.filterMap (neighboringTiles position) grid) > 0
 
 
-neighboringTiles : Grid.Position -> Grid.Cell -> Maybe Grid.Position
+neighboringTiles : Position -> Cell -> Maybe Position
 neighboringTiles ( row, col ) cell =
     if List.member cell.position [ ( row + 1, col ), ( row - 1, col ), ( row, col + 1 ), ( row, col - 1 ) ] then
         case cell.tile of

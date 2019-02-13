@@ -1,9 +1,10 @@
 module ContextManagerTest exposing (FakeMsg(..), suite)
 
 import Data.GameContext as Context
-import Data.Grid as Grid exposing (Tile)
+import Data.Grid as Grid
 import Data.Move as Move exposing (Move)
 import Data.Multiplier as Multiplier
+import Data.Tile exposing (Tile)
 import Dict
 import Expect exposing (Expectation)
 import Http

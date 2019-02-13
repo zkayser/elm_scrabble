@@ -1,11 +1,13 @@
 module Data.Cell exposing (Cell)
 
-import Data.Grid exposing (Position, Tile)
 import Data.Multiplier exposing (Multiplier)
+import Data.Position exposing (Position)
+import Data.Tile exposing (Tile)
+
 
 type alias Cell =
     { position : Position
     , multiplier : Multiplier
-    , tile : Tile
+    , tile : Maybe Tile
     , isCenter : Bool
     }
