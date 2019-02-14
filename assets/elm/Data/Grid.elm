@@ -1,9 +1,9 @@
-module Data.Grid exposing (Dimension(..), Grid, cellToHtml, center, disableDragOnTile, doubleLetterPositions, doubleWordPositions, get, init, initialCellForPosition, isMultipleOf15, multiplierFor, positionFor, positionList, tileToHtml, tripleLetterPositions, tripleWordPositions)
+module Data.Grid exposing (Dimension(..), Grid, cellToHtml, center, doubleLetterPositions, doubleWordPositions, get, init, initialCellForPosition, isMultipleOf15, multiplierFor, positionFor, positionList, tripleLetterPositions, tripleWordPositions)
 
 import Data.Cell exposing (Cell)
 import Data.Multiplier exposing (Multiplier(..))
 import Data.Position exposing (Position)
-import Data.Tile exposing (Tile)
+import Data.Tile as Tile exposing (Tile)
 import Html exposing (..)
 import Html.Attributes exposing (class, src)
 import Widgets.DragAndDrop exposing (Config, draggable, droppable)
@@ -172,10 +172,10 @@ cellToHtml config cell retiredTiles =
         Just tile ->
             case List.member tile retiredTiles of
                 False ->
-                    tileToHtml config tile
+                    Tile.toHtml config tile
 
                 True ->
-                    disableDragOnTile tile
+                    Tile.disable tile
 
         _ ->
             case cell.multiplier of
@@ -199,26 +199,6 @@ cellToHtml config cell retiredTiles =
 
                 _ ->
                     div ([ class "cell" ] ++ dropConfig) [ text "" ]
-
-
-tileToHtml : Config msg Tile Cell -> Tile -> Html msg
-tileToHtml config tile =
-    let
-        dragConfig =
-            draggable (config.dragStartMsg tile) config.dragEndMsg
-    in
-    div ([ class "cell tile" ] ++ dragConfig)
-        [ span [ class "letter" ] [ text tile.letter ]
-        , span [ class "value" ] [ text <| String.fromInt tile.value ]
-        ]
-
-
-disableDragOnTile : Tile -> Html msg
-disableDragOnTile tile =
-    div [ class "cell tile" ]
-        [ span [ class "letter" ] [ text tile.letter ]
-        , span [ class "value" ] [ text <| String.fromInt tile.value ]
-        ]
 
 
 {-| Grabs either a row or a column of the
