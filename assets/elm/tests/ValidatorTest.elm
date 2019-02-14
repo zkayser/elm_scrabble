@@ -1,8 +1,9 @@
 module ValidatorTest exposing (suite)
 
 import Data.GameContext exposing (Context)
-import Data.Grid as Grid exposing (Dimension(..), Grid, Position)
+import Data.Grid as Grid exposing (Dimension(..), Grid)
 import Data.Move as Move exposing (Move)
+import Data.Position exposing (Position)
 import Data.ScrabblePlay as Play exposing (Play)
 import Dict
 import Expect exposing (Expectation)
