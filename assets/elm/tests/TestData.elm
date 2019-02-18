@@ -1,4 +1,4 @@
-module TestData exposing (buildMove, buildPlayFor, createMoves, createTile, fakeTileWith, initialTiles, insertGridIntoContext, insertMoveIntoGrid, insertMovesIntoContext, insertMovesIntoGrid, movesMade, tileA, tileB, tileC, tileD)
+module TestData exposing (buildMove, buildPlayFor, createMoves, createTile, fakeTileWith, initialTiles, insertGridIntoContext, insertMoveIntoGrid, insertMovesIntoContext, insertMovesIntoGrid, movesMade, tileA, tileB, tileC, tileD, dragNDropConfig)
 
 import Data.Cell exposing (Cell)
 import Data.GameContext as Context exposing (Context)
@@ -125,3 +125,17 @@ initialTiles =
 fakeTileWith : Int -> String -> Tile
 fakeTileWith number letter =
     { letter = letter, id = number, value = number, multiplier = Multiplier.NoMultiplier }
+
+-- DragNDropConfig
+type TestMsg
+    = DragStarted Tile
+    | DragEnd
+    | Dropped Cell
+    | DragOver Cell
+
+dragNDropConfig =
+                { dragStartMsg = DragStarted
+                , dragEndMsg = DragEnd
+                , dropMsg = Dropped
+                , dragOverMsg = DragOver
+                }
