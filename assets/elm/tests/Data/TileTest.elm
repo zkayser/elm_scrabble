@@ -28,10 +28,10 @@ suite =
                 , multiplier = NoMultiplier
                 }
         in
-        [ describe "toHtml"
+        [ describe "view"
             [ test "renders the tile's letter" <|
                 \_ ->
-                    Tile.toHtml dragNDropConfig tile
+                    Tile.view dragNDropConfig tile
                         |> Query.fromHtml
                         |> Query.has
                             [ text tile.letter

@@ -1,4 +1,4 @@
-module Data.Tile exposing (Tile, disable, toHtml)
+module Data.Tile exposing (Tile, disable, view)
 
 import Data.Multiplier exposing (Multiplier(..))
 import Html exposing (..)
@@ -14,8 +14,8 @@ type alias Tile =
     }
 
 
-toHtml : Config msg Tile cell -> Tile -> Html msg
-toHtml config tile =
+view : Config msg Tile cell -> Tile -> Html msg
+view config tile =
     let
         dragConfig =
             draggable (config.dragStartMsg tile) config.dragEndMsg

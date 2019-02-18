@@ -172,7 +172,7 @@ cellToHtml config cell retiredTiles =
         Just tile ->
             case List.member tile retiredTiles of
                 False ->
-                    Tile.toHtml config tile
+                    Tile.view config tile
 
                 True ->
                     Tile.disable tile
