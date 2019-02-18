@@ -1,4 +1,4 @@
-module Data.Grid exposing (Dimension(..), Grid, cellToHtml, center, doubleLetterPositions, doubleWordPositions, get, init, initialCellForPosition, isMultipleOf15, multiplierFor, positionFor, positionList, tripleLetterPositions, tripleWordPositions)
+module Data.Grid exposing (Dimension(..), Grid, center, doubleLetterPositions, doubleWordPositions, get, init, initialCellForPosition, isMultipleOf15, multiplierFor, positionFor, positionList, tripleLetterPositions, tripleWordPositions)
 
 import Data.Cell exposing (Cell)
 import Data.Multiplier exposing (Multiplier(..))
@@ -160,45 +160,6 @@ doubleLetterPositions =
     , ( 15, 4 )
     , ( 15, 12 )
     ]
-
-
-cellToHtml : Config msg Tile Cell -> Cell -> List Tile -> Html msg
-cellToHtml config cell retiredTiles =
-    let
-        dropConfig =
-            droppable (config.dropMsg cell) (config.dragOverMsg cell)
-    in
-    case cell.tile of
-        Just tile ->
-            case List.member tile retiredTiles of
-                False ->
-                    Tile.view config tile
-
-                True ->
-                    Tile.disable tile
-
-        _ ->
-            case cell.multiplier of
-                DoubleWord ->
-                    if cell.isCenter then
-                        div ([ class "cell double-word center-tile" ] ++ dropConfig)
-                            [ img [ class "center-logo", src "images/glogo.png" ] []
-                            ]
-
-                    else
-                        div ([ class "cell double-word" ] ++ dropConfig) [ text "2x W" ]
-
-                TripleWord ->
-                    div ([ class "cell triple-word" ] ++ dropConfig) [ text "3x W" ]
-
-                DoubleLetter ->
-                    div ([ class "cell double-letter" ] ++ dropConfig) [ text "2x L" ]
-
-                TripleLetter ->
-                    div ([ class "cell triple-letter" ] ++ dropConfig) [ text "3x L" ]
-
-                _ ->
-                    div ([ class "cell" ] ++ dropConfig) [ text "" ]
 
 
 {-| Grabs either a row or a column of the
