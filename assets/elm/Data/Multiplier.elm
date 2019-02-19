@@ -1,4 +1,6 @@
-module Data.Multiplier exposing (Multiplier(..), toString)
+module Data.Multiplier exposing (Multiplier(..), decode, toString)
+
+import Json.Decode as Decode exposing (Decoder)
 
 
 type Multiplier
@@ -30,3 +32,27 @@ toString multiplier =
 
         Wildcard ->
             "Wildcard"
+
+
+fromString : String -> Multiplier
+fromString string =
+    case string of
+        "DoubleWord" ->
+            DoubleWord
+
+        "DoubleLetter" ->
+            DoubleLetter
+
+        "TripleWord" ->
+            TripleWord
+
+        "TripleLetter" ->
+            TripleLetter
+
+        _ ->
+            NoMultiplier
+
+
+decode : Decoder Multiplier
+decode =
+    Decode.map fromString Decode.string

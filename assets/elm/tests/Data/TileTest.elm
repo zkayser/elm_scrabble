@@ -5,6 +5,9 @@ import Data.Multiplier exposing (Multiplier(..))
 import Data.Tile as Tile exposing (Tile)
 import Expect
 import Html.Attributes as Attribute
+import Json.Decode exposing (decodeValue)
+import Json.Encode as Encode
+import Result
 import Test exposing (..)
 import Test.Html.Query as Query
 import Test.Html.Selector exposing (attribute, classes, text)
@@ -55,6 +58,32 @@ suite =
                                 , classes [ "value" ]
                                 ]
                             ]
+            ]
+        , describe "decode" <|
+            let
+                jsonTileWith multiplierString =
+                    Encode.object
+                        [ ( "id", Encode.int 1 )
+                        , ( "letter", Encode.string "E" )
+                        , ( "multiplier", Encode.string multiplierString )
+                        , ( "value", Encode.int 4 )
+                        ]
+
+                defaultTile =
+                    { id = 1
+                    , letter = "E"
+                    , multiplier = NoMultiplier
+                    , value = 4
+                    }
+            in
+            [ test "decodes a json tile into an Elm Tile" <|
+                \_ ->
+                    let
+                        json =
+                            jsonTileWith "no_multiplier"
+                    in
+                    decodeValue Tile.decode json
+                        |> Expect.equal (Result.Ok defaultTile)
             ]
         ]
 
