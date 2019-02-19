@@ -93,7 +93,7 @@ suite =
                     in
                     decodeValue Cell.decode json
                         |> Expect.equal (Result.Ok { defaultCell | isCenter = True })
-            , test "handles center cells with tiles" <|
+            , test "handles cells with tiles" <|
                 \_ ->
                     let
                         json =
@@ -112,5 +112,24 @@ suite =
                     in
                     decodeValue Cell.decode json
                         |> Expect.equal (Result.Ok { defaultCell | isCenter = True, tile = Just tileA })
+            , test "handles non-center tiles" <|
+                \_ ->
+                    let
+                        json =
+                            Encode.object
+                                [ ( "position", Encode.object [ ( "col", Encode.int 1 ), ( "row", Encode.int 1 ) ] )
+                                , ( "multiplier", Encode.string "double_word" )
+                                , ( "tile"
+                                  , Encode.object
+                                        [ ( "letter", Encode.string "A" )
+                                        , ( "id", Encode.int 1 )
+                                        , ( "value", Encode.int 1 )
+                                        , ( "multiplier", Encode.string "no_multiplier" )
+                                        ]
+                                  )
+                                ]
+                    in
+                    decodeValue Cell.decode json
+                        |> Expect.equal (Result.Ok { position = ( 1, 1 ), multiplier = Multiplier.DoubleWord, isCenter = False, tile = Just tileA })
             ]
         ]
