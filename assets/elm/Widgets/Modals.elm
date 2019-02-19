@@ -1,6 +1,6 @@
 module Widgets.Modals exposing (Modal(..), view)
 
-import Data.Grid exposing (Tile)
+import Data.Tile exposing (Tile)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)

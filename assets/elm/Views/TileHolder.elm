@@ -1,7 +1,8 @@
 module Views.TileHolder exposing (DragConfig, Model, view, viewTile, viewTiles)
 
+import Data.Cell exposing (Cell)
 import Data.GameContext exposing (Context)
-import Data.Grid as Grid exposing (Cell, Tile)
+import Data.Tile exposing (Tile)
 import Html exposing (..)
 import Html.Attributes as Attributes exposing (class)
 import Html.Events as Events exposing (on)

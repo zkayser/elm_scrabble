@@ -1,8 +1,8 @@
 module Logic.TileManager exposing (generateTileBag, handleDrop, shuffleTileBag)
 
 import Data.GameContext exposing (Context)
-import Data.Grid as Grid exposing (Tile)
 import Data.Multiplier exposing (Multiplier(..))
+import Data.Tile exposing (Tile)
 import Logic.ContextManager as ContextManager
 import Random
 import Time exposing (Posix)

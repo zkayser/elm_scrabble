@@ -2,11 +2,13 @@ port module Main exposing (Model, Msg(..), dragAndDropConfig, init, main, showMo
 
 import Browser
 import Channels.LeaderboardChannel as LeaderboardChannel
+import Data.Cell exposing (Cell)
 import Data.GameContext as GameContext exposing (Context, Turn)
-import Data.Grid as Grid exposing (Cell, Grid, Tile)
+import Data.Grid as Grid exposing (Grid)
 import Data.Leaderboard as Leaderboard exposing (Leaderboard)
 import Data.Move as Move
 import Data.Multiplier as Multiplier
+import Data.Tile exposing (Tile)
 import Html exposing (..)
 import Html.Attributes as Attributes
 import Html.Events as Events
