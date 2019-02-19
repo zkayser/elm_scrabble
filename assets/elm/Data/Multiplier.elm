@@ -34,19 +34,19 @@ toString multiplier =
             "Wildcard"
 
 
-fromString : String -> Multiplier
-fromString string =
+fromApiString : String -> Multiplier
+fromApiString string =
     case string of
-        "DoubleWord" ->
+        "double_word" ->
             DoubleWord
 
-        "DoubleLetter" ->
+        "double_letter" ->
             DoubleLetter
 
-        "TripleWord" ->
+        "triple_word" ->
             TripleWord
 
-        "TripleLetter" ->
+        "triple_letter" ->
             TripleLetter
 
         _ ->
@@ -55,4 +55,4 @@ fromString string =
 
 decode : Decoder Multiplier
 decode =
-    Decode.map fromString Decode.string
+    Decode.map fromApiString Decode.string
