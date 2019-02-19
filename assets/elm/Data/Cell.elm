@@ -1,10 +1,11 @@
-module Data.Cell exposing (Cell, view)
+module Data.Cell exposing (Cell, decode, view)
 
 import Data.Multiplier as Multiplier exposing (Multiplier)
-import Data.Position exposing (Position)
+import Data.Position as Position exposing (Position)
 import Data.Tile as Tile exposing (Tile)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList, src)
+import Json.Decode as Decode exposing (Decoder)
 import Widgets.DragAndDrop exposing (Config, draggable, droppable)
 
 
@@ -36,7 +37,7 @@ view config cell retiredTiles =
 
 
 
--- Helpers
+-- View Helpers
 
 
 conditionalClassesFor : Cell -> Html.Attribute msg
@@ -71,3 +72,39 @@ markupFor cell =
 
         ( _, _ ) ->
             text ""
+
+
+
+{- Serialization -}
+
+
+decode : Decoder Cell
+decode =
+    Decode.map4 Cell
+        (Decode.field "position" Position.decode)
+        (Decode.field "multiplier" Multiplier.decode)
+        decodeMaybeTile
+        decodeIsCenter
+
+
+decodeMaybeTile : Decoder (Maybe Tile)
+decodeMaybeTile =
+    Decode.oneOf
+        [ Decode.maybe <| Decode.field "tile" Tile.decode
+        , Decode.succeed Nothing
+        ]
+
+
+decodeIsCenter : Decoder Bool
+decodeIsCenter =
+    Decode.field "position" Position.decode
+        |> Decode.andThen isCenter
+
+
+isCenter : Position -> Decoder Bool
+isCenter position =
+    if position == ( 8, 8 ) then
+        Decode.succeed True
+
+    else
+        Decode.succeed False

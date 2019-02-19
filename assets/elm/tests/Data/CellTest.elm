@@ -6,6 +6,9 @@ import Data.Position exposing (Position)
 import Data.Tile as Tile exposing (Tile)
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
+import Json.Decode exposing (decodeValue)
+import Json.Encode as Encode
+import Result
 import Test exposing (..)
 import Test.Html.Query as Query
 import Test.Html.Selector exposing (classes, text)
@@ -76,5 +79,38 @@ suite =
                     Cell.view dragNDropConfig cell []
                         |> Query.fromHtml
                         |> Query.contains [ Tile.view dragNDropConfig tileA ]
+            ]
+        , describe "decode"
+            [ test "handles center cells with no tile" <|
+                \_ ->
+                    let
+                        json =
+                            Encode.object
+                                [ ( "multiplier", Encode.string "no_multiplier" )
+                                , ( "position", Encode.object [ ( "col", Encode.int 8 ), ( "row", Encode.int 8 ) ] )
+                                , ( "tile", Encode.string "empty" )
+                                ]
+                    in
+                    decodeValue Cell.decode json
+                        |> Expect.equal (Result.Ok { defaultCell | isCenter = True })
+            , test "handles center cells with tiles" <|
+                \_ ->
+                    let
+                        json =
+                            Encode.object
+                                [ ( "position", Encode.object [ ( "col", Encode.int 8 ), ( "row", Encode.int 8 ) ] )
+                                , ( "multiplier", Encode.string "no_multiplier" )
+                                , ( "tile"
+                                  , Encode.object
+                                        [ ( "letter", Encode.string "A" )
+                                        , ( "id", Encode.int 1 )
+                                        , ( "value", Encode.int 1 )
+                                        , ( "multiplier", Encode.string "no_multiplier" )
+                                        ]
+                                  )
+                                ]
+                    in
+                    decodeValue Cell.decode json
+                        |> Expect.equal (Result.Ok { defaultCell | isCenter = True, tile = Just tileA })
             ]
         ]
