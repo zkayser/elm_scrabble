@@ -1,4 +1,4 @@
-module Data.Grid exposing (Dimension(..), Grid, center, doubleLetterPositions, doubleWordPositions, get, init, initialCellForPosition, isMultipleOf15, multiplierFor, positionFor, positionList, tripleLetterPositions, tripleWordPositions)
+module Data.Grid exposing (Dimension(..), Grid, center, doubleLetterPositions, doubleWordPositions, get, init, initialCellForPosition, isMultipleOf15, multiplierFor, positionFor, positionList, setup, tripleLetterPositions, tripleWordPositions)
 
 import Data.Cell exposing (Cell)
 import Data.Multiplier exposing (Multiplier(..))
@@ -22,6 +22,33 @@ type Dimension
 init : Grid
 init =
     List.map initialCellForPosition <| List.range 1 225
+
+
+setup : Grid -> Grid
+setup proposedGrid =
+    List.foldr (removeDuplicates proposedGrid) [] proposedGrid
+        |> List.filter shouldKeepCell
+
+
+removeDuplicates : Grid -> Cell -> List Cell -> Grid
+removeDuplicates proposed currentCell duplicates =
+    if
+        (List.length (List.filter (\cell -> cell.position == currentCell.position) proposed) > 1)
+            && List.member currentCell.position (List.map (\cell -> cell.position) duplicates)
+    then
+        duplicates
+
+    else
+        currentCell :: duplicates
+
+
+shouldKeepCell : Cell -> Bool
+shouldKeepCell { position } =
+    let
+        ( x, y ) =
+            position
+    in
+    not (x < 0 || y < 0)
 
 
 initialCellForPosition : Int -> Cell
