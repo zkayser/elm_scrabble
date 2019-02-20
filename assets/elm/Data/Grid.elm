@@ -28,6 +28,7 @@ setup : Grid -> Grid
 setup proposedGrid =
     List.foldr (removeDuplicates proposedGrid) [] proposedGrid
         |> List.filter shouldKeepCell
+        |> List.sortBy .position
 
 
 removeDuplicates : Grid -> Cell -> List Cell -> Grid

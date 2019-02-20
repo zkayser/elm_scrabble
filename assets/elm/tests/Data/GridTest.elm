@@ -27,4 +27,26 @@ suite =
                         )
                     |> List.length
                     |> Expect.equal 0
+        , fuzz GridFuzzer.fuzzer "orders cells" <|
+            \grid ->
+                let
+                    gridRunner list listOfBools =
+                        case list of
+                            cell1 :: cell2 :: rest ->
+                                gridRunner ([ cell2 ] ++ rest)
+                                    (((Tuple.first cell1.position <= Tuple.first cell2.position)
+                                        && ((Tuple.first cell1.position == Tuple.first cell2.position && Tuple.second cell1.position < Tuple.second cell2.position) || Tuple.first cell1.position < Tuple.first cell2.position)
+                                     )
+                                        :: listOfBools
+                                    )
+
+                            cell1 :: [] ->
+                                gridRunner [] (True :: listOfBools)
+
+                            [] ->
+                                listOfBools
+                in
+                gridRunner grid []
+                    |> List.all (\bool -> bool == True)
+                    |> Expect.true "Expected cells to be sorted in ascending order by position"
         ]
