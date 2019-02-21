@@ -14,9 +14,10 @@ decode =
         (Decode.field "col" Decode.int)
         (Decode.field "row" Decode.int)
 
+
 encode : Position -> Value
 encode ( col, row ) =
-  Encode.object
-    [ ( "col", Encode.int col )
-    , ( "row", Encode.int row )
-    ]
+    Encode.object
+        [ ( "col", Encode.int col )
+        , ( "row", Encode.int row )
+        ]
