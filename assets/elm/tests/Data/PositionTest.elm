@@ -28,24 +28,21 @@ suite =
         , fuzz2 (Fuzz.intRange 0 Random.maxInt) (Fuzz.intRange 0 Random.maxInt) "decoding is reversible" <|
             \col row ->
                 let
-                    encoded =
-                        Encode.object
-                            [ ( "col", Encode.int col )
-                            , ( "row", Encode.int row )
-                            ]
+                    encoded = Position.encode ( col, row )
                     decode = Decode.int
                 in
-                decodeValue Position.decode encoded
-                    |> Expect.all
-                        [ ( \position ->
-                            case position of
-                                Ok pos -> Expect.equal (Tuple.second pos) row
-                                _ -> Expect.fail "Expected row to be decoded"
-                          )
-                        , ( \position ->
-                            case position of
-                                Ok pos -> Expect.equal (Tuple.first pos) col
-                                _ -> Expect.fail "Expected col to be decoded"
-                           )
-                        ]
+                case decodeValue Position.decode encoded of
+                    Ok position ->
+                        position
+                        |> Expect.all
+                            [ Expect.equal row << Tuple.second
+                            , Expect.equal col << Tuple.first
+                            , Expect.equal encoded << Position.encode
+                            , (\pos ->
+                                case decodeValue Position.decode (Position.encode pos) of
+                                    Ok p -> Expect.equal p pos
+                                    _ -> Expect.fail "Expected position decoder to be reversible"
+                              )
+                            ]
+                    _ -> Expect.fail "Expected decoder to succeed"
         ]
