@@ -7,7 +7,6 @@
 # Generated on crash by the VM
 erl_crash.dump
 /.tool-versions
-*.tool-versions
 # Generated on crash by NPM
 npm-debug.log
 
