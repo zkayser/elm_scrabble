@@ -6,6 +6,8 @@ import Data.Position exposing (Position)
 import Data.Tile as Tile exposing (Tile)
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
+import Fuzzers.Cell as CellFuzzer
+import Helpers.Serialization as Serialization
 import Json.Decode exposing (decodeValue)
 import Json.Encode as Encode
 import Result
@@ -131,5 +133,9 @@ suite =
                     in
                     decodeValue Cell.decode json
                         |> Expect.equal (Result.Ok { position = ( 1, 1 ), multiplier = Multiplier.DoubleWord, isCenter = False, tile = Just tileA })
+            , fuzz CellFuzzer.fuzzer "encoding and decoding a cell should yield the same value" <|
+                \cell ->
+                    cell
+                        |> Serialization.expectReversibleDecoder Cell.decode Cell.encode
             ]
         ]

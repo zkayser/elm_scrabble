@@ -1,4 +1,4 @@
-module Data.Cell exposing (Cell, decode, view)
+module Data.Cell exposing (Cell, decode, encode, view)
 
 import Data.Multiplier as Multiplier exposing (Multiplier)
 import Data.Position as Position exposing (Position)
@@ -6,6 +6,7 @@ import Data.Tile as Tile exposing (Tile)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList, src)
 import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
 import Widgets.DragAndDrop exposing (Config, draggable, droppable)
 
 
@@ -78,6 +79,15 @@ markupFor cell =
 {- Serialization -}
 
 
+encode : Cell -> Value
+encode cell =
+    Encode.object
+        [ ( "position", Position.encode cell.position )
+        , ( "multiplier", Encode.string <| Multiplier.toApiString cell.multiplier )
+        , ( "tile", Maybe.withDefault Encode.null <| Maybe.map Tile.encode <| cell.tile )
+        ]
+
+
 decode : Decoder Cell
 decode =
     Decode.map4 Cell
@@ -108,3 +118,13 @@ isCenter position =
 
     else
         Decode.succeed False
+
+
+encodeTile : Maybe Tile -> Value
+encodeTile maybeTile =
+    case maybeTile of
+        Just tile ->
+            Tile.encode tile
+
+        Nothing ->
+            Encode.null
