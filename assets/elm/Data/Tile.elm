@@ -44,6 +44,7 @@ decode =
         (Decode.at [ "value" ] Decode.int)
         (Decode.at [ "multiplier" ] Multiplier.decode)
 
+
 encode : Tile -> Value
 encode tile =
     Encode.object

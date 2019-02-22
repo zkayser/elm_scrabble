@@ -52,14 +52,24 @@ fromApiString string =
         _ ->
             NoMultiplier
 
+
 toApiString : Multiplier -> String
 toApiString multiplier =
     case multiplier of
-        DoubleWord -> "double_word"
-        DoubleLetter -> "double_letter"
-        TripleWord -> "triple_word"
-        TripleLetter -> "triple_letter"
-        _ -> "no_multiplier"
+        DoubleWord ->
+            "double_word"
+
+        DoubleLetter ->
+            "double_letter"
+
+        TripleWord ->
+            "triple_word"
+
+        TripleLetter ->
+            "triple_letter"
+
+        _ ->
+            "no_multiplier"
 
 
 decode : Decoder Multiplier
