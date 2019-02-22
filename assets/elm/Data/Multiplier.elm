@@ -1,4 +1,4 @@
-module Data.Multiplier exposing (Multiplier(..), decode, toString)
+module Data.Multiplier exposing (Multiplier(..), decode, toApiString, toString)
 
 import Json.Decode as Decode exposing (Decoder)
 
@@ -51,6 +51,15 @@ fromApiString string =
 
         _ ->
             NoMultiplier
+
+toApiString : Multiplier -> String
+toApiString multiplier =
+    case multiplier of
+        DoubleWord -> "double_word"
+        DoubleLetter -> "double_letter"
+        TripleWord -> "triple_word"
+        TripleLetter -> "triple_letter"
+        _ -> "no_multiplier"
 
 
 decode : Decoder Multiplier

@@ -1,9 +1,10 @@
-module Data.Tile exposing (Tile, decode, disable, view)
+module Data.Tile exposing (Tile, decode, disable, encode, view)
 
 import Data.Multiplier as Multiplier exposing (Multiplier(..))
 import Html exposing (..)
 import Html.Attributes exposing (class)
 import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
 import Widgets.DragAndDrop exposing (Config, draggable)
 
 
@@ -42,3 +43,12 @@ decode =
         (Decode.at [ "id" ] Decode.int)
         (Decode.at [ "value" ] Decode.int)
         (Decode.at [ "multiplier" ] Multiplier.decode)
+
+encode : Tile -> Value
+encode tile =
+    Encode.object
+        [ ( "letter", Encode.string tile.letter )
+        , ( "id", Encode.int tile.id )
+        , ( "value", Encode.int tile.value )
+        , ( "multiplier", Encode.string <| Multiplier.toApiString tile.multiplier )
+        ]

@@ -4,6 +4,8 @@ import Data.Cell exposing (Cell)
 import Data.Multiplier exposing (Multiplier(..))
 import Data.Tile as Tile exposing (Tile)
 import Expect
+import Fuzzers.Tile as TileFuzzer
+import Helpers.Serialization as Serialization
 import Html.Attributes as Attribute
 import Json.Decode exposing (decodeValue)
 import Json.Encode as Encode
@@ -84,6 +86,10 @@ suite =
                     in
                     decodeValue Tile.decode json
                         |> Expect.equal (Result.Ok defaultTile)
+            , fuzz TileFuzzer.fuzzer "encoding and decoding a tile should result in the same value" <|
+                \exTile ->
+                    exTile
+                        |> Serialization.expectReversibleDecoder Tile.decode Tile.encode
             ]
         ]
 
