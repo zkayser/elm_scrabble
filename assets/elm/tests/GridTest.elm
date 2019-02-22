@@ -6,6 +6,8 @@ import Data.Position exposing (Position)
 import Data.Tile exposing (Tile)
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
+import Fuzzers.Grid as GridFuzzer
+import Helpers.Serialization as Serialization
 import Test exposing (..)
 
 
@@ -29,5 +31,10 @@ suite =
             , test "Get Invalid" <|
                 \_ ->
                     Expect.equal (Grid.get Grid.init Invalid) []
+            ]
+        , describe "decode"
+            [ fuzz GridFuzzer.fuzzer "encoding and decoding a grid should result in the same value" <|
+                \grid ->
+                    Serialization.expectReversibleDecoder Grid.decode Grid.encode grid
             ]
         ]

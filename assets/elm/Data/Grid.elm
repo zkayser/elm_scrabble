@@ -1,11 +1,13 @@
-module Data.Grid exposing (Dimension(..), Grid, center, doubleLetterPositions, doubleWordPositions, get, init, initialCellForPosition, isMultipleOf15, multiplierFor, positionFor, positionList, setup, tripleLetterPositions, tripleWordPositions)
+module Data.Grid exposing (Dimension(..), Grid, center, decode, doubleLetterPositions, doubleWordPositions, encode, get, init, initialCellForPosition, isMultipleOf15, multiplierFor, positionFor, positionList, setup, tripleLetterPositions, tripleWordPositions)
 
-import Data.Cell exposing (Cell)
+import Data.Cell as Cell exposing (Cell)
 import Data.Multiplier exposing (Multiplier(..))
 import Data.Position exposing (Position)
 import Data.Tile as Tile exposing (Tile)
 import Html exposing (..)
 import Html.Attributes exposing (class, src)
+import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
 import Widgets.DragAndDrop exposing (Config, draggable, droppable)
 
 
@@ -29,6 +31,16 @@ setup proposedGrid =
     List.foldr (removeDuplicates proposedGrid) [] proposedGrid
         |> List.filter shouldKeepCell
         |> List.sortBy .position
+
+
+encode : Grid -> Value
+encode grid =
+    Encode.object [ ( "grid", Encode.list Cell.encode grid ) ]
+
+
+decode : Decoder Grid
+decode =
+    Decode.field "grid" <| Decode.list Cell.decode
 
 
 removeDuplicates : Grid -> Cell -> List Cell -> Grid
