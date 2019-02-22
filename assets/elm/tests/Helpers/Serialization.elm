@@ -11,5 +11,5 @@ expectReversibleDecoder decoder encoder initial =
         Ok value ->
             Expect.equal initial value
 
-        Err _ ->
-            Expect.fail "Expected decoder to be reversible"
+        Err error ->
+            Expect.fail <| Debug.toString error
