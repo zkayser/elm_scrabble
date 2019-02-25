@@ -4,6 +4,7 @@ import Browser
 import Channels.LeaderboardChannel as LeaderboardChannel
 import Data.Cell exposing (Cell)
 import Data.GameContext as GameContext exposing (Context, Turn)
+import Data.GameState as GameState exposing (GameState)
 import Data.Grid as Grid exposing (Grid)
 import Data.Leaderboard as Leaderboard exposing (Leaderboard)
 import Data.Move as Move
@@ -49,6 +50,7 @@ type alias Model =
     , modal : Modal Msg
     , discardTilesMsg : Msg
     , finishedTurnMsg : Msg
+    , gameState : GameState
     , phoenix : Phoenix.Model Msg
     }
 
@@ -93,6 +95,7 @@ init flags =
       , modal = Modal.UserPrompt SubmitForm SetUsername
       , finishedTurnMsg = FinishTurn
       , discardTilesMsg = DiscardTiles
+      , gameState = GameState.init
       , phoenix = Phoenix.initialize (Socket.init "/socket" |> Socket.onOpen SocketOpened |> Socket.withDebug) toPhoenix
       }
     , Task.perform CurrentTime Time.now

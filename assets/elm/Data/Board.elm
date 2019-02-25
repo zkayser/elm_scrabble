@@ -1,4 +1,4 @@
-module Data.Board exposing (Board, TileState, decode, encode, tileStateDecoder, tileStateEncoder)
+module Data.Board exposing (Board, TileState, decode, encode, init)
 
 import Data.Grid as Grid exposing (Grid)
 import Data.Position as Position exposing (Position)
@@ -20,6 +20,13 @@ type alias TileState =
     , played : List Tile
     }
 
+init : Board
+init =
+    { grid = Grid.init
+    , invalidAt = []
+    , moves = []
+    , tileState = { inPlay = [], played = [] }
+    }
 
 encode : Board -> Value
 encode board =
