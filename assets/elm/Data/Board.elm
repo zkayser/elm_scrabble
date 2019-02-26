@@ -1,10 +1,11 @@
-module Data.Board exposing (Board, TileState, decode, encode, init)
+module Data.Board exposing (Board, TileState, decode, discardTiles, encode, init)
 
 import Data.Grid as Grid exposing (Grid)
 import Data.Position as Position exposing (Position)
 import Data.Tile as Tile exposing (Tile)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
+import Phoenix.Push as Push exposing (Push)
 
 
 type alias Board =
@@ -20,6 +21,7 @@ type alias TileState =
     , played : List Tile
     }
 
+
 init : Board
 init =
     { grid = Grid.init
@@ -27,6 +29,18 @@ init =
     , moves = []
     , tileState = { inPlay = [], played = [] }
     }
+
+
+{-| Triggers a Cmd to discard inPlay tiles
+-}
+discardTiles : Board -> ( Board, Push msg )
+discardTiles board =
+    let
+        push =
+            Push.init "scrabble:lobby" "discard_tiles"
+    in
+    ( board, push )
+
 
 encode : Board -> Value
 encode board =
