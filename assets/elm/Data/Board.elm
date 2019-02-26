@@ -1,4 +1,4 @@
-module Data.Board exposing (Board, TileState, decode, discardTiles, encode, init)
+module Data.Board exposing (Board, Msg(..), TileState, decode, discardTiles, encode, init, tileStateEncoder, update)
 
 import Data.Grid as Grid exposing (Grid)
 import Data.Position as Position exposing (Position)
@@ -22,6 +22,11 @@ type alias TileState =
     }
 
 
+type Msg
+    = UpdateTileState Value
+    | NoOp
+
+
 init : Board
 init =
     { grid = Grid.init
@@ -33,13 +38,37 @@ init =
 
 {-| Triggers a Cmd to discard inPlay tiles
 -}
-discardTiles : Board -> ( Board, Push msg )
+discardTiles : Board -> ( Board, Push Msg )
 discardTiles board =
     let
         push =
             Push.init "scrabble:lobby" "discard_tiles"
+                |> Push.onOk UpdateTileState
     in
     ( board, push )
+
+
+
+-- UPDATE
+
+
+update : Board -> Msg -> ( Board, Msg )
+update board msg =
+    case msg of
+        UpdateTileState tileStateJson ->
+            case Decode.decodeValue tileStateDecoder tileStateJson of
+                Ok newTileState ->
+                    ( { board | tileState = newTileState }, NoOp )
+
+                _ ->
+                    ( board, NoOp )
+
+        NoOp ->
+            ( board, NoOp )
+
+
+
+-- SERIALIZATION
 
 
 encode : Board -> Value

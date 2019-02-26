@@ -1,10 +1,11 @@
 module Data.BoardTest exposing (suite)
 
-import Data.Board as Board
+import Data.Board as Board exposing (Msg(..))
 import Data.Grid as Grid
 import Expect
 import Fuzzers.Board as BoardFuzzer
 import Helpers.Serialization as Serialization
+import Json.Decode as Decode
 import Phoenix.Push
 import Task
 import Test exposing (..)
@@ -33,5 +34,16 @@ suite =
                             [ \( update, _ ) -> Expect.equal board update
                             , \( _, push ) -> Expect.equal "discard_tiles" push.event
                             ]
+            ]
+        , describe "update"
+            [ describe "UpdateTileState"
+                [ fuzz2 BoardFuzzer.fuzzer BoardFuzzer.tileStateJsonFuzzer "replaces the boards tileState with incoming valid json" <|
+                    \board ( json, tileState ) ->
+                        Board.update board (UpdateTileState json)
+                            |> Expect.all
+                                [ \( newBoard, _ ) -> Expect.equal tileState newBoard.tileState
+                                , \( _, msg ) -> Expect.equal NoOp msg
+                                ]
+                ]
             ]
         ]
