@@ -1,6 +1,6 @@
 port module Phoenix.Push exposing
     ( Push
-    , init, withPayload
+    , init, withPayload, onOk, onError
     , encode
     )
 

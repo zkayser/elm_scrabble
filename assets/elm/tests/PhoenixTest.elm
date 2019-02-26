@@ -224,6 +224,40 @@ suite =
 
                                 _ ->
                                     Expect.fail "Expected channel to exist and be in a LeaveError state"
+                    , describe "PushOk"
+                        [ test "removes the push from the model's pushes dictionary" <|
+                            \_ ->
+                                let
+                                    push =
+                                        Push.init "room:lobby" "push_msg"
+                                            |> Push.onOk PushMsg
+
+                                    modelWithPushes =
+                                        { initModel | pushes = Dict.insert "room:lobby" push initModel.pushes }
+
+                                    ( model, _ ) =
+                                        Phoenix.update (Incoming (PushOk defaultPayload)) modelWithPushes
+                                in
+                                Dict.get defaultPayload.topic model.pushes
+                                    |> Expect.equal Nothing
+                        ]
+                    , describe "PushError"
+                        [ test "removes the push from the model's pushes dictionary" <|
+                            \_ ->
+                                let
+                                    push =
+                                        Push.init "room:lobby" "push_msg"
+                                            |> Push.onError PushMsg
+
+                                    modelWithPushes =
+                                        { initModel | pushes = Dict.insert "room:lobby" push initModel.pushes }
+
+                                    ( model, _ ) =
+                                        Phoenix.update (Incoming (PushError defaultPayload)) modelWithPushes
+                                in
+                                Dict.get defaultPayload.topic model.pushes
+                                    |> Expect.equal Nothing
+                        ]
                     ]
                 ]
             , describe "Outgoing" <|
@@ -313,6 +347,7 @@ suite =
 
 type Msg
     = FakeSendMsg Phoenix.Message.Data
+    | PushMsg Encode.Value
 
 
 fakeSend : Phoenix.Message.Data -> Cmd Msg

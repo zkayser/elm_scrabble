@@ -118,7 +118,7 @@ update phoenixMessage model =
         Incoming (PushOk payload) ->
             case Dict.get payload.topic model.pushes of
                 Just push ->
-                    ( model, maybeTriggerCmdWithPayload push.onOk payload.payload )
+                    ( { model | pushes = Dict.remove push.topic model.pushes }, maybeTriggerCmdWithPayload push.onOk payload.payload )
 
                 _ ->
                     ( model, Cmd.none )
@@ -126,7 +126,7 @@ update phoenixMessage model =
         Incoming (PushError payload) ->
             case Dict.get payload.topic model.pushes of
                 Just push ->
-                    ( model, maybeTriggerCmdWithPayload push.onError payload.payload )
+                    ( { model | pushes = Dict.remove push.topic model.pushes }, maybeTriggerCmdWithPayload push.onError payload.payload )
 
                 _ ->
                     ( model, Cmd.none )
