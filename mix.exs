@@ -46,7 +46,7 @@ defmodule ElmScrabble.Mixfile do
       {:jason, "~> 1.0"},
       {:poison, "~> 2.0"},
       {:httpotion, "~> 3.1.0"},
-      {:dialyxir, "~> 0.5", only: :dev, runtime: false}
+      {:pfds_elixir, git: "https://github.com/zkayser/pfds_elixir"}
     ]
   end
 
